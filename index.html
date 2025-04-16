@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>UPSC 2025 Countdown</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-neutral-100 text-gray-900 min-h-screen flex items-center justify-center p-4">
+
+  <div class="w-full max-w-5xl">
+    <h1 class="text-3xl sm:text-4xl font-semibold text-center mb-8">🕰️ UPSC 2025 Countdown</h1>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Prelims -->
+      <div class="bg-white p-6 rounded-2xl shadow-md transition hover:shadow-xl">
+        <h2 class="text-lg sm:text-xl font-medium mb-1">Prelims</h2>
+        <p class="text-sm text-gray-500 mb-4">Scheduled: 26 May 2025</p>
+        <div id="prelims" class="text-xl sm:text-2xl font-mono text-blue-600"></div>
+      </div>
+
+      <!-- Mains -->
+      <div class="bg-white p-6 rounded-2xl shadow-md transition hover:shadow-xl">
+        <h2 class="text-lg sm:text-xl font-medium mb-1">Mains</h2>
+        <p class="text-sm text-gray-500 mb-4">Scheduled: 22 August 2025</p>
+        <div id="mains" class="text-xl sm:text-2xl font-mono text-green-600"></div>
+      </div>
+
+      <!-- Interview -->
+      <div class="bg-white p-6 rounded-2xl shadow-md transition hover:shadow-xl">
+        <h2 class="text-lg sm:text-xl font-medium mb-1">Interview</h2>
+        <p class="text-sm text-gray-500 mb-4">Expected: 10 January 2026</p>
+        <div id="interview" class="text-xl sm:text-2xl font-mono text-purple-600"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const countdowns = [
+      { id: 'prelims', date: 'May 26, 2025 09:00:00' },
+      { id: 'mains', date: 'August 22, 2025 09:00:00' },
+      { id: 'interview', date: 'January 10, 2026 10:00:00' }
+    ];
+
+    function updateCountdowns() {
+      const now = new Date().getTime();
+
+      countdowns.forEach(item => {
+        const target = new Date(item.date).getTime();
+        const gap = target - now;
+
+        if (gap <= 0) {
+          document.getElementById(item.id).textContent = "Started 🎯";
+          return;
+        }
+
+        const days = Math.floor(gap / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((gap % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((gap % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((gap % (1000 * 60)) / 1000);
+
+        document.getElementById(item.id).textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+      });
+    }
+
+    updateCountdowns();
+    setInterval(updateCountdowns, 1000);
+  </script>
+
+</body>
+</html>
