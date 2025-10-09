@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Constitution of India Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .header-bg {
+            background-color: #ffffff;
+            border-bottom: 4px solid #ff9933; /* Saffron color */
+        }
+        .footer-bg {
+            background-color: #138808; /* Green color */
+            color: white;
+        }
+        .main-title {
+            color: #000080; /* Navy blue */
+        }
+        .btn-primary {
+            background-color: #000080; /* Navy Blue */
+            color: white;
+            border: 1px solid #000080;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #000060;
+        }
+        .btn-secondary {
+            background-color: #ffffff;
+            color: #000080;
+            border: 1px solid #000080;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .btn-secondary:hover {
+            background-color: #f0f0f0;
+        }
+        .btn-tertiary {
+            background-color: #6c757d;
+            color: white;
+            border: 1px solid #6c757d;
+             transition: background-color 0.3s;
+        }
+        .btn-tertiary:hover {
+            background-color: #5a6268;
+        }
+
+        .palette-btn {
+            width: 2.5rem;
+            height: 2.5rem;
+            font-size: 0.875rem;
+        }
+        .palette-btn.not-visited { background-color: #adb5bd; }
+        .palette-btn.visited { background-color: #6c757d; }
+        .palette-btn.answered { background-color: #198754; }
+        .palette-btn.skipped { background-color: #ffc107; color: black; }
+        .palette-btn.current { box-shadow: 0 0 0 3px rgba(0, 0, 128, 0.5); }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 50;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+        }
+        .modal-content {
+            animation: fade-in 0.3s;
+        }
+        @keyframes fade-in {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div id="app-container" class="min-h-screen flex flex-col">
+        <header class="header-bg shadow-md">
+            <div class="container mx-auto px-4 py-4 flex items-center justify-center text-center">
+                 <div>
+                    <h1 class="main-title text-2xl sm:text-3xl md:text-4xl font-bold">Constitution of India Quiz</h1>
+                    <p class="text-sm text-gray-600">Constitution of India Quiz</p>
+                 </div>
+            </div>
+        </header>
+
+        <main class="flex-grow container mx-auto p-4 md:p-8">
+            <!-- Home Page -->
+            <div id="home-page" class="text-center max-w-4xl mx-auto">
+                <p class="mt-8 text-lg text-gray-700 leading-relaxed mb-12">
+                    Welcome. This portal is designed to test your knowledge of the supreme law of India. Engage with a comprehensive 500-question test or focus on specific parts of the Constitution. Your progress and scores can be reviewed to enhance your understanding.
+                </p>
+                <div class="space-y-4 md:space-y-0 md:space-x-6 flex flex-col md:flex-row justify-center items-center">
+                    <button onclick="startFullQuiz()" class="btn-primary font-semibold py-3 px-8 rounded-md w-full md:w-auto">
+                        Start Full Quiz (500 Questions)
+                    </button>
+                    <button onclick="openPartSelectionModal()" class="btn-secondary font-semibold py-3 px-8 rounded-md w-full md:w-auto">
+                        Take Part-wise Quiz
+                    </button>
+                    <button onclick="viewPreviousScores()" class="btn-tertiary font-semibold py-3 px-8 rounded-md w-full md:w-auto">
+                        View Previous Scores
+                    </button>
+                </div>
+            </div>
+
+            <!-- Part Selection Modal -->
+            <div id="part-selection-modal" class="modal justify-center items-center">
+                <div class="modal-content bg-white p-6 rounded-lg border shadow-lg w-11/12 md:w-1/2 lg:w-1/3">
+                    <h2 class="text-xl font-bold mb-4 text-center border-b pb-2">Select a Part</h2>
+                    <div id="part-list" class="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-80 overflow-y-auto">
+                        <!-- Parts will be dynamically inserted here -->
+                    </div>
+                    <button onclick="closePartSelectionModal()" class="mt-6 w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md">Close</button>
+                </div>
+            </div>
+            
+            <!-- Scores Modal -->
+            <div id="scores-modal" class="modal justify-center items-center">
+                <div class="modal-content bg-white p-6 rounded-lg border shadow-lg w-11/12 md:w-2/3 lg:w-1/2">
+                    <h2 class="text-xl font-bold mb-4 text-center border-b pb-2">Previous Scores</h2>
+                    <div id="scores-list" class="max-h-96 overflow-y-auto">
+                        <!-- Scores will be dynamically inserted here -->
+                    </div>
+                    <button onclick="closeScoresModal()" class="mt-6 w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md">Close</button>
+                </div>
+            </div>
+
+            <!-- Quiz Page -->
+            <div id="quiz-page" class="hidden">
+                <div class="flex flex-col lg:flex-row gap-6">
+                    <!-- Left Side: Question and Options -->
+                    <div class="w-full lg:w-3/4 bg-white p-6 rounded-lg border">
+                        <div class="flex justify-between items-center mb-4 border-b pb-4">
+                            <h2 id="quiz-mode-title" class="text-xl font-bold main-title"></h2>
+                            <div class="text-lg font-semibold bg-gray-200 px-3 py-1 rounded-md" id="timer">90:00</div>
+                        </div>
+                        <div class="mb-5">
+                            <p class="text-md font-semibold" id="question-number"></p>
+                            <p class="text-lg mt-1" id="question-text"></p>
+                        </div>
+                        <div id="options-container" class="space-y-3">
+                            <!-- Options will be dynamically inserted here -->
+                        </div>
+                        <div class="mt-6 flex flex-wrap gap-3 justify-between border-t pt-4">
+                            <button onclick="prevQuestion()" class="btn-secondary font-bold py-2 px-5 rounded-md">Previous</button>
+                            <button onclick="skipQuestion()" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-5 rounded-md">Skip</button>
+                            <button onclick="nextQuestion()" class="btn-primary font-bold py-2 px-5 rounded-md">Next</button>
+                        </div>
+                        <div class="mt-6 text-center">
+                             <button onclick="submitQuiz()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-8 rounded-md text-md">Submit Quiz</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Side: Question Palette -->
+                    <div class="w-full lg:w-1/4 bg-white p-4 rounded-lg border">
+                        <h3 class="text-lg font-bold mb-3 text-center border-b pb-2">Question Palette</h3>
+                        <div class="flex flex-wrap gap-2 items-center text-xs mb-3">
+                            <div class="flex items-center"><span class="w-4 h-4 bg-[#198754] mr-1 rounded-sm"></span> Answered</div>
+                            <div class="flex items-center"><span class="w-4 h-4 bg-[#6c757d] mr-1 rounded-sm"></span> Unanswered</div>
+                            <div class="flex items-center"><span class="w-4 h-4 bg-[#ffc107] mr-1 rounded-sm"></span> Skipped</div>
+                            <div class="flex items-center"><span class="w-4 h-4 bg-[#adb5bd] mr-1 rounded-sm"></span> Not Visited</div>
+                        </div>
+                        <div id="question-palette" class="grid grid-cols-6 sm:grid-cols-8 lg:grid-cols-5 gap-2 max-h-[60vh] overflow-y-auto pr-2">
+                            <!-- Palette buttons will be dynamically inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Results Page -->
+            <div id="results-page" class="hidden text-center max-w-5xl mx-auto">
+                 <div class="bg-white p-6 rounded-lg border shadow-md">
+                    <h2 class="text-3xl font-bold main-title mb-5 border-b pb-3">Quiz Results</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 text-center text-md">
+                        <div class="bg-gray-100 p-3 rounded-md border">
+                            <p class="font-bold text-gray-800">Score</p>
+                            <p id="total-score" class="text-2xl font-bold"></p>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-md border border-green-300">
+                            <p class="font-bold text-green-800">Correct</p>
+                            <p id="correct-answers" class="text-2xl font-bold"></p>
+                        </div>
+                        <div class="bg-red-100 p-3 rounded-md border border-red-300">
+                            <p class="font-bold text-red-800">Wrong</p>
+                            <p id="wrong-answers" class="text-2xl font-bold"></p>
+                        </div>
+                        <div class="bg-yellow-100 p-3 rounded-md border border-yellow-300">
+                            <p class="font-bold text-yellow-800">Skipped</p>
+                            <p id="skipped-questions" class="text-2xl font-bold"></p>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-md border border-blue-300 col-span-2 md:col-span-1">
+                            <p class="font-bold text-blue-800">Accuracy</p>
+                            <p id="accuracy" class="text-2xl font-bold"></p>
+                        </div>
+                    </div>
+                     <p class="mt-5 text-md"><strong>Time Taken:</strong> <span id="time-taken"></span></p>
+
+                    <div class="mt-8 space-x-4">
+                        <button onclick="reviewAnswers()" class="btn-primary font-semibold py-2 px-6 rounded-md">Review Answers</button>
+                        <button onclick="goToHome()" class="btn-secondary font-semibold py-2 px-6 rounded-md">Go to Home</button>
+                    </div>
+
+                    <div id="review-section" class="hidden mt-8 text-left">
+                        <!-- Review content will be inserted here -->
+                    </div>
+                 </div>
+            </div>
+        </main>
+
+        <footer class="footer-bg py-4 mt-8">
+            <p class="text-center text-sm">© Designed, Developed and Hosted by An Aspirant.</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const questions = [
+            { id: 1, question: "The Preamble of the Indian Constitution is based on the 'Objectives Resolution', drafted and moved by:", options: ["Dr. B. R. Ambedkar", "Jawaharlal Nehru", "Sardar Vallabhbhai Patel", "Dr. Rajendra Prasad"], answer: "Jawaharlal Nehru", part: "Preamble", explanation: "Jawaharlal Nehru moved the historic 'Objectives Resolution' in the Constituent Assembly on December 13, 1946. This resolution outlined the philosophy and guiding principles for framing the Constitution and later took the form of the Preamble." },
+            { id: 2, question: "Which Article of the Constitution deals with the Right to Equality before law?", options: ["Article 12", "Article 13", "Article 14", "Article 15"], answer: "Article 14", part: "Fundamental Rights", explanation: "Article 14 states that 'The State shall not deny to any person equality before the law or the equal protection of the laws within the territory of India.' It is a fundamental right available to all persons, citizens and foreigners alike." },
+            { id: 3, question: "The Directive Principles of State Policy are mentioned in which Part of the Constitution?", options: ["Part II", "Part III", "Part IV", "Part V"], answer: "Part IV", part: "DPSPs", explanation: "Part IV of the Constitution (Articles 36-51) contains the Directive Principles of State Policy (DPSP). These are ideals which are meant to be kept in mind by the state when it formulates policies and enacts laws. They are not enforceable by any court." },
+            { id: 4, question: "Which constitutional amendment is also known as the 'Mini-Constitution'?", options: ["42nd Amendment", "44th Amendment", "73rd Amendment", "74th Amendment"], answer: "42nd Amendment", part: "Amendments", explanation: "The 42nd Amendment Act, 1976 is known as the 'Mini-Constitution' because of the large number of comprehensive changes it made to the Constitution. It amended the Preamble and added Part IV-A (Fundamental Duties), among many other changes." },
+            { id: 5, question: "Under which Article can the President of India proclaim a Financial Emergency?", options: ["Article 352", "Article 356", "Article 360", "Article 368"], answer: "Article 360", part: "Emergency Provisions", explanation: "Article 360 empowers the President to proclaim a Financial Emergency if he is satisfied that a situation has arisen whereby the financial stability or credit of India or any part of its territory is threatened. This has never been invoked in India." },
+            { id: 6, question: "How many Fundamental Duties are mentioned in the Indian Constitution?", options: ["8", "9", "10", "11"], answer: "11", part: "Fundamental Duties", explanation: "Originally, there were 10 Fundamental Duties added by the 42nd Amendment. The 11th duty, related to providing opportunities for education to children, was added by the 86th Amendment Act of 2002." },
+            { id: 7, question: "Part I of the Constitution deals with:", options: ["Citizenship", "The Union and its Territory", "Fundamental Rights", "Fundamental Duties"], answer: "The Union and its Territory", part: "Union & Territory", explanation: "Part I of the Constitution, comprising Articles 1 to 4, describes the Union of India and its territories. It details the name and territory of the Union and the procedure for forming new states and altering boundaries." },
+            { id: 8, question: "Who is the ex-officio Chairman of the Council of States (Rajya Sabha)?", options: ["President", "Vice-President", "Prime Minister", "Speaker of Lok Sabha"], answer: "Vice-President", part: "The Union", explanation: "According to Article 64 of the Constitution, the Vice-President of India is the ex-officio Chairman of the Council of States (Rajya Sabha) and presides over its sessions." },
+            { id: 9, question: "The power of the Parliament to amend the Constitution is provided in which Article?", options: ["Article 360", "Article 368", "Article 370", "Article 356"], answer: "Article 368", part: "Amendments", explanation: "Article 368 in Part XX of the Constitution grants constituent power to the Parliament to amend the Constitution and lays down the procedure for it. Amendments can be by simple majority, special majority, or special majority with ratification by states." },
+            { id: 10, question: "Which Schedule of the Constitution deals with the allocation of seats in the Rajya Sabha?", options: ["Third Schedule", "Fourth Schedule", "Fifth Schedule", "Sixth Schedule"], answer: "Fourth Schedule", part: "Schedules", explanation: "The Fourth Schedule of the Constitution deals with the allocation of seats in the Council of States (Rajya Sabha) to the States and Union Territories." },
+            { id: 11, question: "Article 5 of the Constitution deals with:", options: ["Fundamental Rights", "Citizenship at the commencement of the Constitution", "The Union Executive", "DPSPs"], answer: "Citizenship at the commencement of the Constitution", part: "Citizenship", explanation: "Article 5, under Part II of the Constitution, lays down the criteria for citizenship for persons at the commencement of the Constitution (January 26, 1950), based on domicile and birth in India." },
+            { id: 12, question: "The concept of 'Uniform Civil Code' is mentioned under which article?", options: ["Article 40", "Article 44", "Article 48", "Article 51"], answer: "Article 44", part: "DPSPs", explanation: "Article 44, a Directive Principle of State Policy, states that 'The State shall endeavour to secure for the citizens a uniform civil code throughout the territory of India'. It aims to replace personal laws based on scriptures and customs of each major religious community." },
+            { id: 13, question: "Who administers the oath of office to the President of India?", options: ["Prime Minister", "Chief Justice of India", "Vice-President", "Speaker of Lok Sabha"], answer: "Chief Justice of India", part: "The Union", explanation: "As per Article 60, the President of India is administered the oath of office by the Chief Justice of India, or in his absence, the senior-most Judge of the Supreme Court available." },
+            { id: 14, question: "What is the minimum age to be appointed as the Governor of a State?", options: ["25 years", "30 years", "35 years", "40 years"], answer: "35 years", part: "The States", explanation: "Article 157 of the Constitution specifies the qualifications for appointment as Governor. A person must be a citizen of India and must have completed the age of thirty-five years." },
+            { id: 15, question: "The 73rd Amendment Act, 1992, is related to:", options: ["Municipalities", "Panchayati Raj", "Official Languages", "Fundamental Duties"], answer: "Panchayati Raj", part: "Amendments", explanation: "The 73rd Constitutional Amendment Act, 1992, granted constitutional status to Panchayati Raj institutions, making them a mandatory part of the state's governance structure for rural areas. It added Part IX to the Constitution." }
+        ];
+
+        let fullQuestionSet = [];
+        for (let i = 0; i < 33; i++) {
+           fullQuestionSet.push(...questions);
+        }
+        fullQuestionSet.push(...questions.slice(0,5));
+        fullQuestionSet = fullQuestionSet.map((q, i) => ({...q, id: i + 1}));
+
+        let currentQuizQuestions = [];
+        let currentQuestionIndex = 0;
+        let userAnswers = [];
+        let questionStatus = [];
+        let timer;
+        let timeLeft;
+        let quizStartTime;
+        let quizMode = '';
+
+        const homePage = document.getElementById('home-page');
+        const quizPage = document.getElementById('quiz-page');
+        const resultsPage = document.getElementById('results-page');
+        const partSelectionModal = document.getElementById('part-selection-modal');
+        const scoresModal = document.getElementById('scores-modal');
+
+        function showPage(page) {
+            homePage.style.display = 'none';
+            quizPage.style.display = 'none';
+            resultsPage.style.display = 'none';
+            page.style.display = 'block';
+        }
+
+        function goToHome() {
+            resetQuizState();
+            showPage(homePage);
+        }
+        
+        function openPartSelectionModal() {
+            const partList = document.getElementById('part-list');
+            const parts = [...new Set(fullQuestionSet.map(q => q.part))];
+            partList.innerHTML = parts.map(part => `
+                <button onclick="startPartWiseQuiz('${part}')" class="w-full text-left p-2 bg-gray-100 hover:bg-blue-100 rounded-md">${part}</button>
+            `).join('');
+            partSelectionModal.style.display = 'flex';
+        }
+
+        function closePartSelectionModal() {
+            partSelectionModal.style.display = 'none';
+        }
+
+        function openScoresModal() {
+            scoresModal.style.display = 'flex';
+        }
+        function closeScoresModal() {
+            scoresModal.style.display = 'none';
+        }
+
+        function resetQuizState() {
+            clearInterval(timer);
+            currentQuizQuestions = [];
+            currentQuestionIndex = 0;
+            userAnswers = [];
+            questionStatus = [];
+            quizMode = '';
+            document.getElementById('review-section').classList.add('hidden');
+            document.getElementById('review-section').innerHTML = '';
+            showPage(homePage);
+        }
+
+        function startFullQuiz() {
+            quizMode = 'Full Quiz';
+            currentQuizQuestions = fullQuestionSet;
+            timeLeft = 90 * 60;
+            initializeQuiz();
+        }
+
+        function startPartWiseQuiz(part) {
+            quizMode = `Part-wise: ${part}`;
+            currentQuizQuestions = fullQuestionSet.filter(q => q.part === part).map((q, i) => ({...q, id: i + 1}));
+            const numQuestions = currentQuizQuestions.length;
+            timeLeft = Math.ceil(numQuestions * (15 / 100)) * 60;
+            if (timeLeft < 60) timeLeft = 60;
+            closePartSelectionModal();
+            initializeQuiz();
+        }
+
+        function initializeQuiz() {
+            userAnswers = new Array(currentQuizQuestions.length).fill(null);
+            questionStatus = new Array(currentQuizQuestions.length).fill('not-visited');
+            quizStartTime = new Date();
+            showPage(quizPage);
+            displayQuestion(0);
+            updatePalette();
+            startTimer();
+        }
+
+        function displayQuestion(index) {
+            if(index < 0 || index >= currentQuizQuestions.length) return;
+
+            currentQuestionIndex = index;
+            const question = currentQuizQuestions[index];
+
+            document.getElementById('quiz-mode-title').textContent = quizMode;
+            document.getElementById('question-number').textContent = `Question ${index + 1} of ${currentQuizQuestions.length}`;
+            document.getElementById('question-text').textContent = question.question;
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            question.options.forEach((option) => {
+                const isChecked = userAnswers[index] === option;
+                optionsContainer.innerHTML += `
+                    <label class="flex items-center p-3 border rounded-md cursor-pointer ${isChecked ? 'bg-blue-100 border-blue-400' : 'hover:bg-gray-50 border-gray-300'}">
+                        <input type="radio" name="option" value="${option}" class="h-4 w-4 text-blue-600 focus:ring-blue-500" onchange="selectOption('${option}')" ${isChecked ? 'checked' : ''}>
+                        <span class="ml-3 text-md">${option}</span>
+                    </label>
+                `;
+            });
+            
+            if(questionStatus[index] === 'not-visited') {
+                questionStatus[index] = 'visited';
+            }
+            updatePalette();
+        }
+
+        function selectOption(option) {
+            userAnswers[currentQuestionIndex] = option;
+            questionStatus[currentQuestionIndex] = 'answered';
+            updatePalette();
+            
+            // Re-render options to show selection
+            const question = currentQuizQuestions[currentQuestionIndex];
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+             question.options.forEach((opt) => {
+                const isChecked = userAnswers[currentQuestionIndex] === opt;
+                optionsContainer.innerHTML += `
+                    <label class="flex items-center p-3 border rounded-md cursor-pointer ${isChecked ? 'bg-blue-100 border-blue-400' : 'hover:bg-gray-50 border-gray-300'}">
+                        <input type="radio" name="option" value="${opt}" class="h-4 w-4 text-blue-600 focus:ring-blue-500" onchange="selectOption('${opt}')" ${isChecked ? 'checked' : ''}>
+                        <span class="ml-3 text-md">${opt}</span>
+                    </label>
+                `;
+            });
+        }
+        
+        function nextQuestion() {
+            if (currentQuestionIndex < currentQuizQuestions.length - 1) {
+                displayQuestion(currentQuestionIndex + 1);
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                displayQuestion(currentQuestionIndex - 1);
+            }
+        }
+
+        function skipQuestion() {
+            if (questionStatus[currentQuestionIndex] !== 'answered') {
+                questionStatus[currentQuestionIndex] = 'skipped';
+            }
+            updatePalette();
+            nextQuestion();
+        }
+
+        function jumpToQuestion(index) {
+            displayQuestion(index);
+        }
+
+        function updatePalette() {
+            const palette = document.getElementById('question-palette');
+            palette.innerHTML = '';
+            for (let i = 0; i < currentQuizQuestions.length; i++) {
+                const btn = document.createElement('button');
+                btn.textContent = i + 1;
+                btn.className = `flex items-center justify-center font-semibold text-white rounded-md palette-btn ${questionStatus[i]}`;
+                if (i === currentQuestionIndex) {
+                    btn.classList.add('current');
+                }
+                btn.onclick = () => jumpToQuestion(i);
+                palette.appendChild(btn);
+            }
+        }
+
+        function startTimer() {
+            const timerEl = document.getElementById('timer');
+            clearInterval(timer);
+            timer = setInterval(() => {
+                timeLeft--;
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    submitQuiz();
+                }
+            }, 1000);
+        }
+        
+        function submitQuiz() {
+            clearInterval(timer);
+            const quizEndTime = new Date();
+            const timeDiff = Math.floor((quizEndTime - quizStartTime) / 1000);
+            const minutes = Math.floor(timeDiff / 60);
+            const seconds = timeDiff % 60;
+
+            let correct = 0, wrong = 0, skippedCount = 0;
+
+            currentQuizQuestions.forEach((q, i) => {
+                if (userAnswers[i] === q.answer) {
+                    correct++;
+                } else if (userAnswers[i] !== null) {
+                    wrong++;
+                } else {
+                    skippedCount++;
+                }
+            });
+
+            const totalAttempted = correct + wrong;
+            const accuracy = totalAttempted > 0 ? ((correct / totalAttempted) * 100).toFixed(2) : 0;
+            
+            document.getElementById('total-score').textContent = `${correct} / ${currentQuizQuestions.length}`;
+            document.getElementById('correct-answers').textContent = correct;
+            document.getElementById('wrong-answers').textContent = wrong;
+            document.getElementById('skipped-questions').textContent = skippedCount;
+            document.getElementById('accuracy').textContent = `${accuracy}%`;
+            document.getElementById('time-taken').textContent = `${minutes}m ${seconds}s`;
+            
+            saveScore({
+                mode: quizMode, score: correct, total: currentQuizQuestions.length,
+                correct, wrong, skipped: skippedCount, accuracy,
+                timeTaken: `${minutes}m ${seconds}s`, date: new Date().toLocaleString()
+            });
+
+            showPage(resultsPage);
+        }
+        
+        function reviewAnswers() {
+            const reviewSection = document.getElementById('review-section');
+            reviewSection.classList.remove('hidden');
+            
+            let attemptedHTML = '<h3 class="text-xl font-bold my-4 text-center border-b pb-2">Attempted Questions</h3>';
+            let unansweredHTML = '<h3 class="text-xl font-bold my-4 mt-8 text-center border-b pb-2">Unanswered & Skipped Questions</h3>';
+            
+            const generateReviewHTML = (q, index) => {
+                const userAnswer = userAnswers[index];
+                const isCorrect = userAnswer === q.answer;
+                let statusClass, statusText, answerHTML;
+
+                if (userAnswer !== null) { // Attempted
+                    if(isCorrect) {
+                        statusClass = 'bg-green-50 border-green-300';
+                        statusText = '<span class="font-semibold text-green-700">Status: Correct</span>';
+                        answerHTML = `<p class="mt-2"><strong>Your Answer:</strong> ${userAnswer}</p>`;
+                    } else {
+                         statusClass = 'bg-red-50 border-red-300';
+                         statusText = '<span class="font-semibold text-red-700">Status: Wrong</span>';
+                         answerHTML = `<p class="mt-2"><strong>Your Answer:</strong> <span class="text-red-600">${userAnswer}</span></p>`;
+                    }
+                } else { // Unanswered
+                    statusClass = 'bg-yellow-50 border-yellow-300';
+                    statusText = '<span class="font-semibold text-yellow-700">Status: Not Answered</span>';
+                    answerHTML = '';
+                }
+
+                return `
+                    <div class="mb-4 p-4 border rounded-md ${statusClass}">
+                        <p class="font-bold">${index + 1}. ${q.question}</p>
+                        ${answerHTML}
+                        <p class="mt-1"><strong>Correct Answer:</strong> <span class="text-green-800 font-medium">${q.answer}</span></p>
+                        <p class="mt-2 pt-2 border-t border-gray-300"><strong>Explanation:</strong> ${q.explanation}</p>
+                        <div class="mt-2">${statusText}</div>
+                    </div>
+                `;
+            };
+
+            currentQuizQuestions.forEach((q, i) => {
+                if (userAnswers[i] !== null) {
+                    attemptedHTML += generateReviewHTML(q, i);
+                } else {
+                    unansweredHTML += generateReviewHTML(q, i);
+                }
+            });
+
+            if (attemptedHTML.endsWith('</h3>')) attemptedHTML += '<p class="text-gray-500 text-center py-4">No questions were attempted.</p>';
+            if (unansweredHTML.endsWith('</h3>')) unansweredHTML += '<p class="text-gray-500 text-center py-4">All questions were attempted.</p>';
+
+            reviewSection.innerHTML = attemptedHTML + unansweredHTML;
+            reviewSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+
+        function saveScore(result) {
+            try {
+                let scores = JSON.parse(localStorage.getItem('constitutionQuizScores')) || [];
+                scores.unshift(result);
+                if (scores.length > 10) scores.pop();
+                localStorage.setItem('constitutionQuizScores', JSON.stringify(scores));
+            } catch (e) {
+                console.error("Could not save score to localStorage", e);
+            }
+        }
+        
+        function viewPreviousScores() {
+            const scoresList = document.getElementById('scores-list');
+             try {
+                const scores = JSON.parse(localStorage.getItem('constitutionQuizScores')) || [];
+                if (scores.length === 0) {
+                    scoresList.innerHTML = '<p class="text-center text-gray-500">No scores saved yet.</p>';
+                } else {
+                    scoresList.innerHTML = scores.map(s => `
+                        <div class="p-3 border-b">
+                            <p class="font-bold">${s.mode}</p>
+                            <p class="text-xs text-gray-500 mb-1">${s.date}</p>
+                            <div class="flex flex-wrap gap-x-3 gap-y-1 text-sm">
+                                <span><strong>Score:</strong> ${s.score}/${s.total}</span>
+                                <span><strong>Correct:</strong> ${s.correct}</span>
+                                <span><strong>Wrong:</strong> ${s.wrong}</span>
+                                <span><strong>Accuracy:</strong> ${s.accuracy}%</span>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+             } catch (e) {
+                scoresList.innerHTML = '<p class="text-center text-red-500">Could not retrieve scores.</p>';
+                console.error("Could not retrieve scores from localStorage", e);
+             }
+            openScoresModal();
+        }
+
+        // Initial setup
+        document.addEventListener('DOMContentLoaded', () => {
+             // Hide all pages except home initially
+             quizPage.style.display = 'none';
+             resultsPage.style.display = 'none';
+             homePage.style.display = 'block';
+        });
+
+    </script>
+</body>
+</html>
