@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Constitution of India Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+        }
+        header {
+            background-color: #003366;
+            color: white;
+        }
+        details > summary {
+            cursor: pointer;
+            list-style-type: none;
+        }
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
+        details[open] > summary .arrow-down {
+            transform: rotate(180deg);
+        }
+        .question-palette-btn.active {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        .question-palette-btn.answered {
+            background-color: #dcfce7;
+            border-color: #4ade80;
+        }
+        .question-palette-btn.marked {
+            background-color: #fef9c3;
+            border-color: #facc15;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <header class="py-4 shadow-md sticky top-0 bg-white z-10 border-b-4 border-orange-500">
+        <div class="container mx-auto px-4 flex items-center justify-between">
+            <div class="flex items-center">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/120px-Emblem_of_India.svg.png" alt="Emblem of India" class="h-16 w-16 mr-4">
+                <div>
+                    <h1 class="text-lg font-semibold text-gray-800">Ministry of Law and Justice</h1>
+                    <p class="text-sm text-gray-600">Government of India</p>
+                </div>
+            </div>
+            <button id="home-btn" class="hidden sm:block bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">Select Another Test</button>
+        </div>
+    </header>
+
+    <div class="container mx-auto p-4 md:p-8">
+        
+        <!-- SELECTION SCREEN -->
+        <div id="selection-screen">
+            <div class="text-center mb-8">
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-800">Select a Test</h1>
+                <p class="text-lg mt-2 text-gray-600">Choose a specific part of the Constitution or take the full mock test.</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <h2 class="text-2xl font-bold mb-4 border-b pb-2">Part-wise Tests</h2>
+                <div id="part-selection-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+                    <!-- Part buttons will be injected here -->
+                </div>
+                 <h2 class="text-2xl font-bold mb-4 border-b pb-2">Full Test</h2>
+                <button id="full-test-btn" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-4 rounded-lg transition duration-300 text-xl">
+                    Take Full Mock Test
+                </button>
+            </div>
+        </div>
+
+        <!-- QUIZ SCREEN -->
+        <main id="quiz-section" class="hidden">
+            <div class="grid lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-lg">
+                    <div id="quiz-container">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                            <h2 id="quiz-title" class="text-2xl font-semibold text-gray-700">Quiz In Progress</h2>
+                            <div class="flex items-center gap-4">
+                                <div id="timer" class="text-2xl font-bold text-red-600 bg-red-100 px-3 py-1 rounded-md">90:00</div>
+                            </div>
+                        </div>
+                        <div id="question-container" class="mb-6 border-t pt-6">
+                            <p id="question-number" class="text-md font-medium text-gray-500 mb-2"></p>
+                            <p id="question-text" class="text-xl font-medium"></p>
+                        </div>
+                        <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                        <div class="mt-8 flex flex-wrap justify-between items-center border-t pt-6 gap-4">
+                            <button id="mark-btn" class="bg-yellow-400 hover:bg-yellow-500 text-gray-800 font-bold py-2 px-4 rounded-lg transition duration-300">Mark for Review</button>
+                            <div>
+                                <button id="prev-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg transition duration-300 mr-2">Previous</button>
+                                <button id="next-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">Save & Next</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold mb-4 border-b pb-2">Question Palette</h3>
+                    <div id="question-palette" class="grid grid-cols-5 md:grid-cols-6 lg:grid-cols-5 gap-2 max-h-96 overflow-y-auto">
+                        <!-- Question palette buttons go here -->
+                    </div>
+                    <div class="mt-6">
+                        <button id="end-test-btn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300">End Test</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <!-- RESULT SCREEN -->
+        <div id="result-container" class="hidden text-center bg-white p-6 rounded-lg shadow-lg">
+             <h2 class="text-3xl font-bold mb-4 text-gray-800">Quiz Results</h2>
+             <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded-lg mb-6 text-left inline-block">
+                <p id="score" class="text-2xl font-bold mb-2"></p>
+                <p id="time-taken" class="text-lg"></p>
+             </div>
+
+             <div id="part-wise-analysis" class="mt-8 text-left">
+                <h3 class="text-2xl font-bold mb-4 text-center">Part-wise Score Analysis</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white border rounded-lg">
+                        <thead class="bg-gray-200">
+                            <tr>
+                                <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600 uppercase">Part</th>
+                                <th class="py-3 px-4 text-center text-sm font-semibold text-gray-600 uppercase">Correct</th>
+                                <th class="py-3 px-4 text-center text-sm font-semibold text-gray-600 uppercase">Total</th>
+                                <th class="py-3 px-4 text-center text-sm font-semibold text-gray-600 uppercase">Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="analysis-table-body">
+                            <!-- Analysis data will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+             </div>
+
+             <div id="review-section" class="mt-8 text-left">
+                <h3 class="text-2xl font-bold mb-4 text-center border-t pt-6">Question Review</h3>
+                <div id="review-content" class="space-y-6">
+                    <!-- Review questions will be injected here -->
+                </div>
+             </div>
+             <button id="take-another-test-btn" class="mt-8 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition duration-300 text-lg">Take Another Test</button>
+        </div>
+
+        <section id="articles-section" class="bg-white p-6 rounded-lg shadow-lg mt-8">
+            <h2 class="text-3xl font-bold text-center mb-6">The Constitution of India - Articles</h2>
+            <div id="articles-content" class="space-y-2">
+                <!-- Articles will be injected here by JavaScript -->
+            </div>
+        </section>
+    </div>
+
+    <footer class="bg-gray-800 text-white py-4 mt-8">
+        <div class="container mx-auto text-center text-sm">
+            <p>&copy; 2024 Ministry of Law and Justice, Government of India. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        const fullQuizData = [
+             // Preamble (5 Questions)
+            { part: "Preamble", question: "The Preamble of the Indian Constitution is based on the 'Objective Resolution' drafted and moved by?", options: ["Dr. B. R. Ambedkar", "Jawaharlal Nehru", "Sardar Vallabhbhai Patel", "Dr. Rajendra Prasad"], answer: "Jawaharlal Nehru", explanation: "Jawaharlal Nehru drafted and moved the Objective Resolution in the Constituent Assembly, which laid down the philosophical foundations of the Constitution and later became the Preamble." },
+            { part: "Preamble", question: "The words 'SOCIALIST' and 'SECULAR' were added to the Preamble by which amendment?", options: ["42nd Amendment", "44th Amendment", "1st Amendment", "24th Amendment"], answer: "42nd Amendment", explanation: "The 42nd Amendment Act of 1976, also known as the 'Mini-Constitution', added the words 'Socialist', 'Secular', and 'Integrity' to the Preamble." },
+            { part: "Preamble", question: "The phrase 'justice, social, economic and political' in the Preamble is inspired by which revolution?", options: ["French Revolution", "American Revolution", "Russian Revolution", "Glorious Revolution"], answer: "Russian Revolution", explanation: "The ideals of social, economic, and political justice in the Preamble are inspired by the Russian Revolution of 1917." },
+            { part: "Preamble", question: "In which landmark case did the Supreme Court hold that the Preamble is a basic feature of the Constitution?", options: ["Golaknath case", "Kesavananda Bharati case", "Minerva Mills case", "Maneka Gandhi case"], answer: "Kesavananda Bharati case", explanation: "In the Kesavananda Bharati case (1973), the Supreme Court ruled that the Preamble is part of the Constitution and can be amended, but its 'basic features' cannot be altered." },
+            { part: "Preamble", question: "How many times has the Preamble to the Constitution of India been amended?", options: ["Never", "Once", "Twice", "Three times"], answer: "Once", explanation: "The Preamble has been amended only once so far, by the 42nd Constitutional Amendment Act in 1976." },
+
+            // Part I: The Union and its Territory (10 Questions)
+            { part: "Part I", question: "Article 1 of the Constitution declares India as a:", options: ["Federation of States", "Union of States", "Unitary State", "Quasi-federal State"], answer: "Union of States", explanation: "Article 1 describes India as a 'Union of States' rather than a 'Federation of States', indicating that the Indian federation is not the result of an agreement among the states and the states have no right to secede." },
+            { part: "Part I", question: "Which article empowers the Parliament to admit new states into the Union of India?", options: ["Article 1", "Article 2", "Article 3", "Article 4"], answer: "Article 2", explanation: "Article 2 grants Parliament the power to admit into the Union of India, or establish, new states on such terms and conditions as it thinks fit." },
+            { part: "Part I", question: "The power to form new states or alter the boundaries of existing states rests with:", options: ["The President", "The Parliament", "The State Legislature", "The Supreme Court"], answer: "The Parliament", explanation: "Article 3 gives Parliament the exclusive power to form new states, increase or diminish the area of any state, alter the boundaries, or change the name of any state." },
+            { part: "Part I", question: "A bill for the creation of a new state requires a recommendation from whom before being introduced in Parliament?", options: ["The Prime Minister", "The Chief Justice of India", "The President", "The Speaker of Lok Sabha"], answer: "The President", explanation: "According to Article 3, any bill for forming a new state can be introduced in either House of Parliament only on the recommendation of the President." },
+            { part: "Part I", question: "Laws made for the admission or establishment of new states under Article 2 are considered:", options: ["Constitutional amendments under Article 368", "Not constitutional amendments under Article 368", "Executive orders", "Judicial pronouncements"], answer: "Not constitutional amendments under Article 368", explanation: "Article 4 clarifies that laws made under Articles 2 and 3 are not to be considered as amendments of the Constitution under Article 368, meaning they can be passed by a simple majority." },
+            { part: "Part I", question: "The state of Sikkim was associated with the Union by which amendment?", options: ["35th Amendment", "36th Amendment", "42nd Amendment", "1st Amendment"], answer: "35th Amendment", explanation: "The 35th Amendment Act (1974) made Sikkim an 'associate state'. It was later made a full-fledged state by the 36th Amendment Act (1975)." },
+            { part: "Part I", question: "Under Article 3, Parliament can alter the name of a state by a:", options: ["Simple majority", "Special majority", "Special majority with ratification by states", "Presidential order"], answer: "Simple majority", explanation: "Changes under Article 3, such as altering a state's name, can be done through a law passed by a simple majority in Parliament." },
+            { part: "Part I", question: "The reorganisation of states on a linguistic basis was done based on the recommendation of which commission?", options: ["Dhar Commission", "JVP Committee", "Fazl Ali Commission", "Sarkaria Commission"], answer: "Fazl Ali Commission", explanation: "The States Reorganisation Act, 1956, which reorganized India's states on linguistic lines, was largely based on the recommendations of the Fazl Ali Commission." },
+            { part: "Part I", question: "Article 4 clarifies that laws made under Articles 2 and 3 are not to be considered amendments of the Constitution for the purposes of:", options: ["Article 14", "Article 19", "Article 32", "Article 368"], answer: "Article 368", explanation: "Article 4 explicitly states that laws altering state boundaries or names are not constitutional amendments for the purpose of Article 368, which outlines the procedure for amending the Constitution." },
+            { part: "Part I", question: "The territory of India comprises:", options: ["Only the territories of the States", "States and Union Territories", "States, Union Territories, and any acquired territories", "Only States and acquired territories"], answer: "States, Union Territories, and any acquired territories", explanation: "Article 1(3) specifies that the territory of India comprises the territories of the States, the Union territories, and any such other territories as may be acquired." },
+
+            // Part II: Citizenship (15 Questions)
+            { part: "Part II", question: "Part II of the Indian Constitution deals with:", options: ["Fundamental Rights", "Citizenship", "Directive Principles of State Policy", "The Union Executive"], answer: "Citizenship", explanation: "Part II of the Constitution, from Articles 5 to 11, deals with the subject of Indian Citizenship." },
+            { part: "Part II", question: "Which article deals with citizenship at the commencement of the Constitution for persons domiciled in India?", options: ["Article 5", "Article 6", "Article 7", "Article 8"], answer: "Article 5", explanation: "Article 5 laid down the criteria for citizenship for people who had their domicile in the territory of India at the time the Constitution commenced." },
+            { part: "Part II", question: "Article 6 grants citizenship rights to certain persons who have migrated to India from:", options: ["Nepal", "Pakistan", "Sri Lanka", "Bangladesh"], answer: "Pakistan", explanation: "Article 6 specifically addresses the citizenship rights of individuals who migrated to India from the territory that became Pakistan after the partition." },
+            { part: "Part II", question: "A person who voluntarily acquires the citizenship of a foreign state ceases to be an Indian citizen under which article?", options: ["Article 7", "Article 8", "Article 9", "Article 10"], answer: "Article 9", explanation: "Article 9 explicitly states that if a person voluntarily acquires the citizenship of any foreign country, they shall no longer be a citizen of India." },
+            { part: "Part II", question: "The power to make any provision with respect to the acquisition and termination of citizenship rests with:", options: ["The President", "The Supreme Court", "The Parliament", "The State Legislatures"], answer: "The Parliament", explanation: "Article 11 empowers the Parliament to make laws regulating the right of citizenship, including its acquisition and termination." },
+            { part: "Part II", question: "The Citizenship Act was enacted by the Parliament in which year?", options: ["1950", "1952", "1955", "1960"], answer: "1955", explanation: "Using the powers granted under Article 11, the Parliament enacted the Citizenship Act in 1955 to provide for the acquisition and determination of Indian citizenship." },
+            { part: "Part II", question: "How many ways of acquiring Indian citizenship are provided for in the Citizenship Act, 1955?", options: ["Three", "Four", "Five", "Six"], answer: "Five", explanation: "The Citizenship Act, 1955, prescribes five ways of acquiring citizenship: by birth, descent, registration, naturalisation, and incorporation of territory." },
+            { part: "Part II", question: "Citizenship by naturalisation can be acquired by a person who has resided in India for how long (in total over a 14-year period before applying)?", options: ["5 years", "7 years", "10 years", "12 years"], answer: "12 years", explanation: "For citizenship by naturalisation, one of the conditions is that the applicant must have resided in India or been in the service of the Government in India for a total of 12 years." },
+            { part: "Part II", question: "The concept of 'Overseas Citizen of India' (OCI) was introduced by amending the Citizenship Act in which year?", options: ["1986", "1992", "2003", "2015"], answer: "2003", explanation: "The OCI scheme was introduced by the Citizenship (Amendment) Act, 2003, to grant certain rights to persons of Indian origin." },
+            { part: "Part II", question: "Which article ensures the continuance of the rights of citizenship?", options: ["Article 8", "Article 9", "Article 10", "Article 11"], answer: "Article 10", explanation: "Article 10 states that every person who is a citizen of India shall continue to be a citizen, subject to the provisions of any law made by Parliament." },
+            { part: "Part II", question: "Article 8 provides citizenship rights for certain persons of Indian origin residing where?", options: ["Only in Commonwealth countries", "Only in the USA and UK", "Outside India", "In neighboring countries"], answer: "Outside India", explanation: "Article 8 deals with the rights of citizenship of certain persons of Indian origin who are ordinarily residing in any country outside India." },
+            { part: "Part II", question: "The termination of Indian citizenship can occur through:", options: ["Renunciation only", "Termination only", "Deprivation only", "Renunciation, Termination, and Deprivation"], answer: "Renunciation, Termination, and Deprivation", explanation: "The Citizenship Act, 1955, provides for three modes of loss of citizenship: renunciation (voluntary giving up), termination (acquiring citizenship of another country), and deprivation (compulsory termination by the government)." },
+            { part: "Part II", question: "The cut-off date for persons who migrated from Pakistan to India for acquiring citizenship under Article 6 is:", options: ["August 15, 1947", "January 26, 1950", "July 19, 1948", "March 1, 1947"], answer: "July 19, 1948", explanation: "Article 6 distinguishes between those who came before July 19, 1948, and those who came on or after this date. This was the date when the permit system for migration was introduced." },
+            { part: "Part II", question: "India follows the principle of citizenship by:", options: ["Birth only (Jus Soli)", "Descent only (Jus Sanguinis)", "Both by birth and by descent", "Naturalisation only"], answer: "Both by birth and by descent", explanation: "India's citizenship laws incorporate both Jus Soli (right of the soil) and Jus Sanguinis (right of blood), though there have been amendments to the conditions for citizenship by birth." },
+            { part: "Part II", question: "Does the Indian Constitution provide for dual citizenship?", options: ["Yes", "No", "Only for persons of Indian origin", "Only in special cases decided by the President"], answer: "No", explanation: "The Indian Constitution and the Citizenship Act, 1955, do not allow for dual citizenship. Article 9 explicitly states that acquiring foreign citizenship leads to the loss of Indian citizenship." },
+
+            // Part III: Fundamental Rights (50 Questions)
+            { part: "Part III", question: "Which part of the Constitution is called the 'Magna Carta' of India?", options: ["Part II", "Part III", "Part IV", "Part V"], answer: "Part III", explanation: "Part III, which contains the Fundamental Rights, is often described as the Magna Carta of India for its role in protecting individual liberties against state action." },
+            { part: "Part III", question: "Article 12 defines 'The State' for the purpose of which part of the Constitution?", options: ["Part I and II", "Part III and IV", "Part V", "The entire Constitution"], answer: "Part III and IV", explanation: "Article 12 provides a wide definition of 'The State' which includes the Government and Parliament of India, state governments and legislatures, and all local or other authorities. This definition applies to Part III (Fundamental Rights) and Part IV (DPSP)." },
+            { part: "Part III", question: "Article 13 declares that laws inconsistent with Fundamental Rights shall be:", options: ["Voidable", "Void", "Valid until challenged", "Subject to presidential review"], answer: "Void", explanation: "Article 13(2) states that the State shall not make any law which takes away or abridges the rights conferred by Part III, and any law made in contravention of this clause shall, to the extent of the contravention, be void." },
+            { part: "Part III", question: "The principle of 'Judicial Review' is implicitly enshrined in which article?", options: ["Article 12", "Article 13", "Article 14", "Article 32"], answer: "Article 13", explanation: "The power of the judiciary to declare a law unconstitutional if it violates Fundamental Rights, known as Judicial Review, is derived from Article 13." },
+            { part: "Part III", question: "Article 14 guarantees:", options: ["Equality before law and equal protection of laws", "Prohibition of discrimination", "Equality of opportunity", "Abolition of untouchability"], answer: "Equality before law and equal protection of laws", explanation: "Article 14 provides that the State shall not deny to any person equality before the law or the equal protection of the laws within the territory of India." },
+            { part: "Part III", question: "Prohibition of discrimination on grounds only of religion, race, caste, sex or place of birth is mentioned in:", options: ["Article 14", "Article 15", "Article 16", "Article 17"], answer: "Article 15", explanation: "Article 15(1) explicitly prohibits the state from discriminating against any citizen on grounds only of religion, race, caste, sex, place of birth or any of them." },
+            { part: "Part III", question: "Article 16 guarantees equality of opportunity in matters of:", options: ["Education", "Public employment", "Freedom of speech", "Religious practice"], answer: "Public employment", explanation: "Article 16(1) guarantees equality of opportunity for all citizens in matters relating to employment or appointment to any office under the State." },
+            { part: "Part III", question: "'Untouchability' is abolished and its practice in any form is forbidden by which article?", options: ["Article 16", "Article 17", "Article 18", "Article 15"], answer: "Article 17", explanation: "Article 17 abolishes untouchability and makes its practice in any form a punishable offense. It is one of the few absolute rights in the Constitution." },
+            { part: "Part III", question: "Which article abolishes all titles except military and academic distinctions?", options: ["Article 17", "Article 18", "Article 19", "Article 14"], answer: "Article 18", explanation: "Article 18 prohibits the State from conferring titles and prevents citizens of India from accepting any title from any foreign State." },
+            { part: "Part III", question: "The six freedoms of a citizen are enumerated in:", options: ["Article 18", "Article 19", "Article 20", "Article 21"], answer: "Article 19", explanation: "Article 19(1) guarantees six fundamental freedoms, including freedom of speech and expression, assembly, association, movement, residence, and profession." },
+            { part: "Part III", question: "The 'Right to Freedom of Speech and Expression' is subject to reasonable restrictions on the grounds of:", options: ["Public order, decency or morality", "Sovereignty and integrity of India", "Security of the State", "All of the above"], answer: "All of the above", explanation: "Freedom of speech under Article 19(1)(a) is not absolute. Article 19(2) lists several grounds on which reasonable restrictions can be imposed." },
+            { part: "Part III", question: "The 'Right to assemble peaceably and without arms' is guaranteed under which clause of Article 19?", options: ["19(1)(a)", "19(1)(b)", "19(1)(c)", "19(1)(d)"], answer: "19(1)(b)", explanation: "Article 19(1)(b) guarantees all citizens the right to assemble peaceably and without arms, subject to reasonable restrictions." },
+            { part: "Part III", question: "Which article provides protection in respect of conviction for offences (protection against ex-post facto law)?", options: ["Article 19", "Article 20", "Article 21", "Article 22"], answer: "Article 20", explanation: "Article 20 provides protection against arbitrary and excessive punishment. Clause (1) protects against ex-post facto laws, meaning a person cannot be convicted for an act that was not an offense when it was committed." },
+            { part: "Part III", question: "The principle of 'double jeopardy' (no person shall be prosecuted and punished for the same offence more than once) is part of:", options: ["Article 20(1)", "Article 20(2)", "Article 20(3)", "Article 21"], answer: "Article 20(2)", explanation: "Article 20(2) embodies the principle of 'autrefois convict' or double jeopardy, protecting a person from being punished for the same offense multiple times." },
+            { part: "Part III", question: "The 'Right to Life and Personal Liberty' is guaranteed under:", options: ["Article 19", "Article 20", "Article 21", "Article 21A"], answer: "Article 21", explanation: "Article 21 states that no person shall be deprived of his life or personal liberty except according to procedure established by law. The Supreme Court has interpreted this right very broadly." },
+            { part: "Part III", question: "The Right to Education (Article 21A) was inserted by which amendment?", options: ["86th Amendment", "42nd Amendment", "44th Amendment", "93rd Amendment"], answer: "86th Amendment", explanation: "The 86th Amendment Act of 2002 inserted Article 21A, making the Right to Education a Fundamental Right." },
+            { part: "Part III", question: "Article 21A makes education a fundamental right for children in which age group?", options: ["0-6 years", "6-14 years", "0-14 years", "6-18 years"], answer: "6-14 years", explanation: "Article 21A makes it obligatory for the State to provide free and compulsory education to all children in the age group of six to fourteen years." },
+            { part: "Part III", question: "Article 22 provides protection against:", options: ["Discrimination", "Exploitation", "Arrest and detention in certain cases", "Religious instruction in schools"], answer: "Arrest and detention in certain cases", explanation: "Article 22 grants protection to persons who are arrested or detained, including the right to be informed of the grounds of arrest and the right to consult a legal practitioner." },
+            { part: "Part III", question: "An arrested person must be produced before a magistrate within how many hours of arrest?", options: ["12 hours", "24 hours", "36 hours", "48 hours"], answer: "24 hours", explanation: "Article 22(2) mandates that every person who is arrested and detained in custody shall be produced before the nearest magistrate within a period of 24 hours (excluding travel time)." },
+            { part: "Part III", question: "Article 23 of the Constitution prohibits:", options: ["Untouchability", "Titles", "Traffic in human beings and forced labour", "Employment of children in factories"], answer: "Traffic in human beings and forced labour", explanation: "Article 23 prohibits traffic in human beings, begar (forced labour), and other similar forms of forced labour." },
+            { part: "Part III", question: "Which article prohibits the employment of children below the age of 14 in factories, mines, or hazardous jobs?", options: ["Article 22", "Article 23", "Article 24", "Article 25"], answer: "Article 24", explanation: "Article 24 explicitly states that no child below the age of fourteen years shall be employed to work in any factory or mine or engaged in any other hazardous employment." },
+            { part: "Part III", question: "Freedom of conscience and free profession, practice, and propagation of religion is guaranteed under:", options: ["Article 24", "Article 25", "Article 26", "Article 27"], answer: "Article 25", explanation: "Article 25 guarantees to all persons the freedom of conscience and the right to freely profess, practice, and propagate religion, subject to public order, morality, and health." },
+            { part: "Part III", question: "Which article gives every religious denomination the right to manage its own affairs in matters of religion?", options: ["Article 25", "Article 26", "Article 27", "Article 28"], answer: "Article 26", explanation: "Article 26 provides that every religious denomination or any section thereof has the right to establish and maintain institutions for religious and charitable purposes and to manage its own affairs in matters of religion." },
+            { part: "Part III", question: "Article 27 provides for freedom from payment of taxes for the promotion of:", options: ["Any religion", "Any particular religion", "Education", "Social welfare"], answer: "Any particular religion", explanation: "Article 27 states that no person shall be compelled to pay any taxes, the proceeds of which are specifically appropriated for the promotion or maintenance of any particular religion." },
+            { part: "Part III", question: "Which article guarantees the protection of the interests of minorities (language, script, and culture)?", options: ["Article 28", "Article 29", "Article 30", "Article 31"], answer: "Article 29", explanation: "Article 29 protects the interests of minorities by giving any section of citizens with a distinct language, script, or culture the right to conserve the same." },
+            { part: "Part III", question: "Which article gives minorities the right to establish and administer educational institutions of their choice?", options: ["Article 28", "Article 29", "Article 30", "Article 31"], answer: "Article 30", explanation: "Article 30 grants all minorities, whether based on religion or language, the right to establish and administer educational institutions of their choice." },
+            { part: "Part III", question: "The Right to Property was removed from the list of Fundamental Rights by which amendment?", options: ["42nd Amendment", "44th Amendment", "1st Amendment", "24th Amendment"], answer: "44th Amendment", explanation: "The 44th Amendment Act, 1978, removed the Right to Property from the list of Fundamental Rights and made it a legal right under Article 300-A." },
+            { part: "Part III", question: "The Right to Constitutional Remedies, which allows citizens to move the Supreme Court for enforcement of rights, is provided under:", options: ["Article 31", "Article 32", "Article 33", "Article 34"], answer: "Article 32", explanation: "Article 32 gives the right to individuals to move to the Supreme Court to seek justice when they feel that their fundamental right has been 'unduly deprived'." },
+            { part: "Part III", question: "Dr. B. R. Ambedkar described which article as the 'heart and soul' of the Constitution?", options: ["Article 14", "Article 19", "Article 21", "Article 32"], answer: "Article 32", explanation: "Dr. Ambedkar called Article 32 the 'most important article' of the Constitution, without which the Constitution would be a nullity, as it provides the mechanism to enforce the Fundamental Rights." },
+            { part: "Part III", question: "The writ of 'Habeas Corpus' means:", options: ["We command", "To have the body of", "By what authority", "To forbid"], answer: "To have the body of", explanation: "Habeas Corpus is a writ requiring a person under arrest to be brought before a judge or into court, to secure the person's release unless lawful grounds are shown for their detention." },
+            { part: "Part III", question: "The writ of 'Mandamus' is a command to:", options: ["A lower court to stop proceedings", "An official to perform a public duty", "Bring a person before the court", "Quash an order"], answer: "An official to perform a public duty", explanation: "Mandamus is a judicial remedy in the form of an order from a superior court to any government, subordinate court, corporation, or public authority to do a specific act which that body is obliged under law to do." },
+            { part: "Part III", question: "The writ of 'Certiorari' is issued by a higher court to a lower court to:", options: ["Transfer a case pending with the lower court", "Quash the order of the lower court", "Both A and B", "Enquire into the legality of a claim"], answer: "Both A and B", explanation: "Certiorari is a writ by which a higher court reviews a case tried in a lower court. It can be used to quash an order of the lower court or to transfer a case." },
+            { part: "Part III", question: "Which writ is issued to inquire into the legality of the claim of a person to a public office?", options: ["Habeas Corpus", "Mandamus", "Prohibition", "Quo Warranto"], answer: "Quo Warranto", explanation: "The writ of Quo Warranto (meaning 'by what authority') is issued to inquire into the legality of a person's claim to a public office." },
+            { part: "Part III", question: "Article 33 empowers Parliament to restrict the Fundamental Rights of:", options: ["Citizens in general", "Members of Armed Forces", "Foreign diplomats", "Convicted criminals"], answer: "Members of Armed Forces", explanation: "Article 33 empowers Parliament to modify the fundamental rights in their application to the members of the Armed Forces, para-military forces, police forces, etc." },
+            { part: "Part III", question: "Fundamental Rights can be suspended during the proclamation of a National Emergency, except for rights under which articles?", options: ["Articles 14 and 15", "Articles 19 and 20", "Articles 20 and 21", "Articles 21 and 22"], answer: "Articles 20 and 21", explanation: "During a national emergency, all fundamental rights can be suspended except the rights guaranteed by Articles 20 (protection in respect of conviction for offenses) and 21 (protection of life and personal liberty)." },
+            { part: "Part III", question: "Right to Information (RTI) is implicitly a fundamental right under:", options: ["Article 14", "Article 19(1)(a)", "Article 21", "Article 32"], answer: "Article 19(1)(a)", explanation: "The Supreme Court has held that the Right to Information is a fundamental right implicit in the Right to Freedom of Speech and Expression under Article 19(1)(a)." },
+            { part: "Part III", question: "The 'doctrine of severability' is associated with which article?", options: ["Article 13", "Article 14", "Article 32", "Article 368"], answer: "Article 13", explanation: "This doctrine, derived from Article 13, means that if a part of a law is found to be unconstitutional, only that part is declared void and not the entire law, provided the void part is separable from the rest." },
+            { part: "Part III", question: "Special provisions for socially and educationally backward classes can be made by the state under:", options: ["Article 15(4)", "Article 16(4)", "Both A and B", "Neither A nor B"], answer: "Both A and B", explanation: "Article 15(4) allows for special provisions for the advancement of backward classes, while Article 16(4) allows for reservation of appointments or posts in their favour." },
+            { part: "Part III", question: "The concept of 'creamy layer' is applicable to reservations for which category?", options: ["Scheduled Castes (SCs)", "Scheduled Tribes (STs)", "Other Backward Classes (OBCs)", "All of the above"], answer: "Other Backward Classes (OBCs)", explanation: "The Supreme Court in the Indra Sawhney case (1992) held that the 'creamy layer' (advanced sections) among the OBCs should be excluded from the benefit of reservation." },
+            { part: "Part III", question: "Right to Privacy has been declared a fundamental right by the Supreme Court as an intrinsic part of:", options: ["Right to Equality (Art 14)", "Right to Freedom (Art 19)", "Right to Life and Personal Liberty (Art 21)", "Right to Constitutional Remedies (Art 32)"], answer: "Right to Life and Personal Liberty (Art 21)", explanation: "In the Justice K. S. Puttaswamy (Retd.) vs Union of India case (2017), a nine-judge bench of the Supreme Court declared the Right to Privacy as a fundamental right under Article 21." },
+            { part: "Part III", question: "The wearing and carrying of 'kirpans' is deemed to be included in the profession of the Sikh religion under:", options: ["Article 25", "Article 26", "Article 27", "Article 28"], answer: "Article 25", explanation: "Explanation I to Article 25 clarifies that the wearing and carrying of kirpans shall be deemed to be included in the profession of the Sikh religion." },
+            { part: "Part III", question: "Which Fundamental Right cannot be suspended even during an emergency?", options: ["Right to Speech", "Right to Religion", "Right to Equality", "Right to Life and Personal Liberty"], answer: "Right to Life and Personal Liberty", explanation: "As per the 44th Amendment Act, the rights guaranteed by Articles 20 and 21 (Right to Life and Personal Liberty) cannot be suspended during a National Emergency." },
+            { part: "Part III", question: "Can Parliament amend the Fundamental Rights?", options: ["No", "Yes, but not the basic structure", "Yes, with a simple majority", "Only with the President's permission"], answer: "Yes, but not the basic structure", explanation: "The Supreme Court in the Kesavananda Bharati case held that Parliament can amend any part of the Constitution, including Fundamental Rights, but cannot alter the 'basic structure' of the Constitution." },
+            { part: "Part III", question: "Article 15 prohibits discrimination. Which of the following is NOT one of the grounds mentioned?", options: ["Religion", "Race", "Language", "Place of birth"], answer: "Language", explanation: "Article 15 prohibits discrimination on grounds of religion, race, caste, sex, or place of birth. Language is not included in this specific list." },
+            { part: "Part III", question: "The concept of 'Equal Protection of Laws' in Article 14 is borrowed from which country's constitution?", options: ["Britain", "USA", "Ireland", "Canada"], answer: "USA", explanation: "While 'Equality before Law' is a British concept, 'Equal Protection of Laws' is taken from the American Constitution." },
+            { part: "Part III", question: "Freedom of the press is implied in which fundamental right?", options: ["Right to equality", "Right to freedom of speech and expression", "Right to life and personal liberty", "Right to constitutional remedies"], answer: "Right to freedom of speech and expression", explanation: "Freedom of the press is not explicitly mentioned but is considered an integral part of the freedom of speech and expression guaranteed under Article 19(1)(a)." },
+            { part: "Part III", question: "Which article empowers Parliament to make laws to give effect to certain specified Fundamental Rights?", options: ["Article 33", "Article 34", "Article 35", "Article 32"], answer: "Article 35", explanation: "Article 35 gives Parliament, and not state legislatures, the exclusive power to make laws on certain matters in Part III, like prescribing punishment for acts declared as offenses (e.g., untouchability)." },
+            { part: "Part III", question: "Article 34 restricts Fundamental Rights while which of the following is in force in any area?", options: ["President's Rule", "Financial Emergency", "Martial Law", "National Emergency"], answer: "Martial Law", explanation: "Article 34 provides for the restriction of fundamental rights while martial law is in force in any area within the territory of India." },
+            { part: "Part III", question: "The right to form associations or unions under Article 19 does NOT include:", options: ["The right to form political parties", "The right to form companies", "The right to strike", "The right to form co-operative societies"], answer: "The right to strike", explanation: "The Supreme Court has held that the right to form associations or unions does not include the right to strike, which is a statutory right governed by industrial laws." },
+            { part: "Part III", question: "The reservation for Economically Weaker Sections (EWS) was introduced under which article?", options: ["Article 15(6) and 16(6)", "Article 15(5) and 16(5)", "Article 14(A)", "Article 21(B)"], answer: "Article 15(6) and 16(6)", explanation: "The 103rd Amendment Act, 2019, added clause (6) to Articles 15 and 16 to provide for up to 10% reservation for Economically Weaker Sections." },
+
+            // Part IV: Directive Principles of State Policy (25 Questions)
+            { part: "Part IV", question: "The Directive Principles of State Policy (DPSP) are contained in which part of the Constitution?", options: ["Part II", "Part III", "Part IV", "Part V"], answer: "Part IV", explanation: "Part IV of the Constitution, from Articles 36 to 51, contains the Directive Principles of State Policy." },
+            { part: "Part IV", question: "The idea of DPSP was borrowed from the constitution of which country?", options: ["USA", "UK", "Ireland", "Canada"], answer: "Ireland", explanation: "The framers of the Indian Constitution were influenced by the Irish Constitution of 1937 for the concept of Directive Principles of State Policy." },
+            { part: "Part IV", question: "Are the Directive Principles enforceable in a court of law?", options: ["Yes", "No", "Only some of them", "Yes, with the permission of the High Court"], answer: "No", explanation: "Article 37 makes it clear that the Directive Principles are not enforceable by any court, but they are fundamental in the governance of the country." },
+            { part: "Part IV", question: "The concept of a 'welfare state' is included in the Constitution in the:", options: ["Preamble", "Fundamental Rights", "Directive Principles of State Policy", "Fundamental Duties"], answer: "Directive Principles of State Policy", explanation: "The DPSPs aim to establish a 'welfare state' by promoting social and economic justice and ensuring the well-being of the people." },
+            { part: "Part IV", question: "Which article directs the State to organize village panchayats?", options: ["Article 39", "Article 40", "Article 41", "Article 42"], answer: "Article 40", explanation: "Based on Gandhian principles, Article 40 directs the State to take steps to organize village panchayats and endow them with powers to function as units of self-government." },
+            { part: "Part IV", question: "Which article promotes equal justice and free legal aid to the poor?", options: ["Article 39", "Article 39A", "Article 40", "Article 41"], answer: "Article 39A", explanation: "Added by the 42nd Amendment, Article 39A directs the State to ensure that the legal system promotes justice on a basis of equal opportunity and to provide free legal aid." },
+            { part: "Part IV", question: "The Uniform Civil Code for citizens is a Directive Principle under:", options: ["Article 42", "Article 43", "Article 44", "Article 45"], answer: "Article 44", explanation: "Article 44 directs the State to endeavor to secure for the citizens a uniform civil code throughout the territory of India." },
+            { part: "Part IV", question: "Article 45, as amended by the 86th Amendment, directs the state to provide early childhood care and education for all children until they complete the age of:", options: ["Three years", "Five years", "Six years", "Fourteen years"], answer: "Six years", explanation: "Following the 86th Amendment, Article 45 was changed to direct the state to provide early childhood care and education for children below the age of six years." },
+            { part: "Part IV", question: "Which article deals with the promotion of educational and economic interests of Scheduled Castes, Scheduled Tribes, and other weaker sections?", options: ["Article 45", "Article 46", "Article 47", "Article 48"], answer: "Article 46", explanation: "Article 46 mandates the State to promote with special care the educational and economic interests of the weaker sections of the people, particularly SCs and STs." },
+            { part: "Part IV", question: "The State's duty to raise the level of nutrition and the standard of living and to improve public health is mentioned in:", options: ["Article 46", "Article 47", "Article 48", "Article 48A"], answer: "Article 47", explanation: "Article 47 considers it a primary duty of the State to improve public health and raise the level of nutrition and the standard of living of its people." },
+            { part: "Part IV", question: "Which article directs the State to organize agriculture and animal husbandry on modern and scientific lines?", options: ["Article 47", "Article 48", "Article 48A", "Article 49"], answer: "Article 48", explanation: "Article 48 directs the State to organize agriculture and animal husbandry on modern and scientific lines and also calls for prohibiting the slaughter of cows and calves." },
+            { part: "Part IV", question: "Protection and improvement of environment and safeguarding of forests and wildlife is a directive under:", options: ["Article 48", "Article 48A", "Article 49", "Article 50"], answer: "Article 48A", explanation: "Added by the 42nd Amendment, Article 48A directs the State to endeavor to protect and improve the environment and to safeguard the forests and wildlife." },
+            { part: "Part IV", question: "Which article makes it an obligation of the State to protect monuments and places of national importance?", options: ["Article 48A", "Article 49", "Article 50", "Article 51"], answer: "Article 49", explanation: "Article 49 states that it shall be the obligation of the State to protect every monument or place or object of artistic or historic interest, declared to be of national importance." },
+            { part: "Part IV", question: "Which article deals with the separation of the judiciary from the executive?", options: ["Article 49", "Article 50", "Article 51", "Article 48"], answer: "Article 50", explanation: "Article 50 directs the State to take steps to separate the judiciary from the executive in the public services of the State to ensure judicial independence." },
+            { part: "Part IV", question: "The promotion of international peace and security is the subject matter of which article?", options: ["Article 50", "Article 51", "Article 51A", "Article 49"], answer: "Article 51", explanation: "Article 51 outlines the state's objective to promote international peace and security, maintain just relations between nations, and encourage settlement of international disputes by arbitration." },
+            { part: "Part IV", question: "The Directive Principles are considered 'fundamental in the governance of the country' under which Article?", options: ["Article 36", "Article 37", "Article 38", "Article 39"], answer: "Article 37", explanation: "Article 37 explicitly declares that the principles laid down in Part IV are fundamental in the governance of the country and it shall be the duty of the State to apply these principles in making laws." },
+            { part: "Part IV", question: "Which of the following is a Gandhian Principle among the DPSPs?", options: ["Uniform Civil Code", "Separation of judiciary from executive", "Promotion of cottage industries", "Equal pay for equal work"], answer: "Promotion of cottage industries", explanation: "The promotion of cottage industries on an individual or co-operative basis in rural areas (Article 43) is one of the key Gandhian principles in the DPSP." },
+            { part: "Part IV", question: "Which DPSP was added by the 42nd Amendment Act, 1976?", options: ["To promote equal justice and to provide free legal aid", "To protect and improve the environment", "Participation of workers in management of industries", "All of the above"], answer: "All of the above", explanation: "The 42nd Amendment added several important DPSPs, including Article 39A (free legal aid), Article 43A (worker participation), and Article 48A (environment protection)." },
+            { part: "Part IV", question: "Article 38 directs the state to secure a social order for the promotion of:", options: ["Welfare of the people", "International peace", "Religious harmony", "Economic equality only"], answer: "Welfare of the people", explanation: "Article 38 directs the state to promote the welfare of the people by securing and protecting a social order in which justice—social, economic, and political—informs all institutions." },
+            { part: "Part IV", question: "The state shall strive to minimize inequalities in income, status, facilities, and opportunities under which article?", options: ["Article 38(1)", "Article 38(2)", "Article 39(c)", "Article 39(d)"], answer: "Article 38(2)", explanation: "Clause (2) was added to Article 38 by the 44th Amendment Act, directing the state to strive to minimize inequalities in income and eliminate inequalities in status, facilities, and opportunities." },
+            { part: "Part IV", question: "The principle of 'equal pay for equal work' for both men and women is a directive under:", options: ["Article 39(a)", "Article 39(b)", "Article 39(c)", "Article 39(d)"], answer: "Article 39(d)", explanation: "Article 39(d) is a key socialistic principle that directs the state to ensure there is equal pay for equal work for both men and women." },
+            { part: "Part IV", question: "Article 43B, which deals with the promotion of co-operative societies, was added by which amendment?", options: ["42nd Amendment", "44th Amendment", "86th Amendment", "97th Amendment"], answer: "97th Amendment", explanation: "The 97th Amendment Act of 2011 added Article 43B, which directs the state to promote voluntary formation, autonomous functioning, democratic control and professional management of co-operative societies." },
+            { part: "Part IV", question: "DPSPs are classified into which of the following categories?", options: ["Socialistic", "Gandhian", "Liberal-Intellectual", "All of the above"], answer: "All of the above", explanation: "Though not explicitly classified in the Constitution, the Directive Principles can be broadly categorized into Socialistic, Gandhian, and Liberal-Intellectual principles based on their underlying philosophy." },
+            { part: "Part IV", question: "Which article provides for securing a living wage and a decent standard of life for workers?", options: ["Article 41", "Article 42", "Article 43", "Article 43A"], answer: "Article 43", explanation: "Article 43 directs the state to endeavor to secure, by suitable legislation or economic organization, to all workers a living wage and conditions of work ensuring a decent standard of life." },
+            { part: "Part IV", question: "In case of a conflict between Fundamental Rights and Directive Principles, which one will prevail?", options: ["Directive Principles", "Fundamental Rights", "The one which is amended later", "The Supreme Court will decide on a case-by-case basis"], answer: "Fundamental Rights", explanation: "The Supreme Court has held that the DPSPs are subsidiary to the Fundamental Rights. However, Parliament can amend Fundamental Rights to implement DPSPs, as long as the 'basic structure' of the Constitution is not violated." },
+
+            // Part IV-A: Fundamental Duties (10 Questions)
+            { part: "Part IV-A", question: "Fundamental Duties are mentioned in which Part of the Constitution?", options: ["Part III", "Part IV", "Part IV-A", "Part V"], answer: "Part IV-A", explanation: "Part IV-A, which consists of a single Article 51A, was added to the Constitution to list the Fundamental Duties." },
+            { part: "Part IV-A", question: "Fundamental Duties were added to the Constitution by which amendment?", options: ["42nd Amendment", "44th Amendment", "24th Amendment", "86th Amendment"], answer: "42nd Amendment", explanation: "The Fundamental Duties were incorporated into the Constitution through the 42nd Amendment Act in 1976." },
+            { part: "Part IV-A", question: "The Fundamental Duties were added on the recommendation of which committee?", options: ["Sarkaria Committee", "Swaran Singh Committee", "Punchhi Committee", "Rajamannar Committee"], answer: "Swaran Singh Committee", explanation: "The Swaran Singh Committee was set up by the government in 1976 to make recommendations about fundamental duties, the need of which was felt during the internal emergency (1975–1977)." },
+            { part: "Part IV-A", question: "Which article lists the Fundamental Duties of a citizen?", options: ["Article 51", "Article 51A", "Article 52", "Article 50A"], answer: "Article 51A", explanation: "Article 51A is the sole article in Part IV-A and enumerates all the Fundamental Duties of the citizens of India." },
+            { part: "Part IV-A", question: "How many Fundamental Duties were originally added by the 42nd Amendment?", options: ["8", "10", "11", "12"], answer: "10", explanation: "The 42nd Amendment Act of 1976 originally introduced 10 Fundamental Duties." },
+            { part: "Part IV-A", question: "The 11th Fundamental Duty, related to education, was added by which amendment?", options: ["42nd Amendment", "44th Amendment", "86th Amendment", "97th Amendment"], answer: "86th Amendment", explanation: "The 86th Amendment Act of 2002 added the 11th Fundamental Duty, which makes it a duty of every parent or guardian to provide opportunities for education to their child between the age of six and fourteen years." },
+            { part: "Part IV-A", question: "Which of the following is a Fundamental Duty?", options: ["To vote in public elections", "To develop the scientific temper, humanism and the spirit of inquiry and reform", "To protect the interests of minorities", "To secure a uniform civil code"], answer: "To develop the scientific temper, humanism and the spirit of inquiry and reform", explanation: "Article 51A(h) lists developing the scientific temper, humanism, and the spirit of inquiry and reform as a fundamental duty." },
+            { part: "Part IV-A", question: "Are the Fundamental Duties enforceable by law?", options: ["Yes", "No", "Some of them are", "Only through a presidential order"], answer: "No", explanation: "Like the Directive Principles, the Fundamental Duties are non-justiciable, meaning they are not enforceable by the courts." },
+            { part: "Part IV-A", question: "The Fundamental Duties are applicable to:", options: ["All persons in India", "Only Indian citizens", "Only government employees", "All residents including foreigners"], answer: "Only Indian citizens", explanation: "The Fundamental Duties are specifically confined to the citizens of India and do not extend to foreigners." },
+            { part: "Part IV-A", question: "Which Fundamental Duty obliges citizens to cherish and follow the noble ideals that inspired the national struggle for freedom?", options: ["51A(a)", "51A(b)", "51A(c)", "51A(d)"], answer: "51A(b)", explanation: "Article 51A(b) states that it is the duty of every citizen 'to cherish and follow the noble ideals which inspired our national struggle for freedom'." },
+            
+            // Part V: The Union (70 Questions)
+            { part: "Part V", question: "Part V of the Constitution deals with:", options: ["The States", "The Union Territories", "The Union", "Citizenship"], answer: "The Union", explanation: "Part V of the Constitution, from Articles 52 to 151, covers the Union executive, Parliament, the Union judiciary, and the CAG." },
+            { part: "Part V", question: "The executive power of the Union is vested in the:", options: ["Prime Minister", "President", "Council of Ministers", "Parliament"], answer: "President", explanation: "Article 53 states that the executive power of the Union shall be vested in the President and shall be exercised by him either directly or through officers subordinate to him." },
+            { part: "Part V", question: "What is the minimum age to be eligible for election as President of India?", options: ["30 years", "35 years", "40 years", "25 years"], answer: "35 years", explanation: "Article 58(1)(b) specifies that a candidate for the office of President must have completed the age of 35 years." },
+            { part: "Part V", question: "The President of India is elected by an electoral college consisting of:", options: ["Members of Parliament", "Elected members of Parliament and State Legislative Assemblies", "Members of Parliament and State Legislatures", "Members of Lok Sabha and Rajya Sabha"], answer: "Elected members of Parliament and State Legislative Assemblies", explanation: "Article 54 defines the electoral college for the President's election, which includes elected members of both Houses of Parliament and the elected members of the Legislative Assemblies of the States." },
+            { part: "Part V", question: "The oath of office to the President is administered by:", options: ["The Prime Minister", "The Speaker of Lok Sabha", "The Chief Justice of India", "The outgoing President"], answer: "The Chief Justice of India", explanation: "According to Article 60, the President takes the oath of office in the presence of the Chief Justice of India." },
+            { part: "Part V", question: "The impeachment of the President under Article 61 can be initiated in:", options: ["Lok Sabha only", "Rajya Sabha only", "Either House of Parliament", "A joint sitting of both Houses"], answer: "Either House of Parliament", explanation: "The impeachment process against the President for 'violation of the Constitution' can be initiated by either the Lok Sabha or the Rajya Sabha as per Article 61." },
+            { part: "Part V", question: "To whom does the President of India address his resignation?", options: ["Chief Justice of India", "Prime Minister", "Vice-President", "Speaker of Lok Sabha"], answer: "Vice-President", explanation: "As per Article 56(1)(a), the President may resign from his office by writing under his hand addressed to the Vice-President." },
+            { part: "Part V", question: "The power of the President to grant pardons, reprieves, etc., is provided under which article?", options: ["Article 71", "Article 72", "Article 73", "Article 61"], answer: "Article 72", explanation: "Article 72 confers upon the President the power to grant pardons, reprieves, respites, or remissions of punishment, or to suspend, remit, or commute the sentence of any person convicted of any offense." },
+            { part: "Part V", question: "Who is the ex-officio Chairman of the Rajya Sabha?", options: ["President", "Vice-President", "Prime Minister", "Speaker of Lok Sabha"], answer: "Vice-President", explanation: "Article 64 states that the Vice-President of India shall be the ex-officio Chairman of the Council of States (Rajya Sabha)." },
+            { part: "Part V", question: "The Vice-President is elected by an electoral college consisting of:", options: ["Elected members of Parliament", "All members of Parliament", "Elected members of Parliament and State Assemblies", "All members of Parliament and State Assemblies"], answer: "All members of Parliament", explanation: "Article 66(1) specifies that the Vice-President is elected by an electoral college consisting of the members (both elected and nominated) of both Houses of Parliament." },
+            { part: "Part V", question: "Who performs the duties of the President in case of a vacancy due to death, resignation or removal?", options: ["The Prime Minister", "The Chief Justice of India", "The Vice-President", "The Speaker of Lok Sabha"], answer: "The Vice-President", explanation: "Article 65 states that in the event of a vacancy in the office of the President, the Vice-President shall act as President until a new President is elected." },
+            { part: "Part V", question: "Article 74 states that there shall be a Council of Ministers with whom at the head to aid and advise the President?", options: ["The Home Minister", "The Defence Minister", "The Prime Minister", "The Vice-President"], answer: "The Prime Minister", explanation: "Article 74(1) mandates a Council of Ministers with the Prime Minister as the head to aid and advise the President, who shall act in accordance with such advice." },
+            { part: "Part V", question: "The Council of Ministers is collectively responsible to the:", options: ["President", "Rajya Sabha", "Lok Sabha", "Prime Minister"], answer: "Lok Sabha", explanation: "Article 75(3) establishes the principle of collective responsibility, stating that the Council of Ministers shall be collectively responsible to the House of the People (Lok Sabha)." },
+            { part: "Part V", question: "The total number of Ministers, including the Prime Minister, in the Council of Ministers shall not exceed what percentage of the total number of members of the House of the People?", options: ["10%", "12%", "15%", "20%"], answer: "15%", explanation: "The 91st Amendment Act of 2003 inserted Article 75(1A), which limits the size of the Council of Ministers to 15% of the total strength of the Lok Sabha." },
+            { part: "Part V", question: "A person who is not a member of either House of Parliament can be appointed a minister, but must become a member within:", options: ["Three months", "Six months", "Nine months", "One year"], answer: "Six months", explanation: "According to Article 75(5), a Minister who is not a member of Parliament for any period of six consecutive months shall cease to be a Minister." },
+            { part: "Part V", question: "The Attorney-General for India is appointed by the:", options: ["Chief Justice of India", "President", "Prime Minister", "Law Minister"], answer: "President", explanation: "Article 76(1) states that the President shall appoint a person who is qualified to be appointed a Judge of the Supreme Court to be Attorney-General for India." },
+            { part: "Part V", question: "Who is the chief law officer of the Government of India?", options: ["Chief Justice of India", "Law Minister", "Attorney-General for India", "Solicitor General of India"], answer: "Attorney-General for India", explanation: "The Attorney-General for India is the highest law officer in the country and the chief legal advisor to the government." },
+            { part: "Part V", question: "The Parliament of India consists of:", options: ["Lok Sabha and Rajya Sabha", "President, Lok Sabha, and Rajya Sabha", "President and Lok Sabha", "President and Rajya Sabha"], answer: "President, Lok Sabha, and Rajya Sabha", explanation: "Article 79 states that the Parliament for the Union shall consist of the President and two Houses to be known respectively as the Council of States (Rajya Sabha) and the House of the People (Lok Sabha)." },
+            { part: "Part V", question: "What is the maximum strength of the Lok Sabha as envisaged by the Constitution?", options: ["500", "545", "550", "552"], answer: "552", explanation: "As per Article 81, the maximum strength of the Lok Sabha is 552 members (530 from states, 20 from UTs, and 2 nominated Anglo-Indians, though the nomination provision has been abolished)." },
+            { part: "Part V", question: "What is the maximum strength of the Rajya Sabha?", options: ["238", "245", "250", "260"], answer: "250", explanation: "Article 80 specifies the maximum strength of the Rajya Sabha as 250, out of which 12 are nominated by the President and 238 are representatives of the States and Union Territories." },
+            { part: "Part V", question: "How many members are nominated by the President to the Rajya Sabha?", options: ["2", "10", "12", "14"], answer: "12", explanation: "The President nominates 12 members to the Rajya Sabha from people who have special knowledge or practical experience in art, literature, science and social service." },
+            { part: "Part V", question: "What is the term of office for a member of the Rajya Sabha?", options: ["5 years", "6 years", "4 years", "It is a permanent house"], answer: "6 years", explanation: "The Rajya Sabha is a permanent body and not subject to dissolution. One-third of its members retire every two years, and each member has a term of six years." },
+            { part: "Part V", question: "A 'Money Bill' can be introduced only in the:", options: ["Rajya Sabha", "Lok Sabha", "Either House", "Joint sitting of both Houses"], answer: "Lok Sabha", explanation: "Article 109(1) explicitly states that a Money Bill shall not be introduced in the Council of States (Rajya Sabha)." },
+            { part: "Part V", question: "Who certifies a bill as a 'Money Bill'?", options: ["President", "Prime Minister", "Finance Minister", "Speaker of the Lok Sabha"], answer: "Speaker of the Lok Sabha", explanation: "As per Article 110(3), if any question arises whether a Bill is a Money Bill or not, the decision of the Speaker of the House of the People shall be final." },
+            { part: "Part V", question: "The Rajya Sabha must return a Money Bill to the Lok Sabha within:", options: ["7 days", "14 days", "30 days", "60 days"], answer: "14 days", explanation: "The Rajya Sabha cannot reject or amend a Money Bill. It can only make recommendations and must return the bill to the Lok Sabha within 14 days." },
+            { part: "Part V", question: "A joint sitting of both Houses of Parliament is presided over by the:", options: ["President", "Vice-President", "Speaker of the Lok Sabha", "Prime Minister"], answer: "Speaker of the Lok Sabha", explanation: "Article 118(4) states that at a joint sitting of the two Houses, the Speaker of the House of the People, or in his absence, a person determined by rules of procedure, shall preside." },
+            { part: "Part V", question: "What is the quorum to constitute a meeting of either House of Parliament?", options: ["One-tenth of the total members", "One-fourth of the total members", "One-third of the total members", "Half of the total members"], answer: "One-tenth of the total members", explanation: "Article 100(3) specifies that the quorum for a meeting of either House shall be one-tenth of the total number of members of the House." },
+            { part: "Part V", question: "The power to promulgate ordinances during the recess of Parliament lies with the:", options: ["Prime Minister", "President", "Council of Ministers", "Speaker of Lok Sabha"], answer: "President", explanation: "Article 123 empowers the President to promulgate Ordinances when both Houses of Parliament are not in session if he is satisfied that circumstances exist which render it necessary for him to take immediate action." },
+            { part: "Part V", question: "An ordinance promulgated by the President must be approved by Parliament within how many weeks of its reassembly?", options: ["2 weeks", "4 weeks", "6 weeks", "8 weeks"], answer: "6 weeks", explanation: "An ordinance will cease to operate at the expiration of six weeks from the reassembly of Parliament, unless it is approved by both Houses before that." },
+            { part: "Part V", question: "The Supreme Court of India was established under which article?", options: ["Article 123", "Article 124", "Article 125", "Article 126"], answer: "Article 124", explanation: "Article 124(1) provides for the establishment and constitution of the Supreme Court of India." },
+            { part: "Part V", question: "A Judge of the Supreme Court holds office until the age of:", options: ["60 years", "62 years", "65 years", "70 years"], answer: "65 years", explanation: "Article 124(2) states that a Judge of the Supreme Court shall hold office until he attains the age of sixty-five years." },
+            { part: "Part V", question: "The power of the Supreme Court to issue writs for the enforcement of Fundamental Rights is covered under:", options: ["Article 32", "Article 131", "Article 136", "Article 141"], answer: "Article 32", explanation: "While the Supreme Court has a wide range of powers, the specific power to issue writs for enforcing Fundamental Rights is granted under Article 32 (Right to Constitutional Remedies)." },
+            { part: "Part V", question: "Which article gives the Supreme Court the power of 'Judicial Review'?", options: ["Article 13", "Article 32", "Article 137", "Article 141"], answer: "Article 13", explanation: "The power of judicial review is explicitly mentioned in Article 13, which allows the Supreme Court to strike down any law that is inconsistent with Fundamental Rights. It also exercises this power under other articles like 32 and 136." },
+            { part: "Part V", question: "The original jurisdiction of the Supreme Court is dealt with in:", options: ["Article 129", "Article 130", "Article 131", "Article 132"], answer: "Article 131", explanation: "Article 131 defines the original jurisdiction of the Supreme Court, which primarily deals with disputes between the Government of India and states, or between states." },
+            { part: "Part V", question: "Advisory jurisdiction of the Supreme Court is provided under which article?", options: ["Article 141", "Article 142", "Article 143", "Article 144"], answer: "Article 143", explanation: "Article 143 empowers the President to consult the Supreme Court on any question of law or fact of public importance. The opinion expressed by the court is advisory and not binding." },
+            { part: "Part V", question: "The law declared by the Supreme Court is binding on all courts within India under which article?", options: ["Article 139", "Article 140", "Article 141", "Article 142"], answer: "Article 141", explanation: "Article 141 establishes the principle of stare decisis, making the law declared by the Supreme Court binding on all other courts in India." },
+            { part: "Part V", question: "The Comptroller and Auditor-General (CAG) of India is appointed by the:", options: ["Prime Minister", "President", "Finance Minister", "Parliament"], answer: "President", explanation: "Article 148(1) states that the Comptroller and Auditor-General of India shall be appointed by the President by warrant under his hand and seal." },
+            { part: "Part V", question: "The CAG submits his audit report relating to the accounts of the Union to the:", options: ["Prime Minister", "Parliament", "President", "Finance Minister"], answer: "President", explanation: "Article 151(1) mandates that the CAG's reports relating to the Union's accounts be submitted to the President, who shall then cause them to be laid before each House of Parliament." },
+            { part: "Part V", question: "Who is regarded as the 'guardian of the public purse' in India?", options: ["The Finance Minister", "The RBI Governor", "The Comptroller and Auditor-General", "The President"], answer: "The Comptroller and Auditor-General", explanation: "The CAG is known as the guardian of the public purse as they audit all expenditure from the Consolidated Fund of India and of each state and UT having a Legislative Assembly." },
+            { part: "Part V", question: "Who decides on the disqualification of a Member of Parliament?", options: ["The Speaker/Chairman of the House", "The President in consultation with the Election Commission", "The Supreme Court", "The Election Commission"], answer: "The President in consultation with the Election Commission", explanation: "Under Article 103, if any question arises as to whether a member has become subject to disqualification, the question is referred to the President, whose decision, made after obtaining the opinion of the Election Commission, is final." },
+            { part: "Part V", question: "The Annual Financial Statement, or Budget, is presented to the Parliament under which article?", options: ["Article 110", "Article 111", "Article 112", "Article 113"], answer: "Article 112", explanation: "Article 112 requires the President to cause to be laid before both Houses of Parliament a statement of the estimated receipts and expenditure of the Government of India for that year." },
+            { part: "Part V", question: "The President can be removed from office on the grounds of:", options: ["Proved misbehaviour", "Incapacity", "Violation of the Constitution", "Corruption"], answer: "Violation of the Constitution", explanation: "Article 61 specifies 'violation of the Constitution' as the sole ground for the impeachment of the President." },
+            { part: "Part V", question: "A resolution for the impeachment of the President must be passed by a majority of not less than:", options: ["Half of the total membership", "Two-thirds of the members present and voting", "Two-thirds of the total membership", "Three-fourths of the total membership"], answer: "Two-thirds of the total membership", explanation: "An impeachment resolution needs to be passed by a majority of not less than two-thirds of the total membership of the House investigating the charge." },
+            { part: "Part V", question: "Who administers the oath of office to the Prime Minister?", options: ["Chief Justice of India", "President", "Outgoing Prime Minister", "Speaker of Lok Sabha"], answer: "President", explanation: "As per Article 75(4), before a Minister enters upon his office, the President shall administer to him the oaths of office and of secrecy." },
+            { part: "Part V", question: "The term of the Lok Sabha is normally:", options: ["4 years", "5 years", "6 years", "Cannot be dissolved"], answer: "5 years", explanation: "Article 83(2) states that the House of the People, unless sooner dissolved, shall continue for five years from the date appointed for its first meeting." },
+            { part: "Part V", question: "Who is the principal channel of communication between the President and the Council of Ministers?", options: ["Vice-President", "Prime Minister", "Speaker of Lok Sabha", "Home Minister"], answer: "Prime Minister", explanation: "Article 78 outlines the duties of the Prime Minister, which include communicating all decisions of the council of Ministers to the President, making him the primary link." },
+            { part: "Part V", question: "The first hour of every parliamentary sitting is slotted for what is known as the:", options: ["Zero Hour", "Question Hour", "Debate Hour", "Resolution Hour"], answer: "Question Hour", explanation: "The Question Hour, where members ask questions to ministers, is the first hour of a sitting session of India's Lok Sabha." },
+            { part: "Part V", question: "Which parliamentary committee examines the report of the CAG?", options: ["Estimates Committee", "Public Accounts Committee", "Committee on Public Undertakings", "Rules Committee"], answer: "Public Accounts Committee", explanation: "The Public Accounts Committee (PAC) examines the annual audit reports of the CAG, which are laid before the Parliament by the President." },
+            { part: "Part V", question: "The President addresses both Houses of Parliament assembled together at the commencement of:", options: ["The first session of each year", "The first session after each general election", "Both A and B", "The budget session only"], answer: "Both A and B", explanation: "Article 87 specifies that the President shall address a joint sitting of Parliament at the commencement of the first session after each general election to the Lok Sabha and at the commencement of the first session of each year." },
+            { part: "Part V", question: "The power to summon the Houses of Parliament is vested with the:", options: ["Prime Minister", "Speaker and Chairman", "President", "Minister of Parliamentary Affairs"], answer: "President", explanation: "Article 85(1) empowers the President to summon each House of Parliament to meet at such time and place as he thinks fit." },
+            { part: "Part V", question: "A member of Parliament can be disqualified on the ground of defection under which schedule of the Constitution?", options: ["Eighth Schedule", "Ninth Schedule", "Tenth Schedule", "Twelfth Schedule"], answer: "Tenth Schedule", explanation: "The Tenth Schedule of the Constitution, added by the 52nd Amendment Act of 1985, lays down the provisions for disqualification of members on the grounds of defection." },
+            { part: "Part V", question: "The President can nominate how many members from the Anglo-Indian community to the Lok Sabha?", options: ["0", "1", "2", "4"], answer: "0", explanation: "The provision for the President to nominate two members of the Anglo-Indian community to the Lok Sabha was abolished by the 104th Constitutional Amendment Act, 2019." },
+            { part: "Part V", question: "What is the gap between two sessions of Parliament not supposed to exceed?", options: ["3 months", "4 months", "6 months", "9 months"], answer: "6 months", explanation: "Article 85 mandates that the maximum gap between two sessions of Parliament cannot be more than six months." },
+            { part: "Part V", question: "The Supreme Court's power to grant special leave to appeal is mentioned in:", options: ["Article 132", "Article 134", "Article 136", "Article 138"], answer: "Article 136", explanation: "Article 136 confers discretionary power on the Supreme Court to grant special leave to appeal from any judgment, decree, determination, sentence or order in any cause or matter passed by any court or tribunal." },
+            { part: "Part V", question: "Who was the first Chief Justice of India?", options: ["Patanjali Sastri", "H.J. Kania", "M. Hidayatullah", "Y. V. Chandrachud"], answer: "H.J. Kania", explanation: "Sir Harilal Jekisundas Kania was the first Chief Justice of India, serving from 1950 to 1951." },
+            { part: "Part V", question: "The salaries and allowances of the Judges of the Supreme Court are charged upon the:", options: ["Contingency Fund of India", "Consolidated Fund of India", "Public Account of India", "A special fund created by Parliament"], answer: "Consolidated Fund of India", explanation: "The salaries, allowances, and pensions of the judges of the Supreme Court are charged on the Consolidated Fund of India, which means they are not subject to the vote of Parliament." },
+            { part: "Part V", question: "Who appoints the ad hoc judges of the Supreme Court?", options: ["The President", "The Chief Justice of India with the previous consent of the President", "The Parliament", "The Council of Ministers"], answer: "The Chief Justice of India with the previous consent of the President", explanation: "Article 127 allows the Chief Justice of India, with the previous consent of the President, to appoint a judge of a High Court as an ad hoc judge of the Supreme Court for a temporary period." },
+            { part: "Part V", question: "The seat of the Supreme Court is in New Delhi, but who has the power to appoint another place as its seat?", options: ["The Parliament", "The President", "The Chief Justice of India with the approval of the President", "The Cabinet"], answer: "The Chief Justice of India with the approval of the President", explanation: "Article 130 authorises the Chief Justice of India to appoint other place or places as seat of the Supreme Court, with the approval of the President." },
+            { part: "Part V", question: "A dispute between the Government of India and one or more States falls under which jurisdiction of the Supreme Court?", options: ["Advisory Jurisdiction", "Appellate Jurisdiction", "Original Jurisdiction", "Writ Jurisdiction"], answer: "Original Jurisdiction", explanation: "Under Article 131, the Supreme Court has exclusive original jurisdiction in any dispute between the Centre and one or more states; or between the Centre and any state on one side and one or more states on the other side; or between two or more states." },
+            { part: "Part V", question: "The process of removal of a Supreme Court judge is similar to the removal of:", options: ["The President", "The Prime Minister", "The Comptroller and Auditor-General", "The Speaker of Lok Sabha"], answer: "The Comptroller and Auditor-General", explanation: "Both a Supreme Court Judge and the CAG are removed from office by the President on the basis of a resolution passed to that effect by both the Houses of Parliament with a special majority, either on the ground of proved misbehaviour or incapacity." },
+            { part: "Part V", question: "Who is the final interpreter of the Constitution of India?", options: ["The Parliament", "The President", "The Supreme Court", "The Attorney General"], answer: "The Supreme Court", explanation: "The Supreme Court of India is the ultimate interpreter of the Constitution and, for that purpose, its power of judicial review is a basic feature of the Constitution." },
+            { part: "Part V", question: "The concept of Public Interest Litigation (PIL) originated in which country?", options: ["UK", "USA", "India", "Australia"], answer: "USA", explanation: "Public Interest Litigation (PIL) is a concept that originated and developed in the USA in the 1960s. In India, the PIL is a product of the judicial activism role of the Supreme Court." },
+            { part: "Part V", question: "The Union executive consists of:", options: ["President, Vice-President, and Council of Ministers", "President, Vice-President, Prime Minister, Council of Ministers, and Attorney General", "President and Prime Minister only", "President, Lok Sabha, and Rajya Sabha"], answer: "President, Vice-President, Prime Minister, Council of Ministers, and Attorney General", explanation: "The Union executive, as per Part V, consists of the President (Article 52), the Vice-President (Article 63), the Prime Minister and Council of Ministers (Article 74), and the Attorney-General for India (Article 76)." },
+            { part: "Part V", question: "The 'Conduct of Business of the Government of India' is detailed in which article?", options: ["Article 75", "Article 76", "Article 77", "Article 78"], answer: "Article 77", explanation: "Article 77 outlines how the business of the Government of India shall be conducted, stating that all executive action shall be expressed to be taken in the name of the President." },
+            { part: "Part V", question: "It is the duty of the Prime Minister to communicate all decisions of the Council of Ministers to the President under which article?", options: ["Article 77", "Article 78", "Article 79", "Article 80"], answer: "Article 78", explanation: "Article 78 lists the duties of the Prime Minister, which include communicating all decisions of the Council of Ministers relating to the administration of the affairs of the Union to the President." },
+            { part: "Part V", question: "Article 80 of the Constitution deals with the:", options: ["Composition of the Lok Sabha", "Composition of the Rajya Sabha", "Powers of the Speaker", "Joint sitting of Parliament"], answer: "Composition of the Rajya Sabha", explanation: "Article 80 specifies the composition of the Council of States (Rajya Sabha), including the number of members and the nomination process." },
+            { part: "Part V", question: "Who presides over the meetings of the Lok Sabha?", options: ["President", "Vice-President", "Prime Minister", "Speaker"], answer: "Speaker", explanation: "The Speaker of the Lok Sabha is the presiding officer and the highest authority of the House of the People." },
+            { part: "Part V", question: "A no-confidence motion against the Government can be introduced in:", options: ["Rajya Sabha only", "Lok Sabha only", "Either House of Parliament", "Can only be initiated by the President"], answer: "Lok Sabha only", explanation: "The Council of Ministers is collectively responsible to the Lok Sabha. Hence, a motion of no-confidence can only be moved in the Lok Sabha." },
+            { part: "Part V", question: "The Appropriation Bill is passed to:", options: ["Introduce the budget", "Authorize the withdrawal of money from the Consolidated Fund of India", "Levy new taxes", "Amend the Constitution"], answer: "Authorize the withdrawal of money from the Consolidated Fund of India", explanation: "As per Article 114, after the grants have been made by the Lok Sabha, an Appropriation Bill is introduced to provide for the appropriation out of the Consolidated Fund of India of all moneys required to meet the grants." },
+            { part: "Part V", question: "The Contingency Fund of India is placed at the disposal of the:", options: ["Prime Minister", "Finance Minister", "President", "Comptroller and Auditor-General"], answer: "President", explanation: "Article 267 establishes the Contingency Fund of India, which is placed at the disposal of the President to meet unforeseen expenditure pending authorization by Parliament." },
+            { part: "Part V", question: "The term of the Comptroller and Auditor-General of India is:", options: ["5 years or age of 65, whichever is earlier", "6 years or age of 65, whichever is earlier", "5 years or age of 62, whichever is earlier", "6 years or age of 62, whichever is earlier"], answer: "6 years or age of 65, whichever is earlier", explanation: "The CAG holds office for a term of six years or up to the age of 65 years, whichever is earlier." },
+        ];
+        
+        const articlesData = [
+            {
+                part: "Preamble",
+                content: "WE, THE PEOPLE OF INDIA, having solemnly resolved to constitute India into a SOVEREIGN SOCIALIST SECULAR DEMOCRATIC REPUBLIC and to secure to all its citizens: JUSTICE, social, economic and political; LIBERTY of thought, expression, belief, faith and worship; EQUALITY of status and of opportunity; and to promote among them all FRATERNITY assuring the dignity of the individual and the unity and integrity of the Nation; IN OUR CONSTITUENT ASSEMBLY this twenty-sixth day of November, 1949, do HEREBY ADOPT, ENACT AND GIVE TO OURSELVES THIS CONSTITUTION."
+            },
+            {
+                part: "PART I: THE UNION AND ITS TERRITORY",
+                articles: [
+                    { number: "1", title: "Name and territory of the Union", content: "Declares India, that is Bharat, as a Union of States. Specifies the territories of India." },
+                    { number: "2", title: "Admission or establishment of new States", content: "Empowers Parliament to admit new states into the Union or establish new states on such terms as it thinks fit." },
+                    { number: "3", title: "Formation of new States and alteration of areas, boundaries or names of existing States", content: "Authorizes Parliament to form new states, alter boundaries, or change names of existing states." },
+                    { number: "4", title: "Laws made under articles 2 and 3", content: "Clarifies that laws made for the formation of new states are not to be considered constitutional amendments." }
+                ]
+            },
+            {
+                part: "PART II: CITIZENSHIP",
+                articles: [
+                    { number: "5", title: "Citizenship at the commencement of the Constitution", content: "Defines who was an Indian citizen at the time the Constitution came into effect." },
+                    { number: "6", title: "Rights of citizenship of certain persons who have migrated to India from Pakistan", content: "Provides citizenship to those who migrated from Pakistan to India before a certain date." },
+                    { number: "7", title: "Rights of citizenship of certain migrants to Pakistan", content: "Deals with the citizenship of those who migrated to Pakistan from India after March 1, 1947." },
+                    { number: "8", title: "Rights of citizenship of certain persons of Indian origin residing outside India", content: "Provisions for persons of Indian origin residing abroad to acquire Indian citizenship." },
+                    { number: "9", title: "Persons voluntarily acquiring citizenship of a foreign State not to be citizens", content: "States that no Indian citizen can simultaneously be a citizen of another country." },
+                    { number: "10", title: "Continuance of the rights of citizenship", content: "Ensures that every citizen continues to be so, subject to laws made by Parliament." },
+                    { number: "11", title: "Parliament to regulate the right of citizenship by law", content: "Gives Parliament the power to make any provision regarding citizenship." }
+                ]
+            },
+            {
+                part: "PART III: FUNDAMENTAL RIGHTS",
+                articles: [
+                    { number: "12", title: "Definition", content: "Defines the term 'State' for the purposes of Part III and Part IV." },
+                    { number: "13", title: "Laws inconsistent with or in derogation of the fundamental rights", content: "Declares that any law inconsistent with Fundamental Rights is void." },
+                    { number: "14", title: "Equality before law", content: "Guarantees equality before the law and equal protection of the laws." },
+                    { number: "15", title: "Prohibition of discrimination", content: "Prohibits discrimination on grounds of religion, race, caste, sex or place of birth." },
+                    { number: "16", title: "Equality of opportunity in matters of public employment", content: "Provides for equality of opportunity in public employment." },
+                    { number: "17", title: "Abolition of Untouchability", content: "Abolishes 'Untouchability' and makes its practice a punishable offence." },
+                    { number: "18", title: "Abolition of titles", content: "Abolishes all titles except military and academic ones." },
+                    { number: "19", title: "Protection of certain rights regarding freedom of speech, etc.", content: "Guarantees six fundamental freedoms to citizens." },
+                    { number: "20", title: "Protection in respect of conviction for offences", content: "Provides protection against arbitrary and excessive punishment to an accused person." },
+                    { number: "21", title: "Protection of life and personal liberty", content: "Guarantees the right to life and personal liberty." },
+                    { number: "21A", title: "Right to education", content: "Makes free and compulsory education a fundamental right for children aged 6 to 14." },
+                    { number: "22", title: "Protection against arrest and detention in certain cases", content: "Provides safeguards against arbitrary arrest and detention." },
+                    { number: "23", title: "Prohibition of traffic in human beings and forced labour", content: "Prohibits human trafficking and forced labour." },
+                    { number: "24", title: "Prohibition of employment of children in factories, etc.", content: "Prohibits the employment of children under 14 in hazardous jobs." },
+                    { number: "25", title: "Freedom of conscience and free profession, practice and propagation of religion", content: "Guarantees freedom of religion to all persons." },
+                    { number: "26", title: "Freedom to manage religious affairs", content: "Gives religious denominations the right to manage their own affairs." },
+                    { number: "27", title: "Freedom as to payment of taxes for promotion of any particular religion", content: "Prohibits the state from compelling any citizen to pay taxes for the promotion of any particular religion." },
+                    { number: "28", title: "Freedom as to attendance at religious instruction or religious worship in certain educational institutions", content: "Deals with religious instruction in educational institutions." },
+                    { number: "29", title: "Protection of interests of minorities", content: "Protects the language, script, and culture of minorities." },
+                    { number: "30", title: "Right of minorities to establish and administer educational institutions", content: "Gives minorities the right to establish and manage their own educational institutions." },
+                    { number: "32", title: "Remedies for enforcement of rights conferred by this Part", content: "Guarantees the right to move the Supreme Court for the enforcement of Fundamental Rights (Right to Constitutional Remedies)." }
+                ]
+            },
+            {
+                part: "PART IV: DIRECTIVE PRINCIPLES OF STATE POLICY",
+                 articles: [
+                    { number: "36", title: "Definition", content: "Defines 'State' for Part IV, same as in Part III." },
+                    { number: "37", title: "Application of the principles contained in this Part", content: "States that these principles are fundamental in the governance of the country but are not enforceable by any court." },
+                    { number: "38", title: "State to secure a social order for the promotion of welfare of the people", content: "Directs the state to promote the welfare of the people by securing a just social order." },
+                    { number: "39", title: "Certain principles of policy to be followed by the State", content: "Lays down principles like right to an adequate means of livelihood and equal pay for equal work." },
+                    { number: "39A", title: "Equal justice and free legal aid", content: "Directs the state to provide free legal aid to the poor." },
+                    { number: "40", title: "Organisation of village panchayats", content: "Directs the state to organize village panchayats." },
+                    { number: "41", title: "Right to work, to education and to public assistance in certain cases", content: "Securing the right to work, education, and public assistance in cases of unemployment, old age, etc." },
+                    { number: "42", title: "Provision for just and humane conditions of work and maternity relief", content: "Making provision for just and humane conditions of work and for maternity relief." },
+                    { number: "43", title: "Living wage, etc., for workers", content: "Securing a living wage, a decent standard of life, and promotion of cottage industries." },
+                    { number: "43A", title: "Participation of workers in management of industries", content: "Taking steps to secure the participation of workers in the management of industries." },
+                    { number: "43B", title: "Promotion of co-operative societies", content: "Promoting voluntary formation, autonomous functioning, and democratic control of co-operative societies." },
+                    { number: "44", title: "Uniform civil code for the citizens", content: "Securing for the citizens a uniform civil code throughout the territory of India." },
+                    { number: "45", title: "Provision for early childhood care and education to children below the age of six years", content: "Providing early childhood care and education for all children until they complete the age of six years." },
+                    { number: "46", title: "Promotion of educational and economic interests of Scheduled Castes, Scheduled Tribes and other weaker sections", content: "Promoting the educational and economic interests of weaker sections of the people." },
+                    { number: "47", title: "Duty of the State to raise the level of nutrition and the standard of living and to improve public health", content: "Raising the level of nutrition, standard of living and improving public health, including prohibition of intoxicating drinks and drugs." },
+                    { number: "48", title: "Organisation of agriculture and animal husbandry", content: "Organizing agriculture and animal husbandry on modern and scientific lines." },
+                    { number: "48A", title: "Protection and improvement of environment and safeguarding of forests and wild life", content: "Protecting and improving the environment and safeguarding forests and wildlife." },
+                    { number: "49", title: "Protection of monuments and places and objects of national importance", content: "Protecting monuments, places and objects of artistic or historic interest which are declared to be of national importance." },
+                    { number: "50", title: "Separation of judiciary from executive", content: "Separating the judiciary from the executive in the public services of the State." },
+                    { number: "51", title: "Promotion of international peace and security", content: "Promoting international peace and security and maintaining just and honorable relations between nations." }
+                ]
+            },
+             {
+                part: "PART IVA: FUNDAMENTAL DUTIES",
+                articles: [
+                    { number: "51A", title: "Fundamental duties", content: "Lists the fundamental duties of every citizen of India." }
+                ]
+            },
+        ];
+
+        // --- GLOBAL VARIABLES & ELEMENT SELECTORS ---
+        const selectionScreen = document.getElementById('selection-screen');
+        const quizSection = document.getElementById('quiz-section');
+        const resultContainer = document.getElementById('result-container');
+        const homeBtn = document.getElementById('home-btn');
+        const timerEl = document.getElementById('timer');
+        const quizTitle = document.getElementById('quiz-title');
+        const questionNumberEl = document.getElementById('question-number');
+        const questionTextEl = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const markBtn = document.getElementById('mark-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const questionPalette = document.getElementById('question-palette');
+        const endTestBtn = document.getElementById('end-test-btn');
+        const scoreEl = document.getElementById('score');
+        const timeTakenEl = document.getElementById('time-taken');
+        const analysisTableBody = document.getElementById('analysis-table-body');
+        const reviewContent = document.getElementById('review-content');
+        const takeAnotherTestBtn = document.getElementById('take-another-test-btn');
+
+
+        let currentQuizData = [];
+        let currentQuestion = 0;
+        let userAnswers = [];
+        let markedForReview = [];
+        let timer;
+        let timeLimit = 90 * 60; 
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            populateSelectionScreen();
+            renderArticles();
+            document.getElementById('full-test-btn').addEventListener('click', () => startQuiz('Full Test'));
+            homeBtn.addEventListener('click', showSelectionScreen);
+            takeAnotherTestBtn.addEventListener('click', showSelectionScreen);
+        });
+
+        function populateSelectionScreen() {
+            const parts = [...new Set(fullQuizData.map(q => q.part))];
+            const container = document.getElementById('part-selection-container');
+            container.innerHTML = '';
+            parts.forEach(part => {
+                const button = document.createElement('button');
+                button.textContent = part;
+                button.className = 'w-full bg-white border-2 border-blue-600 text-blue-600 font-semibold py-3 px-4 rounded-lg hover:bg-blue-600 hover:text-white transition duration-300';
+                button.onclick = () => startQuiz(part);
+                container.appendChild(button);
+            });
+        }
+        
+        function showSelectionScreen() {
+            selectionScreen.style.display = 'block';
+            quizSection.style.display = 'none';
+            resultContainer.style.display = 'none';
+            homeBtn.style.display = 'none';
+        }
+
+        function startQuiz(part) {
+            if (part === 'Full Test') {
+                // In a real scenario, you'd have 500 questions. We'll use the available ones.
+                currentQuizData = fullQuizData; 
+                quizTitle.textContent = 'Full Mock Test';
+            } else {
+                currentQuizData = fullQuizData.filter(q => q.part === part);
+                quizTitle.textContent = `Test: ${part}`;
+            }
+
+            currentQuestion = 0;
+            userAnswers = new Array(currentQuizData.length).fill(null);
+            markedForReview = new Array(currentQuizData.length).fill(false);
+            
+            selectionScreen.style.display = 'none';
+            quizSection.style.display = 'block';
+            homeBtn.style.display = 'block';
+
+            renderQuestionPalette();
+            showQuestion();
+            startTimer();
+        }
+
+        function renderQuestionPalette() {
+            questionPalette.innerHTML = '';
+            for (let i = 0; i < currentQuizData.length; i++) {
+                const btn = document.createElement('button');
+                btn.textContent = i + 1;
+                btn.className = 'question-palette-btn w-10 h-10 border rounded transition';
+                btn.onclick = () => {
+                    currentQuestion = i;
+                    showQuestion();
+                };
+                questionPalette.appendChild(btn);
+            }
+        }
+        
+        function updatePalette() {
+             const buttons = document.querySelectorAll('.question-palette-btn');
+             buttons.forEach((btn, index) => {
+                btn.classList.remove('active', 'answered', 'marked');
+                if (index === currentQuestion) {
+                    btn.classList.add('active');
+                } else if (userAnswers[index] !== null) {
+                    btn.classList.add('answered');
+                }
+                if (markedForReview[index]) {
+                     btn.classList.add('marked');
+                }
+             });
+        }
+
+        function showQuestion() {
+            const questionData = currentQuizData[currentQuestion];
+            questionNumberEl.innerText = `Question ${currentQuestion + 1} of ${currentQuizData.length}`;
+            questionTextEl.innerText = questionData.question;
+            
+            optionsContainer.innerHTML = '';
+            questionData.options.forEach(option => {
+                const button = document.createElement('button');
+                button.innerText = option;
+                button.className = 'w-full text-left p-4 border border-gray-300 rounded-lg hover:bg-blue-50 hover:border-blue-400 transition duration-200';
+                if (userAnswers[currentQuestion] === option) {
+                    button.classList.add('bg-blue-100', 'border-blue-500', 'font-semibold');
+                }
+                button.addEventListener('click', () => selectOption(option));
+                optionsContainer.appendChild(button);
+            });
+            
+            prevBtn.disabled = currentQuestion === 0;
+            prevBtn.classList.toggle('opacity-50', currentQuestion === 0);
+            
+            updatePalette();
+        }
+
+        function selectOption(option) {
+            userAnswers[currentQuestion] = option;
+            const buttons = optionsContainer.getElementsByTagName('button');
+            for (let btn of buttons) {
+                btn.classList.remove('bg-blue-100', 'border-blue-500', 'font-semibold');
+                if (btn.innerText === option) {
+                    btn.classList.add('bg-blue-100', 'border-blue-500', 'font-semibold');
+                }
+            }
+        }
+
+        function startTimer() {
+            clearInterval(timer);
+            let timeLeft = timeLimit;
+            timerEl.innerText = `${Math.floor(timeLeft / 60).toString().padStart(2, '0')}:${(timeLeft % 60).toString().padStart(2, '0')}`;
+            timer = setInterval(() => {
+                timeLeft--;
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerEl.innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    endQuiz();
+                }
+            }, 1000);
+        }
+        
+        function endQuiz() {
+            clearInterval(timer);
+            const partAnalysis = calculatePartWiseScore();
+            quizSection.style.display = 'none';
+            resultContainer.style.display = 'block';
+
+            const remainingTimeStr = timerEl.innerText.split(':');
+            const remainingTime = parseInt(remainingTimeStr[0]) * 60 + parseInt(remainingTimeStr[1]);
+            const timeSpent = timeLimit - remainingTime;
+            const minutes = Math.floor(timeSpent / 60);
+            const seconds = timeSpent % 60;
+            
+            let totalCorrect = 0;
+            Object.values(partAnalysis).forEach(part => totalCorrect += part.correct);
+
+            scoreEl.innerText = `Your Score: ${totalCorrect} out of ${currentQuizData.length}`;
+            timeTakenEl.innerText = `Time Taken: ${minutes}m ${seconds}s`;
+            
+            displayPartWiseAnalysis(partAnalysis);
+            displayReview();
+        }
+
+        function calculatePartWiseScore() {
+            const partAnalysis = {};
+            currentQuizData.forEach((question, index) => {
+                const partName = question.part;
+                if (!partAnalysis[partName]) {
+                    partAnalysis[partName] = { correct: 0, total: 0 };
+                }
+                partAnalysis[partName].total++;
+                if (userAnswers[index] === question.answer) {
+                    partAnalysis[partName].correct++;
+                }
+            });
+            return partAnalysis;
+        }
+
+        function displayPartWiseAnalysis(analysis) {
+            analysisTableBody.innerHTML = '';
+            for (const part in analysis) {
+                const { correct, total } = analysis[part];
+                const percentage = total > 0 ? ((correct / total) * 100).toFixed(1) : 0;
+                const row = document.createElement('tr');
+                row.className = 'border-b';
+                row.innerHTML = `
+                    <td class="py-3 px-4 font-medium">${part}</td>
+                    <td class="py-3 px-4 text-center">${correct}</td>
+                    <td class="py-3 px-4 text-center">${total}</td>
+                    <td class="py-3 px-4 text-center font-semibold">${percentage}%</td>
+                `;
+                analysisTableBody.appendChild(row);
+            }
+        }
+        
+        function displayReview() {
+            reviewContent.innerHTML = '';
+            currentQuizData.forEach((questionData, index) => {
+                const userAnswer = userAnswers[index];
+                const isCorrect = userAnswer === questionData.answer;
+
+                let optionsHtml = '';
+                questionData.options.forEach(option => {
+                    let classes = 'block p-3 border rounded-md mb-2';
+                    if (option === questionData.answer) {
+                        classes += ' bg-green-100 border-green-300 text-green-800';
+                    } else if (option === userAnswer && !isCorrect) {
+                        classes += ' bg-red-100 border-red-300 text-red-800';
+                    }
+                    optionsHtml += `<div class="${classes}">${option}</div>`;
+                });
+
+                const reviewBlock = `
+                    <div class="p-4 border rounded-lg bg-gray-50">
+                        <p class="font-semibold mb-2">${index + 1}. ${questionData.question}</p>
+                        ${optionsHtml}
+                        <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                            <p><strong class="font-semibold">Your Answer:</strong> ${userAnswer || 'Not Answered'}</p>
+                            <p><strong class="font-semibold">Correct Answer:</strong> ${questionData.answer}</p>
+                            <p class="mt-2 text-sm text-gray-700"><strong class="font-semibold">Explanation:</strong> ${questionData.explanation}</p>
+                        </div>
+                    </div>
+                `;
+                reviewContent.innerHTML += reviewBlock;
+            });
+        }
+        
+        // --- EVENT LISTENERS ---
+        nextBtn.addEventListener('click', () => {
+            if (currentQuestion < currentQuizData.length - 1) {
+                currentQuestion++;
+                showQuestion();
+            } else {
+                endQuiz(); // If it's the last question, end the quiz
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                showQuestion();
+            }
+        });
+        
+        markBtn.addEventListener('click', () => {
+             markedForReview[currentQuestion] = !markedForReview[currentQuestion];
+             updatePalette();
+        });
+
+        endTestBtn.addEventListener('click', endQuiz);
+        
+        // --- UTILITY FUNCTIONS ---
+        function renderArticles() {
+            const articlesContent = document.getElementById('articles-content');
+            articlesData.forEach(partData => {
+                const partElement = document.createElement('div');
+                partElement.className = 'border border-gray-200 rounded-lg bg-white';
+
+                if(partData.articles) {
+                    const details = document.createElement('details');
+                    details.className = 'group';
+                    const summary = document.createElement('summary');
+                    summary.className = 'p-4 font-semibold text-lg flex justify-between items-center hover:bg-gray-50 rounded-t-lg';
+                    summary.innerHTML = `<span>${partData.part}</span><svg class="w-5 h-5 transition-transform arrow-down group-open:rotate-180" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>`;
+                    details.appendChild(summary);
+
+                    const articlesContainer = document.createElement('div');
+                    articlesContainer.className = 'p-4 border-t border-gray-200';
+                    partData.articles.forEach(article => {
+                         const articleEl = document.createElement('div');
+                         articleEl.className = 'mb-4';
+                         articleEl.innerHTML = `<h4 class="font-bold text-md text-blue-700">Article ${article.number}: ${article.title}</h4><p class="text-gray-600 text-sm mt-1">${article.content}</p>`;
+                         articlesContainer.appendChild(articleEl);
+                    });
+                    details.appendChild(articlesContainer);
+                    partElement.appendChild(details);
+                } else {
+                    const preambleContainer = document.createElement('div');
+                    preambleContainer.className = 'p-4 bg-blue-50 rounded-lg';
+                    preambleContainer.innerHTML = `<h3 class="font-semibold text-lg mb-2">${partData.part}</h3><p class="text-gray-700 italic">${partData.content}</p>`;
+                    partElement.appendChild(preambleContainer);
+                }
+                articlesContent.appendChild(partElement);
+            });
+        }
+    </script>
+</body>
+</html>
+
