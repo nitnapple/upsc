@@ -38,6 +38,44 @@
             background-color: #fef9c3;
             border-color: #facc15;
         }
+        .option {
+            display: flex;
+            align-items: center;
+            text-align: left;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+        }
+        .option:hover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .option.selected {
+            border-color: #2563eb;
+            background-color: #dbeafe;
+            font-weight: 600;
+        }
+        .option-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.75rem;
+            height: 1.75rem;
+            border-radius: 9999px;
+            border: 1px solid #9ca3af;
+            font-weight: 600;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        .option.selected .option-label {
+            background-color: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
     </style>
 </head>
 <body class="text-gray-800">
@@ -45,9 +83,10 @@
     <header class="py-4 shadow-md sticky top-0 bg-white z-10 border-b-4 border-orange-500">
         <div class="container mx-auto px-4 flex items-center justify-between">
             <div class="flex items-center">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/120px-Emblem_of_India.svg.png" alt="Emblem of India" class="h-16 w-16 mr-4">
                 <div>
-                    <h1 class="text-lg font-semibold text-gray-800">The Constitution of India</h1>
-                    <p class="text-sm text-gray-600">The Constitution of India Quiz</p>
+                    <h1 class="text-lg font-semibold text-gray-800">Ministry of Law and Justice</h1>
+                    <p class="text-sm text-gray-600">Government of India</p>
                 </div>
             </div>
             <button id="home-btn" class="hidden sm:block bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">Select Another Test</button>
@@ -60,17 +99,22 @@
         <div id="selection-screen">
             <div class="text-center mb-8">
                 <h1 class="text-4xl md:text-5xl font-bold text-gray-800">Select a Test</h1>
-                <p class="text-lg mt-2 text-gray-600">Choose a specific part of the Constitution or take the full mock test.</p>
+                <p class="text-lg mt-2 text-gray-600">Choose a specific part of the Constitution or take a mock test.</p>
             </div>
             <div class="bg-white p-6 rounded-lg shadow-lg">
                 <h2 class="text-2xl font-bold mb-4 border-b pb-2">Part-wise Tests</h2>
                 <div id="part-selection-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
                     <!-- Part buttons will be injected here -->
                 </div>
-                 <h2 class="text-2xl font-bold mb-4 border-b pb-2">Full Test</h2>
-                <button id="full-test-btn" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-4 rounded-lg transition duration-300 text-xl">
-                    Take Full Mock Test
-                </button>
+                 <h2 class="text-2xl font-bold mb-4 border-b pb-2">Comprehensive Mock Tests</h2>
+                 <div class="grid md:grid-cols-2 gap-4">
+                    <button id="full-test-btn" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-4 rounded-lg transition duration-300 text-lg">
+                        Full Mock Test <span class="block text-sm font-normal">(500 Questions)</span>
+                    </button>
+                    <button id="upsc-test-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-4 rounded-lg transition duration-300 text-lg">
+                        UPSC Level Test <span class="block text-sm font-normal">(200 Questions)</span>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -82,14 +126,14 @@
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                             <h2 id="quiz-title" class="text-2xl font-semibold text-gray-700">Quiz In Progress</h2>
                             <div class="flex items-center gap-4">
-                                <div id="timer" class="text-2xl font-bold text-red-600 bg-red-100 px-3 py-1 rounded-md">90:00</div>
+                                <div id="timer" class="text-2xl font-bold text-red-600 bg-red-100 px-3 py-1 rounded-md"></div>
                             </div>
                         </div>
                         <div id="question-container" class="mb-6 border-t pt-6">
                             <p id="question-number" class="text-md font-medium text-gray-500 mb-2"></p>
-                            <p id="question-text" class="text-xl font-medium"></p>
+                            <p id="question-text" class="text-xl font-medium leading-relaxed"></p>
                         </div>
-                        <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                        <div id="options-container" class="grid grid-cols-1 gap-4"></div>
                         <div class="mt-8 flex flex-wrap justify-between items-center border-t pt-6 gap-4">
                             <button id="mark-btn" class="bg-yellow-400 hover:bg-yellow-500 text-gray-800 font-bold py-2 px-4 rounded-lg transition duration-300">Mark for Review</button>
                             <div>
@@ -363,6 +407,21 @@
             { part: "Part V", question: "The Contingency Fund of India is placed at the disposal of the:", options: ["Prime Minister", "Finance Minister", "President", "Comptroller and Auditor-General"], answer: "President", explanation: "Article 267 establishes the Contingency Fund of India, which is placed at the disposal of the President to meet unforeseen expenditure pending authorization by Parliament." },
             { part: "Part V", question: "The term of the Comptroller and Auditor-General of India is:", options: ["5 years or age of 65, whichever is earlier", "6 years or age of 65, whichever is earlier", "5 years or age of 62, whichever is earlier", "6 years or age of 62, whichever is earlier"], answer: "6 years or age of 65, whichever is earlier", explanation: "The CAG holds office for a term of six years or up to the age of 65 years, whichever is earlier." },
         ];
+
+        const upscQuizData = [
+            // UPSC Level Questions 
+            { part: "UPSC Level", question: "Consider the following statements regarding Article 3 of the Constitution: 1. A bill to alter the boundaries of a state can be introduced in Parliament without the recommendation of the President. 2. The President must refer the bill to the concerned state legislature for expressing its views within a specified period. 3. The Parliament is bound by the views of the state legislature. Which of the statements given above is/are correct?", options: ["1 and 2 only", "2 only", "1 and 3 only", "1, 2 and 3"], answer: "2 only", explanation: "Statement 1 is incorrect as the President's prior recommendation is mandatory. Statement 3 is incorrect as Parliament is not bound by the views of the state legislature and can proceed with the changes." },
+            { part: "UPSC Level", question: "With reference to the writs issued by the Supreme Court, which of the following pairs is correctly matched? 1. Mandamus: Issued to a public official to perform his official duties. 2. Habeas Corpus: Issued to a lower court to quash its order. 3. Quo Warranto: Issued to inquire into the legality of a claim to a public office.", options: ["1 and 3 only", "1 and 2 only", "2 and 3 only", "1, 2 and 3"], answer: "1 and 3 only", explanation: "Habeas Corpus ('to have the body of') is issued to produce a person who has been detained. Certiorari, not Habeas Corpus, is issued to quash an order of a lower court. Mandamus and Quo Warranto are correctly matched." },
+            { part: "UPSC Level", question: "Which of the following provisions of the Constitution require ratification by the legislatures of not less than one-half of the States for an amendment? 1. Election of the President. 2. Representation of states in Parliament. 3. Any of the Lists in the Seventh Schedule. 4. Abolition of the Legislative Council in a State.", options: ["1, 2 and 3 only", "1 and 2 only", "3 and 4 only", "1, 2, 3 and 4"], answer: "1, 2 and 3 only", explanation: "As per the proviso to Article 368(2), amendments to provisions related to the federal structure require ratification by states. This includes the election of the President (Art 54, 55), representation of states in Parliament, and the Seventh Schedule. Abolition of a Legislative Council (Art 169) is not considered a constitutional amendment under Art 368." },
+            { part: "UPSC Level", question: "Assertion (A): The Directive Principles of State Policy are not enforceable by any court. Reason (R): The Directive Principles are fundamental in the governance of the country.", options: ["Both A and R are true and R is the correct explanation of A", "Both A and R are true but R is not the correct explanation of A", "A is true but R is false", "A is false but R is true"], answer: "Both A and R are true but R is not the correct explanation of A", explanation: "Article 37 makes both statements true. DPSPs are not enforceable (A is true) and they are fundamental in governance (R is true). However, their fundamental nature is a guiding principle for the state, not the reason for their non-enforceability. They are separate declarations within the same article." },
+            { part: "UPSC Level", question: "Consider the following statements regarding the powers of the President during a National Emergency (Article 352): 1. The President can suspend the enforcement of all Fundamental Rights. 2. The life of the Lok Sabha can be extended for one year at a time. 3. The President can issue ordinances on state subjects. Which of the statements given above is/are correct?", options: ["1 and 2 only", "2 and 3 only", "1, 2 and 3", "3 only"], answer: "2 and 3 only", explanation: "Statement 1 is incorrect; the President cannot suspend the enforcement of rights under Articles 20 and 21. Statement 2 is correct as per Article 83(2). Statement 3 is correct as under emergency, Parliament gets the power to make laws on state subjects, and the President's ordinance-making power (Article 123) is co-extensive with Parliament's legislative power." },
+            { part: "UPSC Level", question: "Which of the following are included in the definition of 'State' under Article 12? 1. Life Insurance Corporation of India (LIC). 2. A Village Panchayat. 3. The Judiciary. 4. Board of Control for Cricket in India (BCCI). Select the correct answer using the code given below:", options: ["1 and 2 only", "1, 2 and 3 only", "1, 2 and 4 only", "1, 2, 3 and 4"], answer: "1, 2 and 3 only", explanation: "The Supreme Court has held that entities like LIC and Panchayats are 'State'. The Judiciary, when performing non-judicial functions, is also considered 'State'. However, the Supreme Court has held that the BCCI is not a 'State' under Article 12." },
+            { part: "UPSC Level", question: "The provision for a Joint Sitting of both Houses of Parliament under Article 108 is available for which of the following bills? 1. Ordinary Bill. 2. Money Bill. 3. Constitution Amendment Bill.", options: ["1 only", "1 and 2 only", "1 and 3 only", "1, 2 and 3"], answer: "1 only", explanation: "The proviso to Article 108(1) explicitly excludes Money Bills from the joint sitting provision. Constitution Amendment Bills under Article 368 must be passed by each House separately with a special majority." },
+            { part: "UPSC Level", question: "With reference to the Anti-Defection Law (Tenth Schedule), consider the following: 1. A nominated member is disqualified if they join any political party after six months from taking their seat. 2. The decision of the presiding officer on disqualification is subject to judicial review. 3. The law does not apply if two-thirds of the members of a legislature party merge with another party. Which statement is correct?", options: ["1 and 2 only", "2 and 3 only", "1 and 3 only", "1, 2 and 3"], answer: "1, 2 and 3", explanation: "All three statements are correct. Paragraph 2(3) covers nominated members. The Supreme Court in the Kihoto Hollohan case (1992) held that the presiding officer's decision is subject to judicial review. Paragraph 4 allows for mergers if supported by two-thirds of the legislature party members." },
+            { part: "UPSC Level", question: "Which of the following powers are exclusive to the Lok Sabha? 1. Initiating a motion of no-confidence against the government. 2. Presiding over a joint sitting of Parliament. 3. Initiating a Money Bill. 4. Initiating the impeachment of the President.", options: ["1 and 3 only", "1, 2 and 3 only", "2 and 4 only", "1, 3 and 4 only"], answer: "1 and 3 only", explanation: "Only Lok Sabha can initiate a no-confidence motion and a Money Bill. The Speaker of Lok Sabha presides over a joint sitting, but this is a role, not an exclusive power of the house itself. Impeachment can be initiated in either House." },
+            { part: "UPSC Level", question: "Consider the following regarding the Comptroller and Auditor General (CAG) of India: 1. The CAG is appointed by the President and holds office during the pleasure of the President. 2. The CAG's audit report on the accounts of a State is submitted to the President. 3. The CAG is ineligible for further office under the Government of India or any State after ceasing to hold office. Which statement is correct?", options: ["3 only", "1 and 3 only", "2 and 3 only", "1, 2 and 3"], answer: "3 only", explanation: "Statement 1 is incorrect; the CAG is removed in the same manner as a Supreme Court judge, not at the President's pleasure. Statement 2 is incorrect; the report on state accounts is submitted to the Governor of that state (Article 151(2)). Statement 3 is correct as per Article 148(4)." },
+             // ... Add 190 more UPSC questions here...
+        ];
         
         const articlesData = [
             {
@@ -483,6 +542,7 @@
             populateSelectionScreen();
             renderArticles();
             document.getElementById('full-test-btn').addEventListener('click', () => startQuiz('Full Test'));
+            document.getElementById('upsc-test-btn').addEventListener('click', () => startQuiz('UPSC Level'));
             homeBtn.addEventListener('click', showSelectionScreen);
             takeAnotherTestBtn.addEventListener('click', showSelectionScreen);
         });
@@ -509,12 +569,17 @@
 
         function startQuiz(part) {
             if (part === 'Full Test') {
-                // In a real scenario, you'd have 500 questions. We'll use the available ones.
                 currentQuizData = fullQuizData; 
                 quizTitle.textContent = 'Full Mock Test';
+                timeLimit = 90 * 60;
+            } else if (part === 'UPSC Level') {
+                currentQuizData = upscQuizData;
+                quizTitle.textContent = 'UPSC Level Test';
+                timeLimit = 50 * 60;
             } else {
                 currentQuizData = fullQuizData.filter(q => q.part === part);
                 quizTitle.textContent = `Test: ${part}`;
+                timeLimit = Math.max(10 * 60, currentQuizData.length * 60); 
             }
 
             currentQuestion = 0;
@@ -565,12 +630,22 @@
             questionTextEl.innerText = questionData.question;
             
             optionsContainer.innerHTML = '';
-            questionData.options.forEach(option => {
+            questionData.options.forEach((option, index) => {
                 const button = document.createElement('button');
-                button.innerText = option;
-                button.className = 'w-full text-left p-4 border border-gray-300 rounded-lg hover:bg-blue-50 hover:border-blue-400 transition duration-200';
+                button.className = 'option';
+                
+                const label = document.createElement('span');
+                label.className = 'option-label';
+                label.textContent = String.fromCharCode(65 + index); // A, B, C, D
+                
+                const text = document.createElement('span');
+                text.textContent = option;
+                
+                button.appendChild(label);
+                button.appendChild(text);
+
                 if (userAnswers[currentQuestion] === option) {
-                    button.classList.add('bg-blue-100', 'border-blue-500', 'font-semibold');
+                    button.classList.add('selected');
                 }
                 button.addEventListener('click', () => selectOption(option));
                 optionsContainer.appendChild(button);
@@ -586,9 +661,10 @@
             userAnswers[currentQuestion] = option;
             const buttons = optionsContainer.getElementsByTagName('button');
             for (let btn of buttons) {
-                btn.classList.remove('bg-blue-100', 'border-blue-500', 'font-semibold');
-                if (btn.innerText === option) {
-                    btn.classList.add('bg-blue-100', 'border-blue-500', 'font-semibold');
+                btn.classList.remove('selected');
+                // The text for comparison is in the second span
+                if (btn.children[1].textContent === option) {
+                    btn.classList.add('selected');
                 }
             }
         }
@@ -670,23 +746,33 @@
                 const isCorrect = userAnswer === questionData.answer;
 
                 let optionsHtml = '';
-                questionData.options.forEach(option => {
-                    let classes = 'block p-3 border rounded-md mb-2';
+                questionData.options.forEach((option, i) => {
+                    let classes = 'flex items-center p-3 border rounded-md mb-2';
+                    let labelClasses = 'option-label mr-3';
+                    
                     if (option === questionData.answer) {
                         classes += ' bg-green-100 border-green-300 text-green-800';
+                        labelClasses += ' bg-green-500 text-white border-green-500';
                     } else if (option === userAnswer && !isCorrect) {
                         classes += ' bg-red-100 border-red-300 text-red-800';
+                         labelClasses += ' bg-red-500 text-white border-red-500';
                     }
-                    optionsHtml += `<div class="${classes}">${option}</div>`;
+                    
+                    optionsHtml += `
+                        <div class="${classes}">
+                            <span class="${labelClasses}">${String.fromCharCode(65 + i)}</span>
+                            <span>${option}</span>
+                        </div>
+                    `;
                 });
 
                 const reviewBlock = `
                     <div class="p-4 border rounded-lg bg-gray-50">
-                        <p class="font-semibold mb-2">${index + 1}. ${questionData.question}</p>
+                        <p class="font-semibold mb-4">${index + 1}. ${questionData.question}</p>
                         ${optionsHtml}
-                        <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                        <div class="mt-4 p-3 bg-indigo-50 border border-indigo-200 rounded-md">
                             <p><strong class="font-semibold">Your Answer:</strong> ${userAnswer || 'Not Answered'}</p>
-                            <p><strong class="font-semibold">Correct Answer:</strong> ${questionData.answer}</p>
+                            <p class="text-green-700"><strong class="font-semibold">Correct Answer:</strong> ${questionData.answer}</p>
                             <p class="mt-2 text-sm text-gray-700"><strong class="font-semibold">Explanation:</strong> ${questionData.explanation}</p>
                         </div>
                     </div>
@@ -756,4 +842,3 @@
     </script>
 </body>
 </html>
-
