@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indian Defense Quiz - National Testing Agency</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+        }
+        .nta-header {
+            background: linear-gradient(90deg, #1e3a8a, #3b82f6);
+        }
+        .question-palette-grid {
+            grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+        }
+        .btn-primary {
+            @apply bg-blue-600 text-white hover:bg-blue-700 focus:ring-4 focus:ring-blue-300;
+        }
+        .btn-secondary {
+            @apply bg-gray-500 text-white hover:bg-gray-600 focus:ring-4 focus:ring-gray-300;
+        }
+        .btn-success {
+            @apply bg-green-600 text-white hover:bg-green-700 focus:ring-4 focus:ring-green-300;
+        }
+        .btn-danger {
+            @apply bg-red-600 text-white hover:bg-red-700 focus:ring-4 focus:ring-red-300;
+        }
+        /* Custom scrollbar for better look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        /* Status colors for question palette */
+        .status-not-answered { @apply bg-gray-300 text-gray-800; }
+        .status-answered { @apply bg-green-500 text-white; }
+        .status-not-visited { @apply bg-white text-gray-800 border border-gray-300; }
+        .status-current { @apply bg-blue-500 text-white; }
+    </style>
+</head>
+<body>
+    <!-- Main Application Container -->
+    <div id="app" class="min-h-screen flex flex-col">
+
+        <!-- Header -->
+        <header class="nta-header text-white shadow-md">
+            <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    
+                    <div>
+                        <h1 class="text-xl md:text-2xl font-bold">Indian Defense Quiz</h1>
+                        <p class="text-sm text-blue-200">National Testing Agency</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-grow container mx-auto p-4">
+            
+            <!-- Instructions View -->
+            <div id="instructionsView" class="bg-white p-6 md:p-8 rounded-lg shadow-lg">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Instructions</h2>
+                <div class="prose max-w-none text-gray-700">
+                    <p>Please read the instructions carefully before starting the examination.</p>
+                    <ul class="list-disc list-inside space-y-2">
+                        <li>The examination consists of <strong>200 multiple-choice questions</strong>.</li>
+                        <li>Total duration of the examination is <strong>180 minutes</strong>.</li>
+                        <li>The clock has been set at the server. The countdown timer at the top right corner of the screen will display the remaining time.</li>
+                        <li><strong>Marking Scheme:</strong>
+                            <ul class="list-decimal list-inside ml-6 mt-2">
+                                <li><strong>+4 marks</strong> will be awarded for each correct response.</li>
+                                <li><strong>-1.33 marks (1/3rd)</strong> will be deducted for each incorrect response.</li>
+                                <li><strong>0 marks</strong> for questions not attempted.</li>
+                            </ul>
+                        </li>
+                        <li>The question palette on the right side of the screen shows the status of each question, enabling you to navigate between questions.</li>
+                    </ul>
+                    <div class="mt-8 flex justify-center">
+                        <button id="startQuizBtn" class="px-8 py-3 font-semibold rounded-lg btn-primary transition-transform transform hover:scale-105">
+                            Proceed to Examination
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quiz View -->
+            <div id="quizView" class="hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Left Panel: Question and Options -->
+                    <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-lg flex flex-col">
+                        <div class="flex justify-between items-center border-b pb-4 mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Question No. <span id="questionNumber">1</span></h3>
+                            <div class="font-bold text-xl text-blue-700">Time Left: <span id="timer">180:00</span></div>
+                        </div>
+                        
+                        <div id="questionContainer" class="flex-grow">
+                            <p id="questionText" class="text-lg text-gray-900 mb-6 whitespace-pre-line"></p>
+                            <div id="optionsContainer" class="space-y-4">
+                                <!-- Options will be dynamically inserted here -->
+                            </div>
+                        </div>
+                        
+                        <div class="mt-8 pt-4 border-t flex flex-wrap gap-4 justify-between items-center">
+                            <div>
+                                <button id="clearResponseBtn" class="px-6 py-2 font-semibold rounded-lg btn-secondary">Clear Response</button>
+                            </div>
+                            <div>
+                                <button id="saveNextBtn" class="px-6 py-2 font-semibold rounded-lg btn-success">Save & Next</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Panel: Info and Question Palette -->
+                    <div class="bg-white p-6 rounded-lg shadow-lg">
+                        <div class="text-center mb-4">
+                            <h3 class="font-bold text-lg text-gray-800">Question Palette</h3>
+                        </div>
+                        <div id="questionPalette" class="grid question-palette-grid gap-2 mb-6 max-h-96 overflow-y-auto pr-2">
+                            <!-- Palette buttons will be dynamically inserted here -->
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex items-center"><span class="w-5 h-5 rounded-md status-answered mr-2"></span> Answered</div>
+                            <div class="flex items-center"><span class="w-5 h-5 rounded-md status-not-answered mr-2"></span> Not Answered</div>
+                            <div class="flex items-center"><span class="w-5 h-5 rounded-md status-not-visited mr-2"></span> Not Visited</div>
+                            <div class="flex items-center"><span class="w-5 h-5 rounded-md status-current mr-2"></span> Current Question</div>
+                        </div>
+                         <div class="mt-6">
+                            <button id="submitQuizBtn" class="w-full py-3 font-bold rounded-lg btn-danger">Submit Test</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Result View -->
+            <div id="resultView" class="hidden bg-white p-6 md:p-8 rounded-lg shadow-lg">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Result Analysis</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-center mb-8">
+                    <div class="bg-blue-100 p-4 rounded-lg">
+                        <p class="text-lg text-blue-800 font-semibold">Total Score</p>
+                        <p id="totalScore" class="text-4xl font-bold text-blue-600">0</p>
+                    </div>
+                    <div class="bg-green-100 p-4 rounded-lg">
+                        <p class="text-lg text-green-800 font-semibold">Correct</p>
+                        <p id="correctAnswers" class="text-4xl font-bold text-green-600">0</p>
+                    </div>
+                    <div class="bg-red-100 p-4 rounded-lg">
+                        <p class="text-lg text-red-800 font-semibold">Incorrect</p>
+                        <p id="incorrectAnswers" class="text-4xl font-bold text-red-600">0</p>
+                    </div>
+                    <div class="bg-gray-100 p-4 rounded-lg">
+                        <p class="text-lg text-gray-800 font-semibold">Unattempted</p>
+                        <p id="unattempted" class="text-4xl font-bold text-gray-600">0</p>
+                    </div>
+                </div>
+                <div class="mt-8 flex justify-center">
+                    <button id="viewExplanationsBtn" class="px-8 py-3 font-semibold rounded-lg btn-primary">View Detailed Explanations</button>
+                </div>
+            </div>
+
+            <!-- Explanations View -->
+            <div id="explanationsView" class="hidden bg-white p-6 md:p-8 rounded-lg shadow-lg">
+                 <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Answer Explanations</h2>
+                    <button id="backToResultBtn" class="px-6 py-2 font-semibold rounded-lg btn-secondary">Back to Result</button>
+                </div>
+                <div id="explanationsContainer" class="space-y-6 max-h-[70vh] overflow-y-auto pr-4">
+                    <!-- Explanations will be dynamically inserted here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Submit Confirmation Modal -->
+    <div id="submitModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-lg shadow-xl text-center max-w-sm w-full">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Confirm Submission</h3>
+            <p class="text-gray-600 mb-6">Are you sure you want to submit the test? This action cannot be undone.</p>
+            <div class="flex justify-center gap-4">
+                <button id="cancelSubmitBtn" class="px-6 py-2 font-semibold rounded-lg btn-secondary">Cancel</button>
+                <button id="confirmSubmitBtn" class="px-6 py-2 font-semibold rounded-lg btn-danger">Confirm Submit</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM ELEMENTS ---
+            const instructionsView = document.getElementById('instructionsView');
+            const quizView = document.getElementById('quizView');
+            const resultView = document.getElementById('resultView');
+            const explanationsView = document.getElementById('explanationsView');
+            const submitModal = document.getElementById('submitModal');
+
+            const startQuizBtn = document.getElementById('startQuizBtn');
+            const submitQuizBtn = document.getElementById('submitQuizBtn');
+            const saveNextBtn = document.getElementById('saveNextBtn');
+            const clearResponseBtn = document.getElementById('clearResponseBtn');
+            const viewExplanationsBtn = document.getElementById('viewExplanationsBtn');
+            const backToResultBtn = document.getElementById('backToResultBtn');
+            const confirmSubmitBtn = document.getElementById('confirmSubmitBtn');
+            const cancelSubmitBtn = document.getElementById('cancelSubmitBtn');
+            
+            const questionNumberEl = document.getElementById('questionNumber');
+            const questionTextEl = document.getElementById('questionText');
+            const optionsContainerEl = document.getElementById('optionsContainer');
+            const questionPaletteEl = document.getElementById('questionPalette');
+            const timerEl = document.getElementById('timer');
+
+            // --- QUIZ DATA & STATE ---
+            let questions = [];
+            const TOTAL_QUESTIONS = 200;
+            const QUIZ_DURATION_MINUTES = 180;
+            const MARKS_CORRECT = 4;
+            const MARKS_INCORRECT = -(MARKS_CORRECT / 3);
+
+            let currentQuestionIndex = 0;
+            let userAnswers = new Array(TOTAL_QUESTIONS).fill(null);
+            let questionStatus = new Array(TOTAL_QUESTIONS).fill('not-visited'); // not-visited, not-answered, answered
+            let timerInterval;
+            let timeRemainingInSeconds = QUIZ_DURATION_MINUTES * 60;
+
+            // --- UPSC-LEVEL QUESTION BANK (Sample) ---
+            const sampleQuestions = [
+                {
+                    question: "Consider the following statements regarding the Agni-V missile:\n1. It is a solid-fueled intercontinental ballistic missile.\n2. It incorporates Multiple Independently Targetable Re-entry Vehicle (MIRV) technology.\n3. Its operational range covers all of Asia and parts of Europe.\nWhich of the above statements is/are correct?",
+                    options: ["1 only", "1 and 3 only", "2 and 3 only", "1, 2 and 3"],
+                    correctAnswer: "1, 2 and 3",
+                    explanation: "Agni-V is India's premier ICBM with a solid-fueled propulsion system for quick launch capability. The successful 'Divyastra' test in 2024 confirmed its MIRV capability, allowing it to deliver multiple nuclear warheads to different targets. Its range, exceeding 5,000 km, effectively covers the entire Asian continent and extends into parts of Europe, forming a credible pillar of India's nuclear deterrence."
+                },
+                {
+                    question: "The 'Positive Indigenisation Lists' (PIL) periodically released by the Ministry of Defence are primarily aimed at:",
+                    options: ["Enhancing military exports to friendly foreign countries.", "Banning the import of specific defence items to boost domestic manufacturing.", "Streamlining the procurement process through the Government e-Marketplace (GeM).", "Creating joint ventures between Indian PSUs and foreign defence companies."],
+                    correctAnswer: "Banning the import of specific defence items to boost domestic manufacturing.",
+                    explanation: "The Positive Indigenisation Lists specify defence items that will be procured exclusively from domestic sources after a given timeline. This policy is a cornerstone of the 'Aatmanirbhar Bharat' initiative, designed to reduce import dependency and build a robust indigenous defence industrial ecosystem by providing a clear demand pipeline for Indian manufacturers."
+                },
+                {
+                    question: "The ongoing process of 'Theaterization' of the Indian Armed Forces aims to achieve which of the following primary objectives?",
+                    options: ["Increase the number of personnel in the armed forces.", "Establish separate commands for each branch of the military.", "Integrate the capabilities of the Army, Navy, and Air Force under a single operational commander for a specific geographical area.", "Procure military hardware exclusively from domestic vendors."],
+                    correctAnswer: "Integrate the capabilities of the Army, Navy, and Air Force under a single operational commander for a specific geographical area.",
+                    explanation: "Theaterization aims to create integrated theatre commands, where all assets of the three services (Army, Navy, Air Force) in a particular geographical region are placed under a single commander. This enhances operational synergy, optimizes resource allocation, and ensures a unified response to threats in that theatre, moving away from the current service-specific 'siloed' command structure."
+                },
+                {
+                    question: "Consider the following pairs:\nProject - Associated Vessel Type\n1. Project 15B : Visakhapatnam-class Destroyers\n2. Project 75 : Scorpene-class Submarines\n3. Project 17A : Nilgiri-class Frigates\nWhich of the pairs given above is/are correctly matched?",
+                    options: ["1 and 2 only", "2 and 3 only", "1 and 3 only", "1, 2 and 3"],
+                    correctAnswer: "1, 2 and 3",
+                    explanation: "All three pairs are correctly matched. Project 15B involves the construction of advanced stealth guided-missile destroyers like INS Visakhapatnam. Project 75 covers the six Scorpene (Kalvari-class) diesel-electric attack submarines. Project 17A relates to the development of seven advanced stealth frigates, with INS Nilgiri being the lead ship of the class."
+                },
+                {
+                    question: "The term 'iDEX (Innovations for Defence Excellence)' is often seen in the news. It refers to an ecosystem that aims to:",
+                    options: ["Organize international defence exhibitions in India.", "Promote innovation and technology development in defence by engaging MSMEs, start-ups, and academia.", "Facilitate the export of DRDO-developed technologies.", "Provide a platform for joint military exercises with friendly nations."],
+                    correctAnswer: "Promote innovation and technology development in defence by engaging MSMEs, start-ups, and academia.",
+                    explanation: "Launched by the Department of Defence Production, iDEX is a flagship initiative that aims to create an ecosystem to foster innovation and technology development in Defence and Aerospace. It encourages start-ups, MSMEs, individual innovators, R&D institutes, and academia to provide innovative solutions for challenges faced by the armed forces."
+                },
+                {
+                    question: "With reference to the BrahMos missile, which of the following statements is INCORRECT?",
+                    options: ["It is a supersonic cruise missile that can be launched from land, air, and sea.", "It operates on the 'fire and forget' principle.", "It is a joint venture between India's DRDO and Russia's NPO Mashinostroyeniya.", "It is a long-range hypersonic missile currently under development."],
+                    correctAnswer: "It is a long-range hypersonic missile currently under development.",
+                    explanation: "BrahMos is a SUPERSONIC, not hypersonic, cruise missile. While a hypersonic version (BrahMos-II) is under development, the current operational missile's key feature is its supersonic speed (around Mach 2.8). The other three statements are correct descriptions of the BrahMos system."
+                },
+                {
+                    question: "The Defence Acquisition Council (DAC) holds significant power in India's defence procurement. Who is the chairperson of the DAC?",
+                    options: ["The Prime Minister", "The Chief of Defence Staff (CDS)", "The Raksha Mantri (Defence Minister)", "The National Security Advisor (NSA)"],
+                    correctAnswer: "The Raksha Mantri (Defence Minister)",
+                    explanation: "The Defence Acquisition Council (DAC) is the highest decision-making body in the Ministry of Defence for deciding on new policies and capital acquisitions for the three services (Army, Navy and Air Force) and the Indian Coast Guard. It is chaired by the Union Minister of Defence."
+                },
+                 {
+                    question: "Which of the following was created to lead the coordination and integration of intelligence from the three armed services?",
+                    options: ["Research and Analysis Wing (R&AW)", "Intelligence Bureau (IB)", "Defence Intelligence Agency (DIA)", "National Technical Research Organisation (NTRO)"],
+                    correctAnswer: "Defence Intelligence Agency (DIA)",
+                    explanation: "The Defence Intelligence Agency (DIA) was established in 2002 to act as the primary organization for coordinating and synthesizing military intelligence for the Indian Armed Forces. It integrates intelligence from the directorates of the Army, Navy, and Air Force, unlike R&AW (external civilian) and IB (internal civilian)."
+                },
+                {
+                    question: "Consider the following military exercises and their partner countries:\n1. Dharma Guardian : Japan\n2. Ajeya Warrior : United Kingdom\n3. Garuda Shakti : France\nWhich of the pairs given above is/are correctly matched?",
+                    options: ["1 and 2 only", "2 and 3 only", "1 only", "1, 2 and 3"],
+                    correctAnswer: "1 and 2 only",
+                    explanation: "Dharma Guardian is a joint military exercise between India and Japan. Ajeya Warrior is conducted between India and the UK. However, Garuda Shakti is a joint exercise between India and Indonesia. The exercise with France is named 'Shakti' (Army) or 'Garuda' (Air Force), but not 'Garuda Shakti'."
+                },
+                 {
+                    question: "The Light Combat Aircraft (LCA) Tejas programme has several variants. The 'Mk1A' variant is a significant upgrade over the initial 'Mk1'. What is a key feature of the Tejas Mk1A?",
+                    options: ["Twin-engine configuration for enhanced power.", "Stealth capabilities comparable to fifth-generation fighters.", "An advanced AESA radar and electronic warfare suite.", "Ability to perform vertical take-off and landing (VTOL)."],
+                    correctAnswer: "An advanced AESA radar and electronic warfare suite.",
+                    explanation: "The Tejas Mk1A is a major improvement over the Mk1, featuring an advanced Active Electronically Scanned Array (AESA) radar, a new electronic warfare (EW) suite, beyond-visual-range (BVR) missile capabilities, and numerous other refinements to enhance its combat effectiveness and maintainability. It remains a single-engine aircraft and does not have VTOL or full-stealth features."
+                }
+
+            ];
+
+            // --- FUNCTIONS ---
+            
+            function initializeQuiz() {
+                for (let i = 0; i < TOTAL_QUESTIONS; i++) {
+                    questions.push(sampleQuestions[i % sampleQuestions.length]);
+                }
+                userAnswers = new Array(TOTAL_QUESTIONS).fill(null);
+                questionStatus = new Array(TOTAL_QUESTIONS).fill('not-visited');
+                createQuestionPalette();
+            }
+
+            function createQuestionPalette() {
+                questionPaletteEl.innerHTML = '';
+                for (let i = 0; i < TOTAL_QUESTIONS; i++) {
+                    const button = document.createElement('button');
+                    button.textContent = i + 1;
+                    button.classList.add('w-10', 'h-10', 'rounded-md', 'font-semibold', 'flex', 'items-center', 'justify-center', 'transition-all');
+                    button.dataset.index = i;
+                    button.addEventListener('click', () => navigateToQuestion(i));
+                    questionPaletteEl.appendChild(button);
+                }
+            }
+
+            function updatePalette() {
+                const buttons = questionPaletteEl.children;
+                for (let i = 0; i < buttons.length; i++) {
+                    buttons[i].classList.remove('status-not-answered', 'status-answered', 'status-not-visited', 'status-current');
+                    if (i === currentQuestionIndex) {
+                        buttons[i].classList.add('status-current');
+                    } else if (questionStatus[i] === 'answered') {
+                        buttons[i].classList.add('status-answered');
+                    } else if (questionStatus[i] === 'not-answered') {
+                         buttons[i].classList.add('status-not-answered');
+                    } else {
+                         buttons[i].classList.add('status-not-visited');
+                    }
+                }
+            }
+
+            function displayQuestion(index) {
+                currentQuestionIndex = index;
+                if (questionStatus[index] === 'not-visited') {
+                    questionStatus[index] = 'not-answered';
+                }
+                const q = questions[index];
+                questionNumberEl.textContent = index + 1;
+                questionTextEl.textContent = q.question;
+                optionsContainerEl.innerHTML = '';
+                q.options.forEach((option, i) => {
+                    const optionId = `q${index}_option${i}`;
+                    const div = document.createElement('div');
+                    div.classList.add('flex', 'items-center', 'p-3', 'border', 'rounded-lg', 'cursor-pointer', 'hover:bg-blue-50', 'transition-colors');
+                    
+                    const radio = document.createElement('input');
+                    radio.type = 'radio';
+                    radio.id = optionId;
+                    radio.name = `question${index}`;
+                    radio.value = option;
+                    radio.classList.add('w-5', 'h-5', 'text-blue-600', 'focus:ring-blue-500');
+                    if (userAnswers[index] === option) {
+                        radio.checked = true;
+                    }
+
+                    const label = document.createElement('label');
+                    label.htmlFor = optionId;
+                    label.textContent = option;
+                    label.classList.add('ml-3', 'text-md', 'text-gray-800', 'w-full', 'cursor-pointer');
+                    
+                    div.appendChild(radio);
+                    div.appendChild(label);
+                    div.addEventListener('click', () => {
+                        radio.checked = true;
+                        handleOptionSelect();
+                    });
+
+                    optionsContainerEl.appendChild(div);
+                });
+                
+                document.querySelectorAll(`input[name="question${index}"]`).forEach(radio => {
+                    radio.addEventListener('change', handleOptionSelect);
+                });
+                updatePalette();
+            }
+            
+            function handleOptionSelect() {
+                const selectedOption = document.querySelector(`input[name="question${currentQuestionIndex}"]:checked`);
+                if(selectedOption) {
+                    userAnswers[currentQuestionIndex] = selectedOption.value;
+                    questionStatus[currentQuestionIndex] = 'answered';
+                }
+            }
+
+            function navigateToQuestion(index) {
+                if (index < 0 || index >= TOTAL_QUESTIONS) return;
+                displayQuestion(index);
+            }
+
+            function startTimer(startTimeInSeconds) {
+                let totalSeconds = startTimeInSeconds;
+                timerInterval = setInterval(() => {
+                    if (totalSeconds <= 0) {
+                        clearInterval(timerInterval);
+                        calculateAndShowResults(); // Auto-submit when time is up
+                        return;
+                    }
+                    totalSeconds--;
+                    timeRemainingInSeconds = totalSeconds;
+                    const minutes = Math.floor(totalSeconds / 60);
+                    const seconds = totalSeconds % 60;
+                    timerEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                }, 1000);
+            }
+
+            function calculateAndShowResults() {
+                clearInterval(timerInterval);
+                let score = 0;
+                let correct = 0;
+                let incorrect = 0;
+
+                for (let i = 0; i < TOTAL_QUESTIONS; i++) {
+                    if (userAnswers[i] !== null) {
+                        if (userAnswers[i] === questions[i].correctAnswer) {
+                            score += MARKS_CORRECT;
+                            correct++;
+                        } else {
+                            score += MARKS_INCORRECT;
+                            incorrect++;
+                        }
+                    }
+                }
+                
+                const unattemptedCount = TOTAL_QUESTIONS - (correct + incorrect);
+
+                document.getElementById('totalScore').textContent = score.toFixed(2);
+                document.getElementById('correctAnswers').textContent = correct;
+                document.getElementById('incorrectAnswers').textContent = incorrect;
+                document.getElementById('unattempted').textContent = unattemptedCount;
+
+                quizView.classList.add('hidden');
+                resultView.classList.remove('hidden');
+            }
+            
+            function showExplanations() {
+                const container = document.getElementById('explanationsContainer');
+                container.innerHTML = '';
+
+                questions.forEach((q, i) => {
+                    const div = document.createElement('div');
+                    div.classList.add('p-4', 'rounded-lg', 'border');
+
+                    let userAnswer = userAnswers[i];
+                    let statusClass = '';
+
+                    if (userAnswer === null) statusClass = 'border-gray-300 bg-gray-50';
+                    else if (userAnswer === q.correctAnswer) statusClass = 'border-green-300 bg-green-50';
+                    else statusClass = 'border-red-300 bg-red-50';
+                    
+                    div.classList.add(...statusClass.split(' '));
+
+                    div.innerHTML = `
+                        <p class="font-bold text-lg text-gray-800 mb-2">Q ${i + 1}: ${q.question.replace(/\n/g, '<br>')}</p>
+                        <p class="text-sm font-medium"><strong>Correct Answer:</strong> <span class="text-green-700">${q.correctAnswer}</span></p>
+                        <p class="text-sm font-medium"><strong>Your Answer:</strong> <span class="${userAnswer === q.correctAnswer ? 'text-green-700' : 'text-red-700'}">${userAnswer || 'Not Answered'}</span></p>
+                        <p class="mt-2 text-gray-600"><strong>Explanation:</strong> ${q.explanation}</p>
+                    `;
+                    container.appendChild(div);
+                });
+
+                resultView.classList.add('hidden');
+                explanationsView.classList.remove('hidden');
+            }
+
+            // --- EVENT LISTENERS ---
+            startQuizBtn.addEventListener('click', () => {
+                instructionsView.classList.add('hidden');
+                quizView.classList.remove('hidden');
+                displayQuestion(0);
+                startTimer(timeRemainingInSeconds);
+            });
+
+            saveNextBtn.addEventListener('click', () => {
+                if (currentQuestionIndex < TOTAL_QUESTIONS - 1) {
+                    navigateToQuestion(currentQuestionIndex + 1);
+                } else {
+                    navigateToQuestion(0); // Loop back to the first question
+                }
+            });
+            
+            clearResponseBtn.addEventListener('click', () => {
+                userAnswers[currentQuestionIndex] = null;
+                questionStatus[currentQuestionIndex] = 'not-answered';
+                displayQuestion(currentQuestionIndex);
+                updatePalette();
+            });
+            
+            submitQuizBtn.addEventListener('click', () => {
+                clearInterval(timerInterval);
+                submitModal.classList.remove('hidden');
+            });
+
+            confirmSubmitBtn.addEventListener('click', () => {
+                submitModal.classList.add('hidden');
+                calculateAndShowResults();
+            });
+
+            cancelSubmitBtn.addEventListener('click', () => {
+                submitModal.classList.add('hidden');
+                startTimer(timeRemainingInSeconds); // Resume timer
+            });
+            
+            viewExplanationsBtn.addEventListener('click', showExplanations);
+
+            backToResultBtn.addEventListener('click', () => {
+                explanationsView.classList.add('hidden');
+                resultView.classList.remove('hidden');
+            });
+
+            // --- INITIALIZE ---
+            initializeQuiz();
+        });
+    </script>
+</body>
+</html>
+
+
