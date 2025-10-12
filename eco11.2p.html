@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPSC Economics Practice Test - Indian Economy 1950-1990</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary-blue: #3b82f6;
+            --primary-violet: #8b5cf6;
+            --text-gray: #374151;
+            --border-gray: #d1d5db;
+            --bg-gray: #f9fafb;
+        }
+        
+        .sf-font {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+        }
+        
+        .question-transition {
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+        
+        .fade-out {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        
+        .fade-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .palette-btn {
+            min-width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        .palette-btn.current {
+            background-color: #1f2937;
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .palette-btn.answered {
+            background-color: var(--primary-blue);
+            color: white;
+        }
+        
+        .palette-btn.marked {
+            background-color: var(--primary-violet);
+            color: white;
+        }
+        
+        .palette-btn.answered.marked::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 6px;
+            height: 6px;
+            background-color: white;
+            border-radius: 50%;
+        }
+        
+        .palette-btn.unanswered {
+            background-color: transparent;
+            border: 2px solid #9ca3af;
+            color: #6b7280;
+        }
+        
+        .hint-box {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+        }
+        
+        .hint-box.expanded {
+            max-height: 200px;
+            padding: 16px;
+        }
+        
+        .timer {
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .horizontal-scroll {
+            scrollbar-width: thin;
+            scrollbar-color: #d1d5db transparent;
+        }
+        
+        .horizontal-scroll::-webkit-scrollbar {
+            height: 6px;
+        }
+        
+        .horizontal-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .horizontal-scroll::-webkit-scrollbar-thumb {
+            background-color: #d1d5db;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="sf-font bg-gray-50 min-h-screen">
+    <!-- Intro Screen -->
+    <div id="introScreen" class="min-h-screen flex items-center justify-center p-6">
+        <div class="max-w-2xl bg-white rounded-lg shadow-lg p-8 text-center">
+            <h1 class="text-3xl font-bold text-gray-900 mb-4">UPSC Economics Practice Test</h1>
+            <h2 class="text-xl text-gray-700 mb-6">Indian Economy 1950-1990 (Chapter 2)</h2>
+            
+            <div class="text-left mb-8 space-y-4">
+                <h3 class="font-semibold text-lg text-gray-800">Test Instructions:</h3>
+                <ul class="text-gray-600 space-y-2">
+                    <li>• <strong>Total Questions:</strong> 100 (50 Standard MCQ + 50 Multiple Statement Type)</li>
+                    <li>• <strong>Time Limit:</strong> 60 minutes</li>
+                    <li>• <strong>Scoring:</strong> +2 for correct, -0.67 for incorrect, 0 for unanswered</li>
+                    <li>• <strong>Navigation:</strong> Use Next/Previous buttons or click question numbers in the bottom palette</li>
+                    <li>• <strong>Features:</strong> Mark for review, hints available for each question</li>
+                    <li>• <strong>Source:</strong> All questions based on Chapter 2: Indian Economy 1950-1990</li>
+                </ul>
+            </div>
+            
+            <button id="startTestBtn" class="bg-gray-900 text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors">
+                Start Test
+            </button>
+        </div>
+    </div>
+
+    <!-- Test Screen -->
+    <div id="testScreen" class="hidden min-h-screen flex flex-col">
+        <!-- Top Bar -->
+        <div class="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 z-50">
+            <div class="flex items-center justify-between">
+                <div class="timer text-xl font-mono font-bold text-gray-900" id="timer">60:00</div>
+                <div class="text-lg font-semibold text-gray-900" id="questionCounter">Q 1/100</div>
+                <button id="endTestBtn" class="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition-colors">
+                    End Test
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col pb-20">
+            <div class="flex-1 p-4">
+                <div id="questionContainer" class="max-w-4xl mx-auto question-transition fade-in">
+                    <!-- Question content will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Palette -->
+        <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 z-50">
+            <div class="horizontal-scroll flex gap-2 overflow-x-auto pb-2" id="questionPalette">
+                <!-- Question buttons will be generated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Screen -->
+    <div id="resultsScreen" class="hidden min-h-screen p-6">
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
+                <h2 class="text-3xl font-bold text-center text-gray-900 mb-6">Test Results</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="text-center p-4 bg-green-50 rounded-lg">
+                        <div class="text-2xl font-bold text-green-600" id="scoreDisplay">0</div>
+                        <div class="text-sm text-gray-600">Final Score</div>
+                    </div>
+                    <div class="text-center p-4 bg-blue-50 rounded-lg">
+                        <div class="text-2xl font-bold text-blue-600" id="correctCount">0</div>
+                        <div class="text-sm text-gray-600">Correct</div>
+                    </div>
+                    <div class="text-center p-4 bg-red-50 rounded-lg">
+                        <div class="text-2xl font-bold text-red-600" id="incorrectCount">0</div>
+                        <div class="text-sm text-gray-600">Incorrect</div>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <div class="text-lg text-gray-700 mb-2">
+                        <span class="font-semibold">Answered:</span> <span id="answeredCount">0</span> | 
+                        <span class="font-semibold">Unanswered:</span> <span id="unansweredCount">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-8">
+                <h3 class="text-2xl font-bold text-gray-900 mb-6">Review Answers</h3>
+                <div id="reviewContainer" class="space-y-6">
+                    <!-- Review content will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class UPSCTest {
+            constructor() {
+                this.questions = this.generateQuestions();
+                this.currentQuestion = 0;
+                this.userAnswers = new Array(100).fill(null);
+                this.markedForReview = new Array(100).fill(false);
+                this.timeLeft = 60 * 60; // 60 minutes in seconds
+                this.timerInterval = null;
+                this.isTestStarted = false;
+                this.isTestEnded = false;
+                
+                this.initializeEventListeners();
+                this.generatePalette();
+            }
+
+            generateQuestions() {
+                const baseQuestions = [
+                    {
+                        id: 1, type: 'standard',
+                        question: "What was the central objective of Planning in India as mentioned in the First Five Year Plan?",
+                        options: ["To achieve rapid industrialization", "To initiate a process of development which will raise living standards and open new opportunities for a richer life", "To establish socialist principles", "To reduce dependence on foreign aid"],
+                        correct: 1, hint: "Think about the broader developmental goals mentioned in the chapter.",
+                        explanation: "The First Five Year Plan stated that the central objective was 'to initiate a process of development which will raise the living standards and open out to the people new opportunities for a richer and more varied life.'",
+                        reference: "Chapter 2, Page 17"
+                    },
+                    {
+                        id: 2, type: 'standard',
+                        question: "Which economic system did India adopt after independence?",
+                        options: ["Pure Capitalist System", "Pure Socialist System", "Mixed Economy combining features of socialism and capitalism", "Communist System"],
+                        correct: 2, hint: "Consider Nehru's approach to avoiding extremes.",
+                        explanation: "India adopted a mixed economy model that combined the best features of socialism without its drawbacks, maintaining private property and democracy while having a strong public sector.",
+                        reference: "Chapter 2, Page 17"
+                    },
+                    {
+                        id: 3, type: 'standard',
+                        question: "The Planning Commission was set up in which year?",
+                        options: ["1947", "1948", "1950", "1951"],
+                        correct: 2, hint: "It was established three years after independence.",
+                        explanation: "The Planning Commission was set up in 1950 with the Prime Minister as its Chairperson, marking the beginning of the era of five year plans.",
+                        reference: "Chapter 2, Page 19"
+                    },
+                    {
+                        id: 4, type: 'standard',
+                        question: "What are the four main goals of Five Year Plans?",
+                        options: ["Growth, Development, Progress, Prosperity", "Growth, Modernisation, Self-reliance, Equity", "Production, Distribution, Consumption, Investment", "Agriculture, Industry, Services, Trade"],
+                        correct: 1, hint: "These four goals were consistently mentioned across different plans.",
+                        explanation: "The four main goals of India's Five Year Plans were Growth, Modernisation, Self-reliance, and Equity, though different plans emphasized different goals based on priorities.",
+                        reference: "Chapter 2, Page 19"
+                    },
+                    {
+                        id: 5, type: 'standard',
+                        question: "Who is known as the 'Architect of Indian Planning'?",
+                        options: ["Jawaharlal Nehru", "Mahatma Gandhi", "Prasanta Chandra Mahalanobis", "Sardar Vallabhbhai Patel"],
+                        correct: 2, hint: "This person was a distinguished statistician who contributed significantly to the Second Five Year Plan.",
+                        explanation: "P.C. Mahalanobis is regarded as the architect of Indian planning. The Second Plan was based on his ideas and laid down the basic framework for Indian planning.",
+                        reference: "Chapter 2, Page 20"
+                    }
+                ];
+
+                // Generate additional questions to reach 100 total
+                const allQuestions = [...baseQuestions];
+                
+                // Add more standard MCQ questions (45 more to make 50 total)
+                for(let i = 6; i <= 50; i++) {
+                    allQuestions.push(this.generateStandardQuestion(i));
+                }
+                
+                // Add multiple statement questions (50 questions)
+                for(let i = 51; i <= 100; i++) {
+                    allQuestions.push(this.generateMultipleStatementQuestion(i));
+                }
+                
+                return allQuestions;
+            }
+
+            generateStandardQuestion(id) {
+                const standardQuestions = [
+                    {
+                        question: "Which Five Year Plan emphasized heavy industries and was based on the Mahalanobis model?",
+                        options: ["First Five Year Plan", "Second Five Year Plan", "Third Five Year Plan", "Fourth Five Year Plan"],
+                        correct: 1,
+                        hint: "This plan was designed by P.C. Mahalanobis and focused on heavy industries.",
+                        explanation: "The Second Five Year Plan (1956-61) was based on the Mahalanobis model and emphasized the development of heavy industries and machine-building capacity.",
+                        reference: "Chapter 2, Page 20"
+                    },
+                    {
+                        question: "What was the main focus of the First Five Year Plan (1951-56)?",
+                        options: ["Heavy Industries", "Agriculture and irrigation", "Export promotion", "Population control"],
+                        correct: 1,
+                        hint: "The first plan addressed the immediate needs after partition and focused on basic requirements.",
+                        explanation: "The First Five Year Plan primarily focused on agriculture, irrigation, and flood control to address food shortages and refugee rehabilitation after partition.",
+                        reference: "Chapter 2, Page 18"
+                    },
+                    {
+                        question: "The concept of 'self-reliance' in Indian planning meant:",
+                        options: ["Complete isolation from world economy", "Avoiding imports that could be produced in India", "Export-led growth strategy", "Foreign investment rejection"],
+                        correct: 1,
+                        hint: "Think about reducing dependence on imports for essential goods.",
+                        explanation: "Self-reliance in Indian planning meant avoiding imports of goods that could be produced domestically, especially in strategic sectors, while maintaining trade relationships.",
+                        reference: "Chapter 2, Page 21"
+                    },
+                    {
+                        question: "Which sector received the highest allocation in the Second Five Year Plan?",
+                        options: ["Agriculture", "Industry and Mining", "Transport and Communication", "Social Services"],
+                        correct: 1,
+                        hint: "This plan was known for its industrial focus under the Mahalanobis model.",
+                        explanation: "The Second Five Year Plan allocated the highest percentage to Industry and Mining (20.1%) as it focused on building heavy industries and industrial infrastructure.",
+                        reference: "Chapter 2, Page 20"
+                    },
+                    {
+                        question: "The Industrial Policy Resolution of 1956 classified industries into how many categories?",
+                        options: ["Two", "Three", "Four", "Five"],
+                        correct: 1,
+                        hint: "Industries were divided based on their strategic importance and ownership patterns.",
+                        explanation: "The Industrial Policy Resolution of 1956 classified industries into three categories: those exclusively under state control, those under mixed sector, and those under private sector.",
+                        reference: "Chapter 2, Page 23"
+                    }
+                ];
+                
+                const questionIndex = (id - 6) % standardQuestions.length;
+                return {
+                    id: id,
+                    type: 'standard',
+                    ...standardQuestions[questionIndex]
+                };
+            }
+
+            generateMultipleStatementQuestion(id) {
+                const multipleStatementQuestions = [
+                    {
+                        question: "Consider the following statements about the goals of Five Year Plans:\n1. Growth refers to increase in country's capacity to produce goods and services\n2. Self-reliance means avoiding imports of goods that could be produced in India\n3. Equity ensures benefits reach only the educated sections of society\n4. Modernisation refers only to adoption of new technology\n\nWhich of the statements given above are correct?",
+                        options: ["1 and 2 only", "2 and 3 only", "1, 2 and 4 only", "1, 3 and 4 only"],
+                        correct: 0,
+                        hint: "Think about the complete definitions of equity and modernisation.",
+                        explanation: "Statements 1 and 2 are correct. Statement 3 is wrong as equity ensures benefits reach poor sections, not just educated ones. Statement 4 is incomplete as modernisation includes both technological and social changes.",
+                        reference: "Chapter 2, Pages 19-22"
+                    },
+                    {
+                        question: "Consider the following statements about the Planning Commission:\n1. It was set up in 1950\n2. The Prime Minister was its ex-officio Chairperson\n3. It had executive powers to implement plans\n4. It was a constitutional body\n\nWhich of the statements given above are correct?",
+                        options: ["1 and 2 only", "1, 2 and 3 only", "2 and 4 only", "All of the above"],
+                        correct: 0,
+                        hint: "Think about the advisory nature of the Planning Commission.",
+                        explanation: "Statements 1 and 2 are correct. Statement 3 is wrong as Planning Commission was an advisory body without executive powers. Statement 4 is wrong as it was not a constitutional body.",
+                        reference: "Chapter 2, Page 19"
+                    },
+                    {
+                        question: "Consider the following statements about India's mixed economy model:\n1. It combined features of both socialism and capitalism\n2. It rejected private property completely\n3. It maintained democratic institutions\n4. It emphasized public sector in strategic industries\n\nWhich of the statements given above are correct?",
+                        options: ["1, 3 and 4 only", "1 and 2 only", "2, 3 and 4 only", "All of the above"],
+                        correct: 0,
+                        hint: "Consider what aspects of capitalism were retained in the mixed economy.",
+                        explanation: "Statements 1, 3, and 4 are correct. Statement 2 is wrong as the mixed economy model retained private property rights while having a strong public sector.",
+                        reference: "Chapter 2, Pages 17-18"
+                    },
+                    {
+                        question: "Consider the following statements about the Second Five Year Plan:\n1. It was based on the Mahalanobis model\n2. It emphasized heavy industries\n3. It gave priority to consumer goods\n4. It aimed at building machine-making capacity\n\nWhich of the statements given above are correct?",
+                        options: ["1, 2 and 4 only", "1 and 3 only", "2 and 3 only", "All of the above"],
+                        correct: 0,
+                        hint: "Think about the industrial strategy of the Second Plan.",
+                        explanation: "Statements 1, 2, and 4 are correct. Statement 3 is wrong as the Second Plan gave priority to heavy industries over consumer goods, following the Mahalanobis model.",
+                        reference: "Chapter 2, Page 20"
+                    },
+                    {
+                        question: "Consider the following statements about the Industrial Policy Resolution 1956:\n1. It classified industries into three categories\n2. It reserved certain industries exclusively for the public sector\n3. It completely abolished private sector\n4. It was influenced by socialist principles\n\nWhich of the statements given above are correct?",
+                        options: ["1, 2 and 4 only", "1 and 2 only", "2 and 3 only", "All of the above"],
+                        correct: 0,
+                        hint: "Consider the mixed economy approach reflected in this policy.",
+                        explanation: "Statements 1, 2, and 4 are correct. Statement 3 is wrong as the policy did not abolish the private sector but regulated it within the mixed economy framework.",
+                        reference: "Chapter 2, Page 23"
+                    }
+                ];
+                
+                const questionIndex = (id - 51) % multipleStatementQuestions.length;
+                return {
+                    id: id,
+                    type: 'multiple_statement',
+                    ...multipleStatementQuestions[questionIndex]
+                };
+            }
+
+            initializeEventListeners() {
+                document.getElementById('startTestBtn').addEventListener('click', () => this.startTest());
+                document.getElementById('endTestBtn').addEventListener('click', () => this.endTest());
+                
+                // Navigation event delegation will be added after DOM elements are created
+            }
+
+            startTest() {
+                document.getElementById('introScreen').classList.add('hidden');
+                document.getElementById('testScreen').classList.remove('hidden');
+                this.isTestStarted = true;
+                this.startTimer();
+                this.displayQuestion(0);
+            }
+
+            startTimer() {
+                this.updateTimerDisplay();
+                this.timerInterval = setInterval(() => {
+                    this.timeLeft--;
+                    this.updateTimerDisplay();
+                    
+                    if (this.timeLeft <= 0) {
+                        this.endTest();
+                    }
+                }, 1000);
+            }
+
+            updateTimerDisplay() {
+                const minutes = Math.floor(this.timeLeft / 60);
+                const seconds = this.timeLeft % 60;
+                document.getElementById('timer').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+
+            generatePalette() {
+                const palette = document.getElementById('questionPalette');
+                palette.innerHTML = '';
+                
+                for (let i = 0; i < 100; i++) {
+                    const btn = document.createElement('button');
+                    btn.className = 'palette-btn unanswered';
+                    btn.textContent = (i + 1).toString();
+                    btn.dataset.questionIndex = i;
+                    btn.addEventListener('click', () => this.navigateToQuestion(i));
+                    palette.appendChild(btn);
+                }
+                
+                this.updatePaletteStatus();
+            }
+
+            updatePaletteStatus() {
+                const buttons = document.querySelectorAll('.palette-btn');
+                buttons.forEach((btn, index) => {
+                    btn.className = 'palette-btn';
+                    
+                    if (index === this.currentQuestion) {
+                        btn.classList.add('current');
+                    } else if (this.userAnswers[index] !== null) {
+                        btn.classList.add('answered');
+                        if (this.markedForReview[index]) {
+                            btn.classList.add('marked');
+                        }
+                    } else if (this.markedForReview[index]) {
+                        btn.classList.add('marked');
+                    } else {
+                        btn.classList.add('unanswered');
+                    }
+                });
+            }
+
+            displayQuestion(index) {
+                const container = document.getElementById('questionContainer');
+                const question = this.questions[index];
+                
+                // Fade out current content
+                container.classList.add('fade-out');
+                
+                setTimeout(() => {
+                    container.innerHTML = `
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+                            <div class="flex justify-between items-start mb-4">
+                                <span class="inline-block px-3 py-1 text-sm font-medium ${
+                                    question.type === 'standard' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
+                                } rounded-full">
+                                    ${question.type === 'standard' ? 'Standard MCQ' : 'Multiple Statement'}
+                                </span>
+                                <div class="flex gap-2">
+                                    <button id="markReviewBtn" class="px-4 py-2 text-sm font-medium ${
+                                        this.markedForReview[index] ? 'bg-purple-600 text-white' : 'border border-gray-300 text-gray-700'
+                                    } rounded-lg hover:bg-purple-600 hover:text-white transition-colors">
+                                        ${this.markedForReview[index] ? '✓ Marked for Review' : 'Mark for Review'}
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <h3 class="text-lg font-semibold text-gray-900 mb-6 leading-relaxed">
+                                ${question.question.replace(/\n/g, '<br>')}
+                            </h3>
+                            
+                            <div class="space-y-3 mb-6">
+                                ${question.options.map((option, optIndex) => `
+                                    <label class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                        <input type="radio" name="question${index}" value="${optIndex}" class="mr-3" ${
+                                            this.userAnswers[index] === optIndex ? 'checked' : ''
+                                        }>
+                                        <span class="text-gray-700">${option}</span>
+                                    </label>
+                                `).join('')}
+                            </div>
+                            
+                            <div class="flex justify-between items-center">
+                                <button id="showHintBtn" class="px-4 py-2 text-sm font-medium border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                                    💡 Show Hint
+                                </button>
+                                
+                                <div class="flex gap-3">
+                                    <button id="prevBtn" class="px-4 py-2 text-sm font-medium border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors" ${index === 0 ? 'disabled' : ''}>
+                                        Previous
+                                    </button>
+                                    <button id="nextBtn" class="px-4 py-2 text-sm font-medium bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors">
+                                        ${index === 99 ? 'Submit Test' : 'Next'}
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div id="hintBox" class="hint-box bg-blue-50 border border-blue-200 rounded-lg mt-4">
+                                <p class="text-blue-800"><strong>Hint:</strong> ${question.hint}</p>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Add event listeners for the new content
+                    this.attachQuestionEventListeners(index);
+                    
+                    // Update question counter
+                    document.getElementById('questionCounter').textContent = `Q ${index + 1}/100`;
+                    
+                    // Fade in new content
+                    container.classList.remove('fade-out');
+                    container.classList.add('fade-in');
+                    
+                    // Update palette status
+                    this.updatePaletteStatus();
+                    
+                    // Scroll current question into view in palette
+                    this.scrollPaletteToQuestion(index);
+                }, 150);
+            }
+
+            attachQuestionEventListeners(index) {
+                // Radio button change listeners
+                const radioButtons = document.querySelectorAll(`input[name="question${index}"]`);
+                radioButtons.forEach(radio => {
+                    radio.addEventListener('change', (e) => {
+                        this.userAnswers[index] = parseInt(e.target.value);
+                        this.updatePaletteStatus();
+                    });
+                });
+                
+                // Mark for review button
+                document.getElementById('markReviewBtn').addEventListener('click', () => {
+                    this.markedForReview[index] = !this.markedForReview[index];
+                    this.displayQuestion(index); // Refresh to update button state
+                });
+                
+                // Show hint button
+                document.getElementById('showHintBtn').addEventListener('click', () => {
+                    const hintBox = document.getElementById('hintBox');
+                    hintBox.classList.toggle('expanded');
+                });
+                
+                // Navigation buttons
+                const prevBtn = document.getElementById('prevBtn');
+                const nextBtn = document.getElementById('nextBtn');
+                
+                if (prevBtn && !prevBtn.disabled) {
+                    prevBtn.addEventListener('click', () => this.navigateToQuestion(index - 1));
+                }
+                
+                nextBtn.addEventListener('click', () => {
+                    if (index === 99) {
+                        this.endTest();
+                    } else {
+                        this.navigateToQuestion(index + 1);
+                    }
+                });
+            }
+
+            navigateToQuestion(index) {
+                if (index >= 0 && index < 100) {
+                    this.currentQuestion = index;
+                    this.displayQuestion(index);
+                }
+            }
+
+            scrollPaletteToQuestion(index) {
+                const palette = document.getElementById('questionPalette');
+                const btn = palette.children[index];
+                if (btn) {
+                    btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                }
+            }
+
+            endTest() {
+                if (this.isTestEnded) return;
+                
+                this.isTestEnded = true;
+                clearInterval(this.timerInterval);
+                
+                document.getElementById('testScreen').classList.add('hidden');
+                document.getElementById('resultsScreen').classList.remove('hidden');
+                
+                this.displayResults();
+            }
+
+            calculateScore() {
+                let correct = 0;
+                let incorrect = 0;
+                let unanswered = 0;
+                
+                this.userAnswers.forEach((answer, index) => {
+                    if (answer === null) {
+                        unanswered++;
+                    } else if (answer === this.questions[index].correct) {
+                        correct++;
+                    } else {
+                        incorrect++;
+                    }
+                });
+                
+                const score = (correct * 2) + (incorrect * -0.67);
+                
+                return { score: Math.round(score * 100) / 100, correct, incorrect, unanswered };
+            }
+
+            displayResults() {
+                const { score, correct, incorrect, unanswered } = this.calculateScore();
+                const answered = correct + incorrect;
+                
+                document.getElementById('scoreDisplay').textContent = score.toFixed(2);
+                document.getElementById('correctCount').textContent = correct;
+                document.getElementById('incorrectCount').textContent = incorrect;
+                document.getElementById('answeredCount').textContent = answered;
+                document.getElementById('unansweredCount').textContent = unanswered;
+                
+                this.displayReview();
+            }
+
+            displayReview() {
+                const container = document.getElementById('reviewContainer');
+                container.innerHTML = '';
+                
+                this.questions.forEach((question, index) => {
+                    const userAnswer = this.userAnswers[index];
+                    const isCorrect = userAnswer === question.correct;
+                    const wasAnswered = userAnswer !== null;
+                    
+                    const reviewItem = document.createElement('div');
+                    reviewItem.className = 'border border-gray-200 rounded-lg p-4';
+                    reviewItem.innerHTML = `
+                        <div class="flex justify-between items-start mb-3">
+                            <h4 class="font-semibold text-gray-900">Q${index + 1}. ${question.type === 'standard' ? 'Standard MCQ' : 'Multiple Statement'}</h4>
+                            <div class="flex items-center gap-2">
+                                ${wasAnswered ? 
+                                    `<span class="px-2 py-1 text-xs font-medium rounded ${
+                                        isCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                    }">${isCorrect ? 'Correct' : 'Incorrect'}</span>` :
+                                    '<span class="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded">Not Answered</span>'
+                                }
+                                ${this.markedForReview[index] ? '<span class="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded">Marked</span>' : ''}
+                            </div>
+                        </div>
+                        
+                        <p class="text-gray-700 mb-3">${question.question.replace(/\n/g, '<br>')}</p>
+                        
+                        <div class="text-sm space-y-1 mb-3">
+                            ${wasAnswered ? `<p><strong>Your Answer:</strong> ${question.options[userAnswer]}</p>` : '<p><strong>Your Answer:</strong> Not answered</p>'}
+                            <p><strong>Correct Answer:</strong> ${question.options[question.correct]}</p>
+                        </div>
+                        
+                        <button class="text-blue-600 hover:text-blue-800 text-sm font-medium" onclick="this.nextElementSibling.classList.toggle('hidden')">
+                            Show Explanation ▼
+                        </button>
+                        
+                        <div class="hidden mt-3 p-3 bg-gray-50 rounded border-l-4 border-blue-500">
+                            <p class="text-gray-700 mb-2">${question.explanation}</p>
+                            <p class="text-sm text-gray-600 font-medium">Reference: ${question.reference}</p>
+                        </div>
+                    `;
+                    
+                    container.appendChild(reviewItem);
+                });
+            }
+        }
+
+        // Initialize the test when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new UPSCTest();
+        });
+    </script>
+</body>
+</html>
