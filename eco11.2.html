@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPSC Practice Test: Indian Economy (1950-1990)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Base font settings */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Custom scrollbar for a cleaner look */
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Smooth transition for question content */
+        .question-content {
+            transition: opacity 0.3s ease-in-out;
+        }
+        .fade-out {
+            opacity: 0;
+        }
+        .fade-in {
+            opacity: 1;
+        }
+
+        /* Smooth transition for hint box and explanation box */
+        .hint-box, .explanation-box {
+            transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out, padding 0.5s ease-in-out;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+        .hint-box.expanded, .explanation-box.expanded {
+            max-height: 500px; /* Large enough for content */
+            opacity: 1;
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+        .explanation-box.expanded {
+             padding-top: 0.75rem;
+             padding-bottom: 0.75rem;
+        }
+
+
+        /* Palette item transitions */
+        .palette-item {
+            transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+        }
+
+        /* Custom styles for radio */
+        input[type="radio"] {
+            accent-color: #374151;
+        }
+        
+        /* Ensure review section text is always visible and formatted */
+        #review-section .text-sm {
+          color: #374151; /* A dark gray for readability */
+        }
+        #review-section p, #review-section li {
+          margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <div id="start-screen" class="min-h-screen flex flex-col items-center justify-center p-4 text-center">
+        <div class="bg-white p-8 rounded-lg shadow-xl max-w-2xl w-full">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">UPSC Practice Test</h1>
+            <h2 class="text-xl md:text-2xl text-gray-700 mb-6">Indian Economy: 1950-1990</h2>
+            <p class="text-gray-600 mb-8">This test contains 100 questions based on the provided NCERT chapter. You will have <strong>60 minutes</strong> to complete it. The scoring follows the UPSC pattern (+2 for correct, -0.67 for incorrect).</p>
+            <button id="start-test-btn" class="bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 px-8 rounded-lg text-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50">
+                Start Test
+            </button>
+        </div>
+    </div>
+
+    <div id="test-screen" class="hidden">
+        <header class="sticky top-0 bg-white shadow-md z-10">
+            <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+                <div id="timer" class="text-lg font-bold text-gray-800">60:00</div>
+                <div class="text-sm font-semibold text-gray-600">
+                    Question <span id="current-q-num">1</span>/100
+                </div>
+                <button id="end-test-btn" class="bg-red-600 hover:bg-red-700 text-white text-sm font-bold py-2 px-4 rounded-lg transition-colors">End Test</button>
+            </div>
+        </header>
+
+        <main class="container mx-auto p-4 md:p-8 mb-24">
+            <div id="quiz-container" class="bg-white p-6 rounded-lg shadow-lg">
+                <!-- Question content will be dynamically inserted here -->
+            </div>
+        </main>
+
+        <footer class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-300 p-2 z-10">
+            <div id="question-palette" class="flex items-center space-x-2 overflow-x-auto pb-2 custom-scrollbar">
+                <!-- Palette buttons will be dynamically inserted here -->
+            </div>
+        </footer>
+    </div>
+
+    <div id="results-screen" class="hidden min-h-screen bg-gray-100 py-10 px-4">
+        <div class="max-w-4xl mx-auto bg-white p-6 md:p-8 rounded-lg shadow-xl">
+            <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-4">Test Results</h1>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center mb-8">
+                <div class="bg-green-100 p-4 rounded-lg">
+                    <p class="text-lg font-semibold text-green-800">Correct</p>
+                    <p id="correct-count" class="text-3xl font-bold text-green-600">0</p>
+                </div>
+                <div class="bg-red-100 p-4 rounded-lg">
+                    <p class="text-lg font-semibold text-red-800">Incorrect</p>
+                    <p id="incorrect-count" class="text-3xl font-bold text-red-600">0</p>
+                </div>
+                <div class="bg-gray-200 p-4 rounded-lg">
+                    <p class="text-lg font-semibold text-gray-800">Unanswered</p>
+                    <p id="unanswered-count" class="text-3xl font-bold text-gray-600">0</p>
+                </div>
+            </div>
+            <div class="text-center bg-gray-800 text-white p-6 rounded-lg mb-8">
+                <p class="text-xl font-semibold">Final Score</p>
+                <p id="final-score" class="text-5xl font-bold tracking-tight my-2">0.00</p>
+                <p class="text-sm text-gray-300">Out of 200</p>
+            </div>
+
+            <div id="review-section">
+                <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Review Answers</h2>
+                <div id="review-answers-container" class="space-y-4">
+                    <!-- Review content will be dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full text-center">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">End Test?</h3>
+            <p class="text-gray-600 mb-6">Are you sure you want to end the test? You will not be able to change your answers.</p>
+            <div class="flex justify-center space-x-4">
+                <button id="modal-cancel-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg transition-colors">Cancel</button>
+                <button id="modal-confirm-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition-colors">End Test</button>
+            </div>
+        </div>
+    </div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+// All 100 questions are stored in this array.
+// FIX: Corrected data typos in questions 93 and 99.
+const questions = [
+    // Standard MCQs (50)
+    {
+        id: 1, type: 'mcq',
+        text: "According to the text, what was the central objective of planning in post-independence India as stated in the First Five Year Plan?",
+        options: [
+            { id: 'a', text: "To rapidly industrialize the economy through private enterprises." },
+            { id: 'b', text: "To initiate a development process that raises living standards and provides new opportunities." },
+            { id: 'c', text: "To establish a socialist state identical to the former Soviet Union." },
+            { id: 'd', text: "To achieve self-sufficiency by completely closing the economy to foreign trade." }
+        ],
+        correctOptionId: 'b',
+        hint: "Look for the quote from the First Five Year Plan at the beginning of the chapter.",
+        explanation: "The text explicitly quotes the First Five Year Plan: 'The central objective of Planning in India... is to initiate a process of development which will raise the living standards and open out to the people new opportunities for a richer and more varied life.'",
+        reference: "Chapter 2, Page 2"
+    },
+    {
+        id: 2, type: 'mcq',
+        text: "Which economic system primarily relies on market forces of supply and demand to answer the three fundamental economic questions?",
+        options: [
+            { id: 'a', text: "Socialism" },
+            { id: 'b', text: "Mixed Economy" },
+            { id: 'c', text: "Capitalism" },
+            { id: 'd', text: "Command Economy" }
+        ],
+        correctOptionId: 'c',
+        hint: "This system is also referred to as a market economy in the text.",
+        explanation: "Box 2.1 states, 'In a market economy, also called capitalism, only those consumer goods will be produced that are in demand... One answer to these questions is to depend on the market forces of supply and demand.'",
+        reference: "Chapter 2, Page 3"
+    },
+    {
+        id: 3, type: 'mcq',
+        text: "Who is regarded as the 'architect of Indian planning', particularly for his contribution to the Second Five Year Plan?",
+        options: [
+            { id: 'a', text: "Jawaharlal Nehru" },
+            { id: 'b', text: "Sukhamoy Chakravarty" },
+            { id: 'c', text: "V.M. Dandekar" },
+            { id: 'd', text: "Prasanta Chandra Mahalanobis" }
+        ],
+        correctOptionId: 'd',
+        hint: "Box 2.3 is dedicated to this individual, a renowned statistician.",
+        explanation: "Box 2.3 is titled 'Mahalanobis: the Architect of Indian Planning'. It states, 'The Second Plan... was based on the ideas of Mahalanobis. In that sense, he can be regarded as the architect of Indian planning.'",
+        reference: "Chapter 2, Page 5"
+    },
+    {
+        id: 4, type: 'mcq',
+        text: "What does the term 'Growth' as a goal of Five Year Plans primarily refer to?",
+        options: [
+            { id: 'a', text: "Increase in the country's population." },
+            { id: 'b', text: "Increase in the country's capacity to produce goods and services." },
+            { id: 'c', text: "Increase in the export volume of agricultural products." },
+            { id: 'd', text: "Increase in foreign exchange reserves." }
+        ],
+        correctOptionId: 'b',
+        hint: "The text links this goal to the country's productive capital and GDP.",
+        explanation: "The section 'The Goals of Five Year Plans' defines Growth as: 'It refers to increase in the country's capacity to produce the output of goods and services within the country.'",
+        reference: "Chapter 2, Page 4"
+    },
+    {
+        id: 5, type: 'mcq',
+        text: "The policy of 'self-reliance' during the first seven Five Year Plans primarily aimed at:",
+        options: [
+            { id: 'a', text: "Maximizing exports to developed nations." },
+            { id: 'b', text: "Avoiding imports of goods that could be produced domestically." },
+            { id: 'c', text: "Depending solely on domestic technology without any foreign collaboration." },
+            { id: 'd', text: "Promoting foreign direct investment in all sectors." }
+        ],
+        correctOptionId: 'b',
+        hint: "This policy was driven by a desire to reduce dependence on foreign countries, especially for food.",
+        explanation: "The text defines self-reliance as 'avoiding imports of those goods which could be produced in India itself. This policy was considered a necessity in order to reduce our dependence on foreign countries...'",
+        reference: "Chapter 2, Page 6-7"
+    },
+    {
+        id: 6, type: 'mcq',
+        text: "What was the main purpose of the 'land ceiling' policy implemented as part of land reforms?",
+        options: [
+            { id: 'a', text: "To fix the minimum size of land an individual must own for agriculture." },
+            { id: 'b', text: "To encourage cooperative farming on large tracts of land." },
+            { id: 'c', text: "To reduce the concentration of land ownership in a few hands." },
+            { id: 'd', text: "To convert all agricultural land into government-owned property." }
+        ],
+        correctOptionId: 'c',
+        hint: "This policy was aimed at promoting equity in the agricultural sector.",
+        explanation: "The text states, 'The purpose of land ceiling was to reduce the concentration of land ownership in a few hands.' This was done by 'fixing the maximum size of land which could be owned by an individual.'",
+        reference: "Chapter 2, Page 8"
+    },
+    {
+        id: 7, type: 'mcq',
+        text: "The Green Revolution refers to the large increase in the production of food grains resulting from:",
+        options: [
+            { id: 'a', text: "The expansion of land under cultivation." },
+            { id: 'b', text: "The use of High Yielding Variety (HYV) seeds." },
+            { id: 'c', text: "The nationalization of all agricultural land." },
+            { id: 'd', text: "The implementation of large-scale irrigation projects alone." }
+        ],
+        correctOptionId: 'b',
+        hint: "This revolution was technological in nature and focused on specific inputs.",
+        explanation: "The text defines the Green Revolution as 'the large increase in production of food grains resulting from the use of high yielding variety (HYV) seeds especially for wheat and rice.'",
+        reference: "Chapter 2, Page 9"
+    },
+    {
+        id: 8, type: 'mcq',
+        text: "What is meant by 'marketed surplus' in the context of agriculture?",
+        options: [
+            { id: 'a', text: "The excess produce stored by the government in case of a famine." },
+            { id: 'b', text: "The portion of agricultural produce which is sold in the market by farmers." },
+            { id: 'c', text: "The total agricultural output of a country in a given year." },
+            { id: 'd', text: "The amount of produce a farmer consumes for their own family." }
+        ],
+        correctOptionId: 'b',
+        hint: "This concept relates to the produce that enters the wider economy, not what is consumed on the farm.",
+        explanation: "The text defines marketed surplus as: 'The portion of agricultural produce which is sold in the market by the farmers is called marketed surplus.'",
+        reference: "Chapter 2, Page 10"
+    },
+    {
+        id: 9, type: 'mcq',
+        text: "The Industrial Policy Resolution (IPR) of 1956 formed the basis of which Five Year Plan?",
+        options: [
+            { id: 'a', text: "First Five Year Plan" },
+            { id: 'b', text: "Second Five Year Plan" },
+            { id: 'c', text: "Fourth Five Year Plan" },
+            { id: 'd', text: "Fifth Five Year Plan" }
+        ],
+        correctOptionId: 'b',
+        hint: "This plan is noted for trying to build a 'socialist pattern of society'.",
+        explanation: "The text states, 'In accordance with the goal of the state controlling the commanding heights of the economy, the Industrial Policy Resolution of 1956 was adopted. This resolution formed the basis of the Second Five Year Plan...'",
+        reference: "Chapter 2, Page 14"
+    },
+    {
+        id: 10, type: 'mcq',
+        text: "The trade strategy adopted during the first seven plans, characterized by replacing imports with domestic production, is called:",
+        options: [
+            { id: 'a', text: "Export Promotion" },
+            { id: 'b', text: "Free Trade Policy" },
+            { id: 'c', text: "Import Substitution" },
+            { id: 'd', text: "Laissez-faire" }
+        ],
+        correctOptionId: 'c',
+        hint: "This was described as an 'inward looking trade strategy'.",
+        explanation: "The text clearly states, 'In the first seven plans, trade was characterised by what is commonly called an inward looking trade strategy. Technically, this strategy is called import substitution. This policy aimed at replacing or substituting imports with domestic production.'",
+        reference: "Chapter 2, Page 15"
+    },
+    { id: 11, type: 'mcq', text: "According to Box 2.1, in a socialist society, how is the distribution of goods and services supposed to be based?", correctOptionId: 'd', options: [{ id: 'a', text: 'On purchasing power' }, { id: 'b', text: 'On individual consumer desires' }, { id: 'c', text: 'On market demand' }, { id: 'd', text: 'On what people need' }], hint: "This contrasts directly with how distribution works in a capitalist society.", explanation: "Box 2.1 explains, 'In principle, distribution under socialism is supposed to be based on what people need and not on what they can afford to purchase.'", reference: "Chapter 2, Page 3" },
+    { id: 12, type: 'mcq', text: "What is a 'perspective plan' as described in Box 2.2?", correctOptionId: 'a', options: [{ id: 'a', text: 'A long-term plan spanning twenty years.' }, { id: 'b', text: 'The annual budget of a Five Year Plan.' }, { id: 'c', text: 'A plan focused solely on the agricultural sector.' }, { id: 'd', text: 'A plan that is revised every year.' }], hint: "This type of plan provides a long-term vision for the shorter Five Year Plans.", explanation: "Box 2.2 defines it as: 'This long-term plan is called ‘perspective plan’. The five year plans were supposed to provide the basis for the perspective plan.' It also mentions a period of twenty years.", reference: "Chapter 2, Page 4" },
+    { id: 13, type: 'mcq', text: "Besides the adoption of new technology, what other aspect does 'modernisation' as a planning goal refer to?", correctOptionId: 'c', options: [{ id: 'a', text: 'The growth of urban population.' }, { id: 'b', text: 'The increase in national income.' }, { id: 'c', text: 'Changes in social outlook, such as gender equality.' }, { id: 'd', text: 'The establishment of heavy industries.' }], hint: "The text provides a specific social example related to the role of women.", explanation: "The text clarifies, 'However, modernisation does not refer only to the use of new technology but also to changes in social outlook such as the recognition that women should have the same rights as men.'", reference: "Chapter 2, Page 6" },
+    { id: 14, type: 'mcq', text: "The 'land to the tiller' policy was based on the idea that ownership provides cultivators with:", correctOptionId: 'b', options: [{ id: 'a', text: 'Access to government subsidies.' }, { id: 'b', text: 'Incentive to increase output.' }, { id: 'c', text: 'Exemption from agricultural taxes.' }, { id: 'd', text: 'Political power in local bodies.' }], hint: "Box 2.5 discusses the relationship between ownership and productivity.", explanation: "Box 2.5 explains, 'The policy of ‘land to the tiller’ is based on the idea that the cultivators will take more interest—they will have more incentive—in increasing output if they are the owners of the land.'", reference: "Chapter 2, Page 8" },
+    { id: 15, type: 'mcq', text: "In the first phase of the Green Revolution (mid-1960s to mid-1970s), the use of HYV seeds was largely restricted to:", correctOptionId: 'a', options: [{ id: 'a', text: 'More affluent states and wheat-growing regions.' }, { id: 'b', text: 'Small and marginal farmers across the country.' }, { id: 'c', text: 'Dryland farming areas in central India.' }, { id: 'd', text: 'Eastern states like West Bengal and Odisha.' }], hint: "The initial phase had limitations in terms of geographical and crop coverage.", explanation: "The text notes, '...in the first phase of the green revolution (approximately mid 1960s upto mid 1970s), the use of HYV seeds was restricted to the more affluent states such as Punjab, Andhra Pradesh and Tamil Nadu. Further, the use of HYV seeds primarily benefited the wheat-growing regions only.'", reference: "Chapter 2, Page 9" },
+    { id: 16, type: 'mcq', text: "What was a significant positive outcome of the Green Revolution for the Indian economy as a whole?", correctOptionId: 'd', options: [{ id: 'a', text: 'It eliminated rural poverty completely.' }, { id: 'b', text: 'It made agricultural exports the primary source of GDP.' }, { id: 'c', text: 'It solved the problem of unemployment in rural areas.' }, { id: 'd', text: 'It enabled India to achieve self-sufficiency in food grains.' }], hint: "Think about India's dependence on other nations for food before this period.", explanation: "A key achievement mentioned is: 'The spread of green revolution technology enabled India to achieve self-sufficiency in food grains; India no longer had to be at the mercy of America, or any other nation, for meeting its food requirements.'", reference: "Chapter 2, Page 9" },
+    { id: 17, type: 'mcq', text: "According to some economists, why was it necessary to provide subsidies for the adoption of HYV technology initially?", correctOptionId: 'c', options: [{ id: 'a', text: 'To benefit the fertilizer industry primarily.' }, { id: 'b', text: 'To discourage farmers from using traditional seeds.' }, { id: 'c', text: 'To encourage farmers to test the new, risky technology.' }, { id: 'd', text: 'To fulfill a condition for receiving foreign aid.' }], hint: "Farmers are often hesitant to adopt new methods that they perceive as risky.", explanation: "The text explains the rationale: 'It is generally agreed that it was necessary to use subsidies to provide an incentive for adoption of the new HYV technology... Any new technology will be looked upon as being risky by farmers. Subsidies were, therefore, needed to encourage farmers to test the new technology.'", reference: "Chapter 2, Page 11" },
+    { id: 18, type: 'mcq', text: "What was a major failure of the economic policies during 1950-1990 regarding the workforce?", correctOptionId: 'b', options: [{ id: 'a', text: 'A decline in the overall population growth rate.' }, { id: 'b', text: 'The industrial and service sectors did not absorb the agricultural workforce.' }, { id: 'c', text: 'A significant shortage of labor in the industrial sector.' }, { id: 'd', text: 'The complete migration of the rural population to urban areas.' }], hint: "Consider the percentage of the population that remained dependent on agriculture despite changes in GDP composition.", explanation: "The text points this out as a failure: 'The answer is that the industrial sector and the service sector did not absorb the people working in the agricultural sector. Many economists call this an important failure of our policies followed during 1950-1990.'", reference: "Chapter 2, Page 12" },
+    { id: 19, type: 'mcq', text: "Why did the government have to play an extensive role in promoting the industrial sector after independence?", correctOptionId: 'a', options: [{ id: 'a', text: 'Private industrialists lacked capital and the market was not large enough.' }, { id: 'b', text: 'The Indian constitution completely banned private industry.' }, { id: 'c', text: 'Foreign companies refused to invest in India.' }, { id: 'd', text: 'There was a complete absence of entrepreneurial skills in the country.' }], hint: "The text points to two principal reasons related to capital and market size.", explanation: "The text explains, 'Indian industrialists did not have the capital to undertake investment in industrial ventures required... nor was the market big enough to encourage industrialists to undertake major projects... It is principally for these reasons that the erstwhile governments had to play an extensive role...'", reference: "Chapter 2, Page 13-14" },
+    { id: 20, type: 'mcq', text: "Under the IPR 1956, how was the private sector kept under state control even for industries left to it?", correctOptionId: 'd', options: [{ id: 'a', text: 'Through direct government ownership of a majority stake.' }, { id: 'b', text: 'By fixing the prices of all privately manufactured goods.' }, { id: 'c', text: 'By mandating that all profits be shared with the government.' }, { id: 'd', text: 'Through a system of licenses for starting or expanding industries.' }], hint: "This system of control was later termed the 'permit license raj'.", explanation: "The text clarifies, 'Although there was a category of industries left to the private sector, the sector was kept under state control through a system of licenses. No new industry was allowed unless a license was obtained from the government.'", reference: "Chapter 2, Page 14" },
+    { id: 21, type: 'mcq', text: "The Karve Committee (1955) noted the possibility of using which type of industries for promoting rural development?", correctOptionId: 'c', options: [{ id: 'a', text: 'Heavy engineering industries' }, { id: 'b', text: 'Multinational corporations' }, { id: 'c', text: 'Small-scale industries' }, { id: 'd',text: 'Public sector undertakings' }], hint: "This committee's name is associated with Village and Small-Scale Industries.", explanation: "The text states, 'In 1955, the Village and Small-Scale Industries Committee, also called the Karve Committee, noted the possibility of using small-scale industries for promoting rural development.'", reference: "Chapter 2, Page 14" },
+    { id: 22, type: 'mcq', text: "What are 'tariffs' when used as a tool for protection from imports?", correctOptionId: 'b', options: [{ id: 'a', text: 'A limit on the quantity of goods that can be imported.' }, { id: 'b', text: 'A tax on imported goods.' }, { id: 'c', text: 'A government subsidy for domestic producers.' }, { id: 'd', text: 'A ban on specific imported items.' }], hint: "This tool makes imported goods more expensive.", explanation: "The text defines tariffs as: 'Tariffs are a tax on imported goods; they make imported goods more expensive and discourage their use.'", reference: "Chapter 2, Page 15" },
+    { id: 23, type: 'mcq', text: "What was a major criticism of the performance of many public sector enterprises during the 1950-1990 period?", correctOptionId: 'a', options: [{ id: 'a', text: 'Many incurred huge losses but continued to function.' }, { id: 'b', text: 'They focused too much on profit-making instead of welfare.' }, { id: 'c', text: 'They did not provide job security to their workers.' }, { id: 'd', text: 'They were not allowed to enter vital sectors of the economy.' }], hint: "The text discusses the issue of their financial viability and the difficulty in closing them.", explanation: "A key criticism mentioned is: 'Many public sector firms incurred huge losses but continued to function because it is difficult to close a government undertaking even if it is a drain on the nation’s limited resources.'", reference: "Chapter 2, Page 17" },
+    { id: 24, type: 'mcq', text: "The excessive regulation under the 'permit license raj' had what negative effect on industrialists?", correctOptionId: 'd', options: [{ id: 'a', text: 'It forced them to pay very high wages to workers.' }, { id: 'b', text: 'It prevented them from accessing domestic capital.' }, { id: 'c', text: 'It encouraged too much competition between firms.' }, { id: 'd', text: 'They spent more time obtaining licenses than improving products.' }], hint: "This system shifted the focus from innovation to lobbying.", explanation: "The text critiques this system by stating, 'More time was spent by industrialists in trying to obtain a license or lobby with the concerned ministries rather than on thinking about how to improve their products.'", reference: "Chapter 2, Page 17" },
+    { id: 25, type: 'mcq', text: "What was the main reason Indian producers had little incentive to improve quality under the protectionist trade policy?", correctOptionId: 'b', options: [{ id: 'a', text: 'Lack of skilled labor and technology.' }, { id: 'b', text: 'They had a captive domestic market with no competition.' }, { id: 'c', text: 'Government regulations explicitly forbade quality improvements.' }, { id: 'd', text: 'Consumers preferred low-quality goods due to low prices.' }], hint: "The absence of foreign competition played a crucial role.", explanation: "The text argues, 'The producers were aware that they had a captive market; so they had no incentive to improve the quality of their goods. Why should they think of improving quality when they could sell low quality items at a high price?'", reference: "Chapter 2, Page 17" },
+    { id: 26, type: 'mcq', text: "The Planning Commission was set up in 1950 with whom as its Chairperson?", correctOptionId: 'a', options: [{ id: 'a', text: 'The Prime Minister' }, { id: 'b', text: 'The President' }, { id: 'c', text: 'The Finance Minister' }, { id: 'd', text: 'The Governor of the Reserve Bank' }], hint: "This is a standard fact about the structure of the Planning Commission.", explanation: "The text mentions, 'In 1950, the Planning Commission was set up with the Prime Minister as its Chairperson.'", reference: "Chapter 2, Page 4" },
+    { id: 27, type: 'mcq', text: "What is a good indicator of economic growth, often described as the 'size of the cake'?", correctOptionId: 'c', options: [{ id: 'a', text: 'Human Development Index (HDI)' }, { id: 'b', text: 'Net National Product (NNP)' }, { id: 'c', text: 'Gross Domestic Product (GDP)' }, { id: 'd', text: 'Foreign Direct Investment (FDI)' }], hint: "This indicator measures the market value of all final goods and services produced in a country.", explanation: "The text states, 'A good indicator of economic growth, in the language of economics, is steady increase in the Gross Domestic Product (GDP)... You can think of the GDP as a cake and growth is increase in the size of the cake.'", reference: "Chapter 2, Page 4 & 6" },
+    { id: 28, type: 'mcq', text: "What peculiar 'structural change' did the Indian economy witness by 1990, as mentioned in Box 2.4?", correctOptionId: 'd', options: [{ id: 'a', text: 'The industrial sector’s share of GDP surpassed that of agriculture and services combined.' }, { id: 'b', text: 'The agricultural sector’s share of GDP remained constant at over 70%.' }, { id: 'c', text: 'The economy transitioned directly from an industrial to an agricultural base.' }, { id: 'd', text: 'The service sector’s share of GDP grew to be more than agriculture or industry.' }], hint: "This pattern is usually seen in highly developed nations, making India's case unusual for its development stage at the time.", explanation: "Box 2.4 highlights this peculiarity: 'But by 1990 the share of the service sector was 40.59 per cent, more than that of agriculture or industry, like what we find in developed nations.'", reference: "Chapter 2, Page 6" },
+    { id: 29, type: 'mcq', text: "The abolition of intermediaries like zamindars meant that approximately how many tenants came into direct contact with the government?", correctOptionId: 'b', options: [{ id: 'a', text: '20 lakh' }, { id: 'b', text: '200 lakh' }, { id: 'c', text: '50 lakh' }, { id: 'd', text: '500 lakh' }], hint: "The text provides a specific figure for the number of tenants freed from exploitation.", explanation: "The text quantifies the impact: 'The abolition of intermediaries meant that some 200 lakh tenants came into direct contact with the government—they were thus freed from being exploited by the zamindars.'", reference: "Chapter 2, Page 8" },
+    { id: 30, type: 'mcq', text: "In which two states were land reforms particularly successful due to government commitment?", correctOptionId: 'a', options: [{ id: 'a', text: 'Kerala and West Bengal' }, { id: 'b', text: 'Punjab and Haryana' }, { id: 'c', text: 'Gujarat and Maharashtra' }, { id: 'd', text: 'Uttar Pradesh and Bihar' }], hint: "These states had governments that were strongly committed to the 'land to the tiller' policy.", explanation: "The text explicitly states, 'Land reforms were successful in Kerala and West Bengal because these states had governments committed to the policy of land to the tiller.'", reference: "Chapter 2, Page 9" },
+    { id: 31, type: 'mcq', text: "How did the government attempt to ensure that small farmers also benefited from the Green Revolution?", correctOptionId: 'd', options: [{ id: 'a', text: 'By reserving HYV seeds exclusively for them.' }, { id: 'b', text: 'By banning large farmers from using the new technology.' }, { id: 'c', text: 'By providing free land to all small farmers.' }, { id: 'd', text: 'By providing loans at low interest rates and subsidised fertilisers.' }], hint: "The government took steps to mitigate the risk that only wealthy farmers could afford the new inputs.", explanation: "The text says, 'The government provided loans at a low interest rate to small farmers and subsidised fertilisers so that small farmers could also have access to the needed inputs.' This prevented the technology from favoring only the rich.", reference: "Chapter 2, Page 11" },
+    { id: 32, type: 'mcq', text: "What argument do some economists make for continuing with agricultural subsidies?", correctOptionId: 'c', options: [{ id: 'a', text: 'Subsidies primarily benefit the fertilizer industry, which is crucial for the economy.' }, { id: 'b', text: 'Subsidies encourage wasteful use of resources, which boosts economic activity.' }, { id: 'c', text: 'Farming is still a risky business and most farmers are too poor to afford inputs without them.' }, { id: 'd', text: 'They are a permanent feature of a socialist economy and cannot be removed.' }], hint: "This argument is rooted in the concepts of risk and equity for poor farmers.", explanation: "The text presents the counter-argument: '...the government should continue with agricultural subsidies because farming in India continues to be a risky business. Most farmers are very poor and they will not be able to afford the required inputs without subsidies.'", reference: "Chapter 2, Page 11" },
+    { id: 33, type: 'mcq', text: "Between 1950 and 1990, the proportion of GDP contributed by agriculture declined significantly. What happened to the population depending on it?", correctOptionId: 'a', options: [{ id: 'a', text: 'It did not decline significantly.' }, { id: 'b', text: 'It declined at the same rate as the GDP share.' }, { id: 'c', text: 'It increased significantly.' }, { id: 'd', text: 'It was completely absorbed by the service sector.' }], hint: "This disparity is highlighted as a major failure of the planning process.", explanation: "The text points out the imbalance: 'In India, between 1950 and 1990, the proportion of GDP contributed by agriculture declined significantly but not the population depending on it (67.5 per cent in 1950 to 64.9 per cent by 1990).'", reference: "Chapter 2, Page 12" },
+    { id: 34, type: 'mcq', text: "Which two well-managed iron and steel firms existed at the time of independence?", correctOptionId: 'b', options: [{ id: 'a', text: 'One in Bhilai and one in Rourkela.' }, { id: 'b', text: 'One in Jamshedpur and one in Kolkata.' }, { id: 'c', text: 'One in Bokaro and one in Durgapur.' }, { id: 'd', text: 'One in Salem and one in Visakhapatnam.' }], hint: "The text mentions these two as part of the very narrow industrial base.", explanation: "The text states, 'There were two well-managed iron and steel firms - one in Jamshedpur and the other in Kolkata - but, obviously, we needed to expand the industrial base...'", reference: "Chapter 2, Page 13" },
+    { id: 35, type: 'mcq', text: "What was the investment limit for a small-scale industrial unit in 1950?", correctOptionId: 'c', options: [{ id: 'a', text: 'Rupees one lakh' }, { id: 'b', text: 'Rupees ten lakh' }, { id: 'c', text: 'Rupees five lakh' }, { id: 'd', text: 'Rupees one crore' }], hint: "This limit has changed significantly over time; the question asks for the 1950 value.", explanation: "The text specifies the original limit: 'In 1950 a small-scale industrial unit was one which invested a maximum of rupees five lakh...'", reference: "Chapter 2, Page 14-15" },
+    { id: 36, type: 'mcq', text: "What are 'quotas' as a form of protection from imports?", correctOptionId: 'a', options: [{ id: 'a', text: 'They specify the quantity of goods which can be imported.' }, { id: 'b', text: 'They are a tax levied on imported goods.' }, { id: 'c', text: 'They are a quality standard that imports must meet.' }, { id: 'd', text: 'They are subsidies given to domestic producers.' }], hint: "This is a quantitative restriction, unlike tariffs which are a price-based restriction.", explanation: "The text defines quotas as: 'Quotas specify the quantity of goods which can be imported.'", reference: "Chapter 2, Page 15" },
+    { id: 37, type: 'mcq', text: "By 1990-91, the proportion of GDP contributed by the industrial sector increased to what percentage from 13% in 1950-51?", correctOptionId: 'd', options: [{ id: 'a', text: '15.5%' }, { id: 'b', text: '40.5%' }, { id: 'c', text: '34.9%' }, { id: 'd', text: '24.6%' }], hint: "This rise is noted as an impressive achievement and an important indicator of development.", explanation: "The text provides the specific figures: 'The proportion of GDP contributed by the industrial sector increased in the period from 13 per cent in 1950-51 to 24.6 per cent in 1990-91.'", reference: "Chapter 2, Page 15" },
+    { id: 38, type: 'mcq', text: "Which service industry continued to be reserved for the public sector until the late 1990s, leading to long waits for connections?", correctOptionId: 'c', options: [{ id: 'a', text: 'Banking' }, { id: 'b', text: 'Aviation' }, { id: 'c', text: 'Telecommunication' }, { id: 'd', text: 'Insurance' }], hint: "The text uses this as an example of a service that the private sector could have provided.", explanation: "The text cites this as an example: 'An example is the provision of telecommunication service. This industry continued to be reserved for the Public Sector... Due to the absence of competition, even till the late 1990s, one had to wait for a long time to get a telephone connection.'", reference: "Chapter 2, Page 16" },
+    { id: 39, type: 'mcq', text: "The journal 'Sankhya' was started by P.C. Mahalanobis and serves as a forum for which group of professionals?", correctOptionId: 'b', options: [{ id: 'a', text: 'Historians' }, { id: 'b', text: 'Statisticians' }, { id: 'c', text: 'Sociologists' }, { id: 'd', text: 'Physicists' }], hint: "P.C. Mahalanobis was a renowned statistician.", explanation: "Box 2.3 notes, 'Mahalanobis established the Indian Statistical Institute (ISI) in Calcutta and started a journal, Sankhya, which still serves as a respected forum for statisticians to discuss their ideas.'", reference: "Chapter 2, Page 5" },
+    { id: 40, type: 'mcq', text: "Jawaharlal Nehru was most appealed by which economic ideology, although he sought a modified version for India?", correctOptionId: 'a', options: [{ id: 'a', text: 'Socialism' }, { id: 'b', text: 'Capitalism' }, { id: 'c', text: 'Mercantilism' }, { id: 'd', text: 'Anarchism' }], hint: "He was not in favor of the extreme version practiced in the Soviet Union.", explanation: "The text states, 'There are different types of economic systems... and among them, socialism appealed to Jawaharlal Nehru the most. However, he was not in favour of the kind of socialism established in the former Soviet Union...'", reference: "Chapter 2, Page 2" },
+    { id: 41, type: 'mcq', text: "According to the document, why did the low-cost housing for the poor not count as demand in a pure market economy?", correctOptionId: 'd', options: [{ id: 'a', text: 'Because the government provided it for free.' }, { id: 'b', text: 'Because there was no technology to build low-cost houses.' }, { id: 'c', text: 'Because the demand for luxury housing was higher.' }, { id: 'd', text: 'Because the poor lacked the purchasing power to back the demand.' }], hint: "In a capitalist system, 'need' is different from 'demand'.", explanation: "The text explains, 'Low cost housing for the poor is much needed but will not count as demand in the market sense because the poor do not have the purchasing power to back the demand.'", reference: "Chapter 2, Page 3" },
+    { id: 42, type: 'mcq', text: "The idea that planners may have to balance conflicting goals is illustrated with the example of modern technology conflicting with:", correctOptionId: 'c', options: [{ id: 'a', text: 'The goal of self-reliance.' }, { id: 'b', text: 'The goal of equity.' }, { id: 'c', text: 'The goal of increasing employment.' }, { id: 'd', text: 'The goal of economic growth.' }], hint: "Think about how technology can affect the need for human labor.", explanation: "Box 2.2 provides this example: 'For example, the goal of introducing modern technology may be in conflict with the goal of increasing employment if the technology reduces the need for labour.'", reference: "Chapter 2, Page 4" },
+    { id: 43, type: 'mcq', text: "The term 'equity' as a planning goal implies that every Indian should be able to meet basic needs and:", correctOptionId: 'a', options: [{ id: 'a', text: 'Inequality in the distribution of wealth should be reduced.' }, { id: 'b', text: 'Everyone should have the exact same income.' }, { id: 'c', text: 'Private property should be completely abolished.' }, { id: 'd', text: 'The country should focus only on helping the poor.' }], hint: "Equity is about fairness and reducing large disparities, not necessarily about absolute equality.", explanation: "The text defines the goal of equity as ensuring benefits reach the poor and that every Indian can meet basic needs like food, housing, education, and health care. It explicitly adds, '...and inequality in the distribution of wealth should be reduced.'", reference: "Chapter 2, Page 7" },
+    { id: 44, type: 'mcq', text: "At the time of independence, the land tenure system was characterized by intermediaries who primarily:", correctOptionId: 'b', options: [{ id: 'a', text: 'Invested heavily in farm improvements.' }, { id: 'b', text: 'Collected rent without contributing to improvements.' }, { id: 'c', text: 'Provided high-yielding seeds to the tillers.' }, { id: 'd', text: 'Organized farmers into successful cooperatives.' }], hint: "These intermediaries, like zamindars, were seen as exploitative.", explanation: "The text describes the system: '...the land tenure system was characterised by intermediaries (variously called zamindars, jagirdars etc.) who merely collected rent from the actual tillers of the soil without contributing towards improvements on the farm.'", reference: "Chapter 2, Page 8" },
+    { id: 45, type: 'mcq', text: "What was a major loophole used by big landlords to evade land ceiling legislation?", correctOptionId: 'd', options: [{ id: 'a', text: 'They declared their land as non-agricultural.' }, { id: 'b', text: 'They bribed officials to get exemptions.' }, { id: 'c', text: 'They exported all their produce so the law didn\'t apply.' }, { id: 'd', text: 'They registered their lands in the name of close relatives.' }], hint: "They exploited delays in implementation to circumvent the law.", explanation: "The text points out several hurdles, including: 'They used this delay to register their lands in the name of close relatives, thereby escaping from the legislation.'", reference: "Chapter 2, Page 9" },
+    { id: 46, type: 'mcq', text: "The benefits of the Green Revolution, such as a decline in relative food grain prices, particularly helped which group?", correctOptionId: 'a', options: [{ id: 'a', text: 'Low-income groups who spend a large part of their income on food.' }, { id: 'b', text: 'Large commercial farmers who could hoard produce.' }, { id: 'c', text: 'Urban factory owners who employed a large workforce.' }, { id: 'd', text: 'The government, by increasing tax revenue from agriculture.' }], hint: "Consider who is most affected by a change in the price of basic necessities.", explanation: "The text states, 'The low-income groups, who spend a large percentage of their income on food, benefited from this decline in relative prices.'", reference: "Chapter 2, Page 10" },
+    { id: 47, type: 'mcq', text: "One of the risks of HYV crops was that they were more prone to:", correctOptionId: 'c', options: [{ id: 'a', text: 'Drought conditions.' }, { id: 'b', text: 'Flooding.' }, { id: 'c', text: 'Attack by pests.' }, { id: 'd', text: 'Soil salinity.' }], hint: "This risk was a particular concern for small farmers who could lose everything.", explanation: "The text mentions the risks involved: 'Moreover, the HYV crops were also more prone to attack by pests and the small farmers who adopted this technology could lose everything in a pest attack.'", reference: "Chapter 2, Page 10" },
+    { id: 48, type: 'mcq', text: "Some economists argue that subsidies do not allow prices to indicate the supply of a good. According to this view, what do prices act as?", correctOptionId: 'b', options: [{ id: 'a', text: 'Profits' }, { id: 'b', text: 'Signals' }, { id: 'c', text: 'Liabilities' }, { id: 'd', text: 'Costs' }], hint: "Box 2.6 discusses how prices communicate information about scarcity.", explanation: "Box 2.6 is titled 'Prices as Signals' and it explains: 'It is important to understand that prices are signals about the availability of goods. If a good becomes scarce, its price will rise...'", reference: "Chapter 2, Page 12" },
+    { id: 49, type: 'mcq', text: "How did the industrial licensing policy aim to promote regional equality?", correctOptionId: 'a', options: [{ id: 'a', text: 'By making it easier to get a license for units in backward areas.' }, { id: 'b', text: 'By banning new industries in already developed regions.' }, { id: 'c', text: 'By forcing all industries to relocate to backward areas.' }, { id: 'd', text: 'By providing licenses only to entrepreneurs from backward areas.' }], hint: "The policy used incentives rather than compulsion.", explanation: "The text explains this aspect of the policy: 'This policy was used for promoting industry in backward regions; it was easier to obtain a license if the industrial unit was established in an economically backward area.'", reference: "Chapter 2, Page 14" },
+    { id: 50, type: 'mcq', text: "The New Economic Policy was initiated in 1991 primarily to:", correctOptionId: 'd', options: [{ id: 'a', text: 'Strengthen the public sector\'s control over the economy.' }, { id: 'b', text: 'Increase protection for domestic industries.' }, { id: 'c', text: 'Reintroduce the zamindari system.' }, { id: 'd', text: 'Make the Indian economy more efficient in a changing global scenario.' }], hint: "This policy was a response to the perceived failures and inefficiencies of the 1950-1990 period.", explanation: "The conclusion states, 'The need for reform of economic policy was widely felt in the context of changing global economic scenario, and the new economic policy was initiated in 1991 to make Indian economy more efficient.'", reference: "Chapter 2, Page 18" },
+
+    // Multiple-Statement MCQs (50)
+    {
+        id: 51, type: 'msq',
+        text: "With reference to the economic system adopted by post-independence India, consider the following statements: <br>1. India adopted an extreme version of socialism, abolishing all private property. <br>2. The chosen model was a mixed economy, combining features of both socialism and capitalism. <br>3. The system aimed to have a strong public sector alongside private property and democracy.",
+        options: [
+            { id: 'a', text: "1 and 3 only" },
+            { id: 'b', text: "2 and 3 only" },
+            { id: 'c', text: "2 only" },
+            { id: 'd', text: "1, 2 and 3" }
+        ],
+        correctOptionId: 'b',
+        hint: "Jawaharlal Nehru sympathized with socialism but did not favor the Soviet model for a democratic India.",
+        explanation: "Statement 1 is incorrect; the text explicitly states Nehru was 'not in favour of the kind of socialism established in the former Soviet Union' and that such a system isn't possible in a democracy. Statements 2 and 3 are correct. The text says leaders 'found the answer in an economic system which... combined the best features of socialism without its drawbacks,' and that 'India would be a socialist society with a strong public sector but also with private property and democracy.' This describes a mixed economy.",
+        reference: "Chapter 2, Page 2"
+    },
+    {
+        id: 52, type: 'msq',
+        text: "Which of the following are among the four main goals of India's Five Year Plans mentioned in the chapter? <br>1. Growth <br>2. Urbanization <br>3. Self-Reliance <br>4. Equity",
+        options: [
+            { id: 'a', text: "1, 2 and 3 only" },
+            { id: 'b', text: "1, 3 and 4 only" },
+            { id: 'c', text: "2 and 4 only" },
+            { id: 'd', text: "1, 2, 3 and 4" }
+        ],
+        correctOptionId: 'b',
+        hint: "The four goals are explicitly listed together in one section of the chapter.",
+        explanation: "The text clearly lists the four goals: 'The goals of the five year plans were: growth, modernisation, self-reliance and equity.' Urbanization is not listed as one of these primary goals. Therefore, statements 1, 3, and 4 are correct.",
+        reference: "Chapter 2, Page 4"
+    },
+    {
+        id: 53, type: 'msq',
+        text: "Regarding the Green Revolution, consider the following statements: <br>1. It required the use of fertilisers and pesticides in correct quantities. <br>2. It was initially successful in all states and for all crops simultaneously. <br>3. It permanently broke the stagnation in agriculture from the colonial rule.",
+        options: [
+            { id: 'a', text: "1 and 2 only" },
+            { id: 'b', text: "2 and 3 only" },
+            { id: 'c', text: "1 and 3 only" },
+            { id: 'd', text: "1, 2 and 3" }
+        ],
+        correctOptionId: 'c',
+        hint: "Think about the inputs required for HYV seeds and the phased implementation of the revolution.",
+        explanation: "Statement 1 is correct: 'The use of these seeds required the use of fertiliser and pesticide in the correct quantities'. Statement 2 is incorrect; the first phase was restricted to affluent states and primarily wheat. Statement 3 is correct: 'The stagnation in agriculture during the colonial rule was permanently broken by the green revolution.'",
+        reference: "Chapter 2, Page 9"
+    },
+    {
+        id: 54, type: 'msq',
+        text: "The Industrial Policy Resolution (IPR) of 1956 classified industries into categories. Which of the following accurately describe these categories? <br>1. Industries exclusively owned by the government. <br>2. Industries where the private sector could supplement the public sector, with the government taking sole responsibility for starting new units. <br>3. Industries that were to be in the private sector, but under state control through licenses.",
+        options: [
+            { id: 'a', text: "1 only" },
+            { id: 'b', text: "1 and 2 only" },
+            { id: 'c', text: "3 only" },
+            { id: 'd', text: "1, 2 and 3" }
+        ],
+        correctOptionId: 'd',
+        hint: "The resolution created a three-tiered structure for industrial ownership and control.",
+        explanation: "All three statements accurately describe the classification. The text lists them as: 'The first category comprised industries which would be exclusively owned by the government; the second category consisted of industries in which the private sector could supplement the efforts of the public sector...; the third category consisted of the remaining industries which were to be in the private sector.' It also adds that this third category was kept under state control via licenses.",
+        reference: "Chapter 2, Page 14"
+    },
+    {
+        id: 55, type: 'msq',
+        text: "Consider the following statements regarding the policy of 'import substitution': <br>1. It was an 'inward looking' trade strategy. <br>2. It aimed to protect domestic industries from foreign competition. <br>3. The primary tools used for this policy were tariffs and quotas.",
+        options: [
+            { id: 'a', text: "1 and 2 only" },
+            { id: 'b', text: "2 and 3 only" },
+            { id: 'c', text: "1 and 3 only" },
+            { id: 'd', text: "1, 2 and 3" }
+        ],
+        correctOptionId: 'd',
+        hint: "This policy was the cornerstone of India's trade strategy for decades.",
+        explanation: "All three statements are correct. The text describes it as an 'inward looking trade strategy' (Statement 1). It states that 'the government protected the domestic industries from foreign competition' (Statement 2). It also specifies the tools: 'Protection from imports took two forms: tariffs and quotas' (Statement 3).",
+        reference: "Chapter 2, Page 15"
+    },
+    { id: 56, type: 'msq', text: "In a capitalist economy as described in Box 2.1, which of the following are true? <br>1. Goods are produced based on what people need, regardless of their ability to pay. <br>2. The method of production (labor vs. capital) depends on which is cheaper. <br>3. Goods are distributed on the basis of Purchasing Power.", correctOptionId: 'c', options: [{ id: 'a', text: '1 and 2 only' }, { id: 'b', text: '3 only' }, { id: 'c', text: '2 and 3 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "This system prioritizes profitability and market signals over social needs.", explanation: "Statement 1 is incorrect; production is based on demand backed by purchasing power, not need. Statement 2 is correct: 'If labour is cheaper than capital, more labour-intensive methods of production will be used and vice-versa.' Statement 3 is correct: '...the goods produced are distributed among people not on the basis of what people need but on the basis of Purchasing Power'.", reference: "Chapter 2, Page 3" },
+    { id: 57, type: 'msq', text: "Which of the following statements about India's Five Year Plans are correct according to the text? <br>1. The concept was borrowed from the former Soviet Union. <br>2. The plans also included a long-term 'perspective plan' of twenty years. <br>3. Every goal of a plan was given equal importance in all the plans.", correctOptionId: 'b', options: [{ id: 'a', text: '1 only' }, { id: 'b', text: '1 and 2 only' }, { id: 'c', text: '2 and 3 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "Consider the origin of national planning, the time horizons involved, and the practical challenges of resource allocation.", explanation: "Statement 1 is correct: 'we borrowed this from the former Soviet Union'. Statement 2 is correct: 'what is to be achieved over a period of twenty years. This long-term plan is called ‘perspective plan’'. Statement 3 is incorrect: 'It will be unrealistic to expect all the goals of a plan to be given equal importance in all the plans.'", reference: "Chapter 2, Page 4" },
+    { id: 58, type: 'msq', text: "The goal of 'equity' in planning implies which of the following? <br>1. The benefits of economic prosperity should reach the poor. <br>2. The country can have high growth and modern technology even while most people live in poverty. <br>3. Inequality in the distribution of wealth should be reduced.", correctOptionId: 'd', options: [{ id: 'a', text: '1 and 2 only' }, { id: 'b', text: '2 and 3 only' }, { id: 'c', text: '3 only' }, { id: 'd', text: '1 and 3 only' }], hint: "Statement 2 describes the problem that the goal of equity aims to solve.", explanation: "Statement 1 is correct: 'It is important to ensure that the benefits of economic prosperity reach the poor sections'. Statement 2 describes a scenario that equity aims to prevent, not what it implies. Statement 3 is correct: '...inequality in the distribution of wealth should be reduced.'", reference: "Chapter 2, Page 7" },
+    { id: 59, type: 'msq', text: "Land reforms in independent India had which of the following objectives? <br>1. To abolish intermediaries like zamindars. <br>2. To promote equity in the agricultural sector. <br>3. To change the ownership of landholdings.", correctOptionId: 'a', options: [{ id: 'a', text: '1, 2 and 3' }, { id: 'b', text: '1 and 2 only' }, { id: 'c', text: '2 and 3 only' }, { id: 'd', text: '1 only' }], hint: "Land reforms were a comprehensive set of policies aimed at restructuring the agricultural landscape.", explanation: "All three statements are correct. The text mentions the goal was to 'abolish intermediaries' (Statement 1), 'promote equity in the agricultural sector' (Statement 2), and that land reforms 'primarily refer to change in the ownership of landholdings' (Statement 3).", reference: "Chapter 2, Page 8" },
+    { id: 60, type: 'msq', text: "Why was the implementation of land ceiling legislation met with hurdles? <br>1. Big landlords challenged the legislation in courts, causing delays. <br>2. The legislation itself had loopholes that were exploited. <br>3. There was a lack of political commitment in most states.", correctOptionId: 'd', options: [{ id: 'a', text: '1 only' }, { id: 'b', text: '2 and 3 only' }, { id: 'c', text: '1 and 2 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "The failure was a combination of legal challenges, legislative weaknesses, and political factors.", explanation: "All three statements are correct. The text mentions that landlords 'challenged the legislation in the courts' (Statement 1), the legislation 'had a lot of loopholes' (Statement 2), and that unlike Kerala and West Bengal, 'other states did not have the same level of commitment' (Statement 3).", reference: "Chapter 2, Page 9" },
+    { id: 61, type: 'msq', text: "The use of HYV seeds in the Green Revolution had which of the following requirements? <br>1. A regular supply of water and reliable irrigation. <br>2. Financial resources to purchase fertiliser and pesticide. <br>3. Application of inputs in correct proportions.", correctOptionId: 'a', options: [{ id: 'a', text: '1, 2 and 3' }, { id: 'b', text: '1 and 3 only' }, { id: 'c', text: '2 only' }, { id: 'd', text: '1 and 2 only' }], hint: "This technology was a package deal; the seeds alone were not enough.", explanation: "All three statements are correct. The text lists the requirements: 'required the use of fertiliser and pesticide in the correct quantities as well as regular supply of water' (Statements 1 and part of 3), 'required reliable irrigation facilities as well as the financial resources to purchase fertiliser and pesticide' (Statement 2 and part of 1), and 'the application of these inputs in correct proportions is vital' (Statement 3).", reference: "Chapter 2, Page 9" },
+    { id: 62, type: 'msq', text: "Consider the following statements about the debate over agricultural subsidies. <br>1. Some economists argue that once a technology is widely adopted, subsidies should be phased out. <br>2. A criticism is that a substantial amount of fertiliser subsidy benefits the fertiliser industry. <br>3. Those in favour of continuing subsidies argue that eliminating them would violate the goal of equity.", correctOptionId: 'd', options: [{ id: 'a', text: '1 and 2 only' }, { id: 'b', text: '2 and 3 only' }, { id: 'c', text: '1 and 3 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "The text presents a balanced view with arguments for and against subsidies.", explanation: "All three statements represent the arguments presented in the text. Statement 1 is the view that subsidies should be temporary. Statement 2 is a criticism of how the subsidy is distributed. Statement 3 is the counter-argument that removing subsidies would increase inequality between rich and poor farmers.", reference: "Chapter 2, Page 11" },
+    { id: 63, type: 'msq', text: "What were the reasons for giving the public sector a leading role in industrial development? <br>1. The decision to develop the Indian economy on socialist lines. <br>2. Private industrialists did not have enough capital for large investments. <br>3. The domestic market was not big enough to encourage major private projects.", correctOptionId: 'a', options: [{ id: 'a', text: '1, 2 and 3' }, { id: 'b', text: '1 and 2 only' }, { id: 'c', text: '2 and 3 only' }, { id: 'd', text: '1 only' }], hint: "The reasons were a mix of ideology and practical constraints of the time.", explanation: "All three reasons are cited in the text. Statement 1 refers to the 'socialist lines' policy. Statements 2 and 3 are listed as the principal reasons: lack of capital and insufficient market size for private players.", reference: "Chapter 2, Page 13-14" },
+    { id: 64, type: 'msq', text: "Small-scale industries (SSIs) were promoted for which of the following reasons? <br>1. They are believed to be more 'labour intensive' and generate more employment. <br>2. They could easily compete with large industrial firms without any support. <br>3. They were seen as a tool for promoting rural development.", correctOptionId: 'c', options: [{ id: 'a', text: '1 only' }, { id: 'b', text: '2 and 3 only' }, { id: 'c', text: '1 and 3 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "SSIs required protection because they could not compete with large firms.", explanation: "Statement 1 is correct: 'they use more labour than the large-scale industries and, therefore, generate more employment'. Statement 2 is incorrect; the text explicitly states 'these industries cannot compete with the big industrial firms'. Statement 3 is correct, as noted by the Karve Committee.", reference: "Chapter 2, Page 14-15" },
+    { id: 65, type: 'msq', text: "What were the positive achievements of India's industrial sector during the first seven plans? <br>1. The industrial sector became well-diversified by 1990. <br>2. The share of industry in GDP increased significantly. <br>3. Indigenous industries in electronics and automobiles developed due to protection.", correctOptionId: 'd', options: [{ id: 'a', text: '1 and 2 only' }, { id: 'b', text: '2 and 3 only' }, { id: 'c', text: '1 and 3 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "Despite criticisms, the industrial policy did have some notable successes.", explanation: "All three achievements are mentioned in the text. It notes the sector became 'well diversified' (Statement 1), the GDP share rose from 13% to 24.6% (Statement 2), and protection enabled the development of 'indigenous industries in the areas of electronics and automobile sectors' (Statement 3).", reference: "Chapter 2, Page 15-16" },
+    { id: 66, type: 'msq', text: "The criticism against the public sector's role included which of the following points? <br>1. State enterprises continued to produce goods that the private sector could have provided. <br>2. The public sector was meant to promote welfare, not earn profits, so financial losses were irrelevant. <br>3. It was difficult to close a loss-making government undertaking.", correctOptionId: 'b', options: [{ id: 'a', text: '1 and 2 only' }, { id: 'b', text: '1 and 3 only' }, { id: 'c', text: '2 and 3 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "Statement 2 is an argument in defense of the public sector, not a criticism.", explanation: "Statement 1 is a criticism, with telecommunication and bread manufacturing cited as examples. Statement 3 is also a criticism, noting they become a 'drain on the nation’s limited resources'. Statement 2 is presented as a counter-argument by some economists, not a criticism of its performance.", reference: "Chapter 2, Page 16-17" },
+    { id: 67, type: 'msq', text: "The policy of protection from foreign competition was criticized on which grounds? <br>1. It continued even after it proved to do more harm than good. <br>2. It forced Indian producers to become highly efficient and quality-conscious. <br>3. It gave Indian producers no incentive to improve the quality of their goods.", correctOptionId: 'c', options: [{ id: 'a', text: '1 only' }, { id: 'b', text: '2 only' }, { id: 'c', text: '1 and 3 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "The criticism focuses on the lack of incentive for improvement due to a captive market.", explanation: "Statement 1 is a valid criticism mentioned. Statement 2 is the opposite of what happened; the text argues competition forces efficiency, and its absence did the reverse. Statement 3 is a major point of criticism: 'they had no incentive to improve the quality of their goods.'", reference: "Chapter 2, Page 17" },
+    { id: 68, type: 'msq', text: "Consider the following statements about P.C. Mahalanobis. <br>1. He was educated at Cambridge University and was a Fellow of Britain's Royal Society. <br>2. He was receptive to criticism and invited economists who were critical of his ideas to advise him. <br>3. His approach to planning is universally accepted by economists today.", correctOptionId: 'a', options: [{ id: 'a', text: '1 and 2 only' }, { id: 'b', text: '2 and 3 only' }, { id: 'c', text: '1 and 3 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "The text praises his scholarly attitude but also notes that his ideas are now contested.", explanation: "Statement 1 is correct, as the text mentions his education and fellowship. Statement 2 is correct, highlighting his scholarly nature in listening to critics. Statement 3 is incorrect: 'Many economists today reject the approach to planning formulated by Mahalanobis'.", reference: "Chapter 2, Page 5" },
+    { id: 69, type: 'msq', text: "Which of the following are the three fundamental economic questions every society must answer, according to Box 2.1? <br>1. What goods and services should be produced? <br>2. How should goods and services be produced? <br>3. How should goods and services be distributed?", correctOptionId: 'd', options: [{ id: 'a', text: '1 and 2 only' }, { id: 'b', text: '2 and 3 only' }, { id: 'c', text: '1 and 3 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "These three questions form the basis of defining any economic system.", explanation: "All three are explicitly listed in Box 2.1 as the three questions every society has to answer: 'What goods and services should be produced in the country?', 'How should the goods and services be produced?', and 'How should the goods and services be distributed among people?'.", reference: "Chapter 2, Page 3" },
+    { id: 70, type: 'msq', text: "A socialist society, as described in the text, is characterized by: <br>1. The government deciding what goods are to be produced in accordance with societal needs. <br>2. The absence of private property, with everything owned by the state. <br>3. The desires of individual consumers being given the highest importance.", correctOptionId: 'b', options: [{ id: 'a', text: '1 only' }, { id: 'b', text: '1 and 2 only' }, { id: 'c', text: '2 and 3 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "This system prioritizes collective needs over individual consumer choice.", explanation: "Statement 1 is correct: 'the government decides what goods are to be produced in accordance with the needs of society.' Statement 2 is also correct: 'Strictly, a socialist society has no private property since everything is owned by the state.' Statement 3 is incorrect; the text explicitly states 'the desires of individual consumers are not given much importance.'", reference: "Chapter 2, Page 3" },
+    { id: 71, type: 'msq', text: "Consider the following statements about 'growth' as a planning objective. <br>1. It implies a larger stock of productive capital or supporting services. <br>2. A good indicator of economic growth is a steady increase in GDP. <br>3. The GDP of a country is derived solely from the industrial sector.", correctOptionId: 'a', options: [{ id: 'a', text: '1 and 2 only' }, { id: 'b', text: '2 and 3 only' }, { id: 'c', text: '1 and 3 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "GDP composition includes multiple sectors of the economy.", explanation: "Statement 1 is correct, as growth 'implies either a larger stock of productive capital, or a larger size of supporting services'. Statement 2 is correct, as GDP is cited as 'A good indicator of economic growth'. Statement 3 is incorrect; GDP is derived from 'the agricultural sector, the industrial sector and the service sector.'", reference: "Chapter 2, Page 4 & 6" },
+    { id: 72, type: 'msq', text: "The policy of self-reliance was considered a necessity for which of the following reasons? <br>1. To reduce dependence on foreign countries, especially for food. <br>2. A fear that dependence on foreign capital and technology could make India's sovereignty vulnerable. <br>3. To maximize the import of luxury goods to improve living standards.", correctOptionId: 'c', options: [{ id: 'a', text: '1 only' }, { id: 'b', text: '2 only' }, { id: 'c', text: '1 and 2 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "This policy was rooted in post-colonial anxieties about foreign influence and food security.", explanation: "Statements 1 and 2 are correct reasons provided in the text. Statement 3 is incorrect; in fact, the planners feared that foreign exchange might be wasted on luxury goods imports, which is a reason for restrictions, not self-reliance.", reference: "Chapter 2, Page 7" },
+    { id: 73, type: 'msq', text: "Which of the following groups did not benefit from the land reforms as intended? <br>1. Sharecroppers <br>2. Former zamindars who found loopholes in the law. <br>3. Landless agricultural labourers.", correctOptionId: 'd', options: [{ id: 'a', text: '1 and 2 only' }, { id: 'b', text: '2 and 3 only' }, { id: 'c', text: '1 and 3 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "The goal of equity was not fully served, as some groups were left out and others manipulated the system.", explanation: "Statement 1 and 3 are correct, as the text states 'the poorest of the agricultural labourers (such as sharecroppers and landless labourers) did not benefit from land reforms.' Statement 2 is also correct in the sense that they 'benefited' by evading the reforms, as 'former zamindars continued to own large areas of land by making use of some loopholes'. All three did not benefit as intended by the policy's goals.", reference: "Chapter 2, Page 9" },
+    { id: 74, type: 'msq', text: "The second phase of the Green Revolution (mid-1970s to mid-1980s) was characterized by: <br>1. The HYV technology spreading to a larger number of states. <br>2. The technology benefiting more varieties of crops, not just wheat. <br>3. A complete reversal to traditional farming methods.", correctOptionId: 'b', options: [{ id: 'a', text: '1 only' }, { id: 'b', text: '1 and 2 only' }, { id: 'c', text: '2 and 3 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "The second phase represented an expansion and diversification of the initial revolution.", explanation: "Statements 1 and 2 are correct. The text says, 'In the second phase of the green revolution... the HYV technology spread to a larger number of states and benefited more variety of crops.' Statement 3 is incorrect.", reference: "Chapter 2, Page 9" },
+    { id: 75, type: 'msq', text: "The Green Revolution enabled the government to build a stock of food grains. What was the purpose of this stock? <br>1. To be used in times of food shortage. <br>2. To be exported to other countries for profit. <br>3. To be used to control food grain prices in the market.", correctOptionId: 'a', options: [{ id: 'a', text: '1 only' }, { id: 'b', text: '1 and 2 only' }, { id: 'c', text: '2 and 3 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "Think about food security and managing crises.", explanation: "Statement 1 is the explicit purpose mentioned: '...to build a stock which could be used in times of food shortage.' While government stocks can influence prices (Statement 3), the primary purpose stated in this context is for shortages. Exporting for profit (Statement 2) is not mentioned as the goal of this buffer stock.", reference: "Chapter 2, Page 10" },
+    { id: 76, type: 'msq', text: "According to Box 2.6, subsidies on resources like electricity and water can lead to which of the following outcomes? <br>1. Wasteful use of the resources without concern for their scarcity. <br>2. Farmers cultivating water-intensive crops even in water-scarce regions. <br>3. Efficient use of resources as farmers have more capital to invest.", correctOptionId: 'c', options: [{ id: 'a', text: '1 only' }, { id: 'b', text: '3 only' }, { id: 'c', text: '1 and 2 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "Subsidies distort the price signals that would otherwise encourage conservation.", explanation: "Statements 1 and 2 are negative outcomes mentioned in the box. '...they will be used wastefully without any concern for their scarcity.' And 'Farmers will cultivate water intensive crops if water is supplied free, although the water resources in that region may be scarce...' Statement 3 is incorrect; the box argues subsidies provide an incentive for wasteful, not efficient, use.", reference: "Chapter 2, Page 12" },
+    { id: 77, type: 'msq', text: "At the time of independence, India's industrial sector was characterized by: <br>1. Being largely confined to cotton textiles and jute. <br>2. A wide variety of well-developed heavy industries. <br>3. The presence of two well-managed iron and steel firms.", correctOptionId: 'b', options: [{ id: 'a', text: '1 only' }, { id: 'b', text: '1 and 3 only' }, { id: 'c', text: '2 and 3 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "The industrial base was described as being very narrow.", explanation: "Statement 1 is correct: 'largely confined to cotton textiles and jute.' Statement 2 is incorrect; the text states the variety of industries was 'very narrow' and needed expansion. Statement 3 is correct, referring to the firms in Jamshedpur and Kolkata.", reference: "Chapter 2, Page 13" },
+    { id: 78, type: 'msq', text: "The industrial licensing system was used by the government for which of the following purposes? <br>1. To promote regional equality by giving concessions for units in backward areas. <br>2. To ensure the quantity of goods produced was not more than what the economy required. <br>3. To encourage foreign companies to set up manufacturing plants in India.", correctOptionId: 'a', options: [{ id: 'a', text: '1 and 2 only' }, { id: 'b', text: '2 and 3 only' }, { id: 'c', text: '1 and 3 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "The licensing system was a tool for control and planning, not for attracting foreign investment.", explanation: "Statement 1 and 2 are correct purposes mentioned in the text. Licenses were easier to get for backward areas, and were also used to manage production quantities. Statement 3 is incorrect; the overall policy was protectionist and inward-looking, not focused on encouraging foreign companies.", reference: "Chapter 2, Page 14" },
+    { id: 79, type: 'msq', text: "Small-scale industries were shielded from large firms through which measures? <br>1. Reservation of a number of products for the SSI sector. <br>2. Concessions such as lower excise duty. <br>3. Bank loans at lower interest rates.", correctOptionId: 'd', options: [{ id: 'a', text: '1 only' }, { id: 'b', text: '1 and 2 only' }, { id: 'c', text: '2 and 3 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "A multi-pronged approach was used to protect and promote SSIs.", explanation: "All three measures are listed in the text. '...the production of a number of products was reserved for the small-scale industry' (Statement 1). 'They were also given concessions such as lower excise duty' (Statement 2) 'and bank loans at lower interest rates' (Statement 3).", reference: "Chapter 2, Page 15" },
+    { id: 80, type: 'msq', text: "Which of the following statements correctly reflect the criticisms of the 'permit license raj'? <br>1. It was misused by big industrialists to prevent competitors from starting new firms. <br>2. It prevented firms from becoming more efficient. <br>3. It encouraged industrialists to focus on product improvement over lobbying.", correctOptionId: 'b', options: [{ id: 'a', text: '1 only' }, { id: 'b', text: '1 and 2 only' }, { id: 'c', text: '2 and 3 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "Statement 3 is the opposite of what the critics argued.", explanation: "Statements 1 and 2 are correct criticisms. The text says industrialists would get a license 'not for starting a new firm but to prevent competitors from starting new firms' and that the regulation 'prevented certain firms from becoming more efficient.' Statement 3 is incorrect; the text says more time was spent lobbying 'rather than on thinking about how to improve their products.'", reference: "Chapter 2, Page 17" },
+    { id: 81, type: 'msq', text: "According to the concluding section, what were the major drawbacks of the economic policies from 1950-1990? <br>1. Excessive government regulation prevented the growth of entrepreneurship. <br>2. Protection against foreign competition did not give producers an incentive to improve quality. <br>3. The policies successfully developed a strong export sector.", correctOptionId: 'a', options: [{ id: 'a', text: '1 and 2 only' }, { id: 'b', text: '2 and 3 only' }, { id: 'c', text: '1 and 3 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "The conclusion summarizes the key failures that led to the 1991 reforms.", explanation: "Statements 1 and 2 are listed as major drawbacks. Statement 3 is incorrect; the text explicitly states that the 'inward oriented' policies 'failed to develop a strong export sector.'", reference: "Chapter 2, Page 18" },
+    { id: 82, type: 'msq', text: "The mixed economy model adopted by India sought to: <br>1. Combine the best features of socialism and capitalism. <br>2. Promote the welfare of all rather than a few. <br>3. Replicate the economic system of the United States.", correctOptionId: 'c', options: [{ id: 'a', text: '1 only' }, { id: 'b', text: '2 and 3 only' }, { id: 'c', text: '1 and 2 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "The model was an alternative to the extreme versions of both capitalism and socialism.", explanation: "Statement 1 is correct, as the text says it 'combined the best features of socialism without its drawbacks'. Statement 2 is correct, as the goal was a system that 'would promote the welfare of all rather than a few'. Statement 3 is incorrect, as the capitalist model did not appeal to Nehru because it would leave the majority behind.", reference: "Chapter 2, Page 2" },
+    { id: 83, type: 'msq', text: "According to the text, in a strictly socialist society: <br>1. There is no private property. <br>2. Free health care is provided to all citizens. <br>3. Most economic activities are governed by socialistic principles.", correctOptionId: 'd', options: [{ id: 'a', text: '1 and 2 only' }, { id: 'b', text: '2 and 3 only' }, { id: 'c', text: '1 and 3 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "The text provides several characteristics of a socialist society, using examples like Cuba and China.", explanation: "All three statements are mentioned. '...a socialist society has no private property' (Statement 1). '...a socialist nation provides free health care to all its citizens' (Statement 2). 'In Cuba and China, for example, most of the economic activities are governed by the socialistic principles' (Statement 3).", reference: "Chapter 2, Page 3" },
+    { id: 84, type: 'msq', text: "The term 'modernisation' as a planning objective includes: <br>1. Adoption of new technology by producers. <br>2. Changes in social outlook, like recognizing women's rights. <br>3. A modern society making use of the talents of women in the workplace.", correctOptionId: 'a', options: [{ id: 'a', text: '1, 2 and 3' }, { id: 'b', text: '1 and 2 only' }, { id: 'c', text: '2 and 3 only' }, { id: 'd', text: '1 only' }], hint: "The concept is presented as being broader than just technology.", explanation: "All three statements are correct. The text defines it as 'Adoption of new technology' (Statement 1) but adds that it also refers to 'changes in social outlook such as the recognition that women should have the same rights as men' (Statement 2) and provides the example of utilizing women's talents in the workplace (Statement 3).", reference: "Chapter 2, Page 6" },
+    { id: 85, type: 'msq', text: "The policy of 'land to the tiller' was intended to provide incentives to cultivators. The text illustrates this with a counter-example from the former Soviet Union where: <br>1. Farmers packed rotten fruits with fresh fruits. <br>2. This happened because farmers did not own the land and thus did not enjoy profits or suffer losses. <br>3. This lack of ownership incentive explained the poor performance of the agricultural sector there.", correctOptionId: 'd', options: [{ id: 'a', text: '1 and 2 only' }, { id: 'b', text: '2 and 3 only' }, { id: 'c', text: '1 and 3 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "Box 2.5 explains how the absence of ownership removes the incentive for efficiency.", explanation: "All three statements are part of the illustration in Box 2.5. The box describes the packing of rotten fruits (Statement 1), explains it was due to a lack of ownership and profit/loss incentive (Statement 2), and links this to the sector's poor performance (Statement 3).", reference: "Chapter 2, Page 8" },
+    { id: 86, type: 'msq', text: "What were the consequences of a substantial portion of the Green Revolution's produce becoming 'marketed surplus'? <br>1. The price of food grains declined relative to other items. <br>2. Low-income groups benefited from this relative price decline. <br>3. The government was able to procure sufficient food grains to build a buffer stock.", correctOptionId: 'a', options: [{ id: 'a', text: '1, 2 and 3' }, { id: 'b', text: '1 and 2 only' }, { id: 'c', text: '2 and 3 only' }, { id: 'd', text: '1 only' }], hint: "The increased supply to the market had several positive ripple effects on the economy.", explanation: "All three consequences are mentioned in the text. '...the price of food grains declined' (Statement 1). 'The low-income groups... benefited from this decline' (Statement 2). The revolution 'enabled the government to procure sufficient amount of food grains to build a stock' (Statement 3).", reference: "Chapter 2, Page 10" },
+    { id: 87, type: 'msq', text: "The government took steps to mitigate the risks of the Green Revolution for small farmers. These steps included: <br>1. Providing loans at low interest rates. <br>2. Subsidising fertilisers. <br>3. Services rendered by government-established research institutes to reduce risks from pests.", correctOptionId: 'd', options: [{ id: 'a', text: '1 and 2 only' }, { id: 'b', text: '2 and 3 only' }, { id: 'c', text: '1 and 3 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "The state played an extensive role to ensure the gains from the new technology were widespread.", explanation: "All three statements are correct. The text mentions 'provided loans at a low interest rate to small farmers' (Statement 1), 'subsidised fertilisers' (Statement 2), and that risks from pests were 'considerably reduced by the services rendered by research institutes established by the government' (Statement 3).", reference: "Chapter 2, Page 11" },
+    { id: 88, type: 'msq', text: "Why is a good industrial sector considered important for a poor nation's progress? <br>1. It provides employment that is more stable than in agriculture. <br>2. It promotes modernisation and overall prosperity. <br>3. It is the only sector that contributes to GDP.", correctOptionId: 'b', options: [{ id: 'a', text: '1 only' }, { id: 'b', text: '1 and 2 only' }, { id: 'c', text: '2 and 3 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "Industry has several advantages over agriculture in terms of employment stability and modernization.", explanation: "Statements 1 and 2 are correct reasons given in the text. 'Industry provides employment which is more stable than the employment in agriculture; it promotes modernisation and overall prosperity.' Statement 3 is incorrect as agriculture and services also contribute to GDP.", reference: "Chapter 2, Page 12" },
+    { id: 89, type: 'msq', text: "The rationale for the policy of protectionism was based on which assumptions? <br>1. Industries of developing countries were not in a position to compete against those from developed economies. <br>2. If domestic industries were protected, they would learn to compete over time. <br>3. It would prevent foreign exchange from being spent on importing luxury goods.", correctOptionId: 'a', options: [{ id: 'a', text: '1, 2 and 3' }, { id: 'b', text: '1 and 2 only' }, { id: 'c', text: '2 and 3 only' }, { id: 'd', text: '1 only' }], hint: "This policy was based on the 'infant industry' argument and concerns about foreign exchange.", explanation: "All three assumptions are mentioned in the text as the basis for the protectionist policy. Statement 1 refers to the inability to compete. Statement 2 is the 'infant industry' argument that they would learn to compete. Statement 3 is the concern over spending foreign exchange on non-essential imports.", reference: "Chapter 2, Page 15" },
+    { id: 90, type: 'msq', text: "Consider the arguments made by scholars who were critical of the state's role in certain areas by the end of the 1950-1990 period. <br>1. The state should get out of areas which the private sector can manage. <br>2. The government should concentrate its resources on important services which the private sector cannot provide. <br>3. The government running hotels is a good example of a service only the public sector can provide.", correctOptionId: 'c', options: [{ id: 'a', text: '1 only' }, { id: 'b', text: '2 and 3 only' }, { id: 'c', text: '1 and 2 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "The argument is about redefining the scope of the public sector, not eliminating it. Hotels are used as an example of what the private sector *can* do.", explanation: "Statements 1 and 2 correctly reflect the argument presented. Statement 3 is incorrect; the text uses government-run hotels as an example of something the private sector can manage well, questioning the need for a public sector presence.", reference: "Chapter 2, Page 17" },
+    { id: 91, type: 'msq', text: "The progress of the Indian economy during the first seven plans included: <br>1. Industries becoming far more diversified. <br>2. India achieving self-sufficiency in food production. <br>3. Abolition of the zamindari system.", correctOptionId: 'd', options: [{ id: 'a', text: '1 and 2 only' }, { id: 'b', text: '2 and 3 only' }, { id: 'c', text: '1 and 3 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "The conclusion of the chapter lists several impressive achievements despite the drawbacks.", explanation: "All three are listed as achievements in the conclusion. 'Our industries became far more diversified' (Statement 1). 'India became self-sufficient in food production' (Statement 2). 'Land reforms resulted in abolition of the hated zamindari system' (Statement 3).", reference: "Chapter 2, Page 18" },
+    { id: 92, type: 'msq', text: "The structural composition of an economy refers to: <br>1. The contribution made by each of the different sectors to the GDP. <br>2. The different sectors being agriculture, industry, and services. <br>3. The mandatory requirement that the service sector must contribute the most to GDP.", correctOptionId: 'b', options: [{ id: 'a', text: '1 only' }, { id: 'b', text: '1 and 2 only' }, { id: 'c', text: '2 and 3 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "It's about the makeup of the economy, not a rule about which sector should be largest.", explanation: "Statements 1 and 2 are correct. The text defines structural composition as 'The contribution made by each of these sectors' and names them as 'the agricultural sector, the industrial sector and the service sector'. Statement 3 is incorrect; the text notes that in some countries agriculture contributes more, while in others the service sector does, it is not a requirement.", reference: "Chapter 2, Page 6" },
+    { 
+        id: 93, type: 'msq', 
+        text: "At independence, India's agricultural sector was characterized by: <br>1. Very high productivity due to British investments. <br>2. Heavy dependence on the monsoon. <br>3. Widespread access to modern irrigation facilities.",
+        options: [
+            { id: 'a', text: '1 and 2 only' }, 
+            { id: 'b', text: '2 only' }, 
+            { id: 'c', text: '3 only' }, 
+            { id: 'd', text: '1, 2 and 3' }
+        ], 
+        correctOptionId: 'b', 
+        hint: "The agricultural sector was stagnant and underdeveloped.", 
+        explanation: "Statement 2 is correct, 'India’s agriculture vitally depends on the monsoon'. Statements 1 and 3 are incorrect. The text states productivity was 'very low because of the use of old technology' and farmers had access to irrigation facilities 'which very few had'. Therefore, only the second statement is correct.", 
+        reference: "Chapter 2, Page 9" 
+    },
+    { id: 94, type: 'msq', text: "Regarding the performance of land reforms, which statements are true? <br>1. The goal of equity was fully served by the abolition of intermediaries. <br>2. Some former zamindars continued to own large areas of land using loopholes. <br>3. In some cases, tenants were evicted and landowners claimed to be self-cultivators.", correctOptionId: 'a', options: [{ id: 'a', text: '2 and 3 only' }, { id: 'b', text: '1 and 2 only' }, { id: 'c', text: '1 and 3 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "The text highlights that the implementation had significant flaws and did not achieve all its goals.", explanation: "Statement 1 is incorrect: 'the goal of equity was not fully served'. Statements 2 and 3 are correct examples of the failures and loopholes that occurred during implementation.", reference: "Chapter 2, Page 8-9" },
+    { id: 95, type: 'msq', text: "The text suggests that economists have found that as a nation becomes more prosperous: <br>1. The proportion of GDP from agriculture declines. <br>2. The proportion of the population working in agriculture declines considerably. <br>3. The proportion of GDP from industry remains constant.", correctOptionId: 'b', options: [{ id: 'a', text: '1 only' }, { id: 'b', text: '1 and 2 only' }, { id: 'c', text: '2 and 3 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "This describes the typical path of structural transformation in a developing economy.", explanation: "Statements 1 and 2 are correct observations mentioned in the text. India's failure was that while statement 1 happened, statement 2 did not happen to a significant extent. Statement 3 is not mentioned and is generally not true during development.", reference: "Chapter 2, Page 12" },
+    { id: 96, type: 'msq', text: "Consider the following about the role of the private sector in the planning period. <br>1. Its policies had to be complimentary to those of the public sector. <br>2. It was completely banned from participating in any industrial activity. <br>3. It was encouraged to be part of the plan effort.", correctOptionId: 'c', options: [{ id: 'a', text: '1 only' }, { id: 'b', text: '2 and 3 only' }, { id: 'c', text: '1 and 3 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "The private sector had a role, but it was secondary and regulated.", explanation: "Statements 1 and 3 are correct. The text mentions 'The policies of the private sector would have to be complimentary to those of the public sector' and that it was 'encouraged to be part of the plan effort'. Statement 2 is incorrect, as there was a category of industries left for the private sector.", reference: "Chapter 2, Page 4 & 14" },
+    { id: 97, type: 'msq', text: "The establishment of 'Modern Bread' by the public sector is used as an example to argue that: <br>1. The public sector was highly efficient and innovative. <br>2. The state continued to operate in areas where it was no longer required. <br>3. The private sector was incapable of manufacturing bread.", correctOptionId: 'b', options: [{ id: 'a', text: '1 only' }, { id: 'b', text: '2 only' }, { id: 'c', text: '1 and 3 only' }, { id: 'd', text: '2 and 3 only' }], hint: "This example illustrates a lack of distinction between what only the public sector can do and what the private sector can also do.", explanation: "Statement 2 is the correct interpretation. The text uses this example to show that the public sector was involved in activities (like bread-making) that the private sector could easily handle, questioning the necessity of such ventures. Statement 3 is implicitly argued to be false by the text.", reference: "Chapter 2, Page 16-17" },
+    { id: 98, type: 'msq', text: "Which statements correctly reflect the arguments of economists who defend protectionism and the public sector? <br>1. The public sector should be evaluated on its contribution to welfare, not just profits. <br>2. Private firms are always profitable and efficient. <br>3. Protection of domestic producers is justified as long as rich nations continue to protect their own.", correctOptionId: 'c', options: [{ id: 'a', text: '1 only' }, { id: 'b', text: '2 and 3 only' }, { id: 'c', text: '1 and 3 only' }, { id: 'd', text: '1, 2 and 3' }], hint: "The text presents counter-arguments to the main criticisms.", explanation: "Statement 1 is a defense of the public sector mentioned in the text. Statement 2 is incorrect; the text explicitly states 'This does not mean that private firms are always profitable'. Statement 3 is a defense of protectionism mentioned at the end of the section.", reference: "Chapter 2, Page 17" },
+    { 
+        id: 99, type: 'msq', 
+        text: "The term 'plan' as defined in the text includes which of the following elements? <br>1. It spells out how a nation's resources should be used. <br>2. It should have general goals and specific objectives. <br>3. The objectives are to be achieved within a specified period of time.", 
+        options: [
+            { id: 'a', text: '1 and 2 only' }, 
+            { id: 'b', text: '2 and 3 only' }, 
+            { id: 'c', text: '1 and 3 only' }, 
+            { id: 'd', text: '1, 2 and 3' }
+        ], 
+        correctOptionId: 'd', 
+        hint: "Box 2.2 provides a clear and comprehensive definition.", 
+        explanation: "All three elements are part of the definition in Box 2.2: 'A plan spells out how the resources of a nation should be put to use. It should have some general goals as well as specific objectives which are to be achieved within a specified period of time...'", 
+        reference: "Chapter 2, Page 4" 
+    },
+    { id: 100, type: 'msq', text: "The 'recap' section at the end of the chapter summarizes which key points? <br>1. India adopted a mixed economy model. <br>2. The proportion of people depending on agriculture did not decline as expected. <br>3. The inefficient functioning of the public sector was a major drawback.", correctOptionId: 'a', options: [{ id: 'a', text: '1, 2 and 3' }, { id: 'b', text: '1 and 2 only' }, { id: 'c', text: '2 and 3 only' }, { id: 'd', text: '1 only' }], hint: "The recap provides a quick overview of the chapter's main conclusions.", explanation: "All three are explicitly mentioned as bullet points in the 'Recap' section, summarizing the key takeaways from the chapter's discussion.", reference: "Chapter 2, Page 18" }
+];
+
+
+// Get all necessary DOM elements
+const startScreen = document.getElementById('start-screen');
+const testScreen = document.getElementById('test-screen');
+const resultsScreen = document.getElementById('results-screen');
+const startTestBtn = document.getElementById('start-test-btn');
+const endTestBtn = document.getElementById('end-test-btn');
+const timerEl = document.getElementById('timer');
+const currentQNumEl = document.getElementById('current-q-num');
+const quizContainer = document.getElementById('quiz-container');
+const paletteContainer = document.getElementById('question-palette');
+const confirmModal = document.getElementById('confirm-modal');
+const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+const modalCancelBtn = document.getElementById('modal-cancel-btn');
+
+// State variables
+let currentQuestionIndex = 0;
+let userAnswers = [];
+let timerInterval;
+let timeLeft = 60 * 60; // 60 minutes in seconds
+
+// Initialize user answers array
+function initializeUserAnswers() {
+    userAnswers = questions.map(q => ({
+        id: q.id,
+        userSelection: null,
+        status: 'unanswered', // unanswered, answered, marked, answeredAndMarked
+    }));
+}
+
+// Start the test
+function startTest() {
+    startScreen.classList.add('hidden');
+    testScreen.classList.remove('hidden');
+    initializeUserAnswers();
+    renderPalette();
+    renderQuestion(currentQuestionIndex);
+    startTimer();
+}
+
+// Timer logic
+function startTimer() {
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay();
+        if (timeLeft <= 0) {
+            finishTest(); // Automatically finish test when time is up
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+// Render a question
+function renderQuestion(index) {
+    const question = questions[index];
+    const userAnswerData = userAnswers[index];
+    currentQNumEl.textContent = index + 1;
+
+    // FIX: Simplified options creation. All questions now use radio buttons.
+    // This corrects the error where multiple-statement questions were rendered with checkboxes,
+    // which did not match the single-choice nature of their answers.
+    const createOptions = () => {
+        return question.options.map(opt => `
+            <label class="flex items-start p-3 my-2 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                <input type="radio" name="option" value="${opt.id}" class="mt-1" ${userAnswerData.userSelection === opt.id ? 'checked' : ''}>
+                <span class="ml-3 text-gray-700">${opt.text}</span>
+            </label>
+        `).join('');
+    };
+    
+    // Create the HTML for the new question
+    const newContent = `
+        <div class="question-content fade-in">
+            <p class="mb-4 text-lg leading-relaxed"><strong class="font-semibold">Q${index + 1}:</strong> ${question.text}</p>
+            <div class="options-container">${createOptions()}</div>
+            <div class="mt-6">
+                <button class="show-hint-btn text-sm text-blue-600 hover:underline">Show Hint</button>
+                <div class="hint-box bg-blue-50 border border-blue-200 mt-2 rounded-lg text-sm text-blue-800">
+                    <strong>Hint:</strong> ${question.hint}
+                </div>
+            </div>
+            <div class="flex justify-between items-center mt-8 pt-4 border-t">
+                <button id="mark-review-btn" class="border border-violet-500 text-violet-600 hover:bg-violet-100 font-semibold py-2 px-4 rounded-lg transition-colors text-sm">
+                    ${userAnswerData.status === 'marked' || userAnswerData.status === 'answeredAndMarked' ? 'Unmark Review' : 'Mark for Review'}
+                </button>
+                <div>
+                    <button id="prev-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-l-lg transition-colors ${index === 0 ? 'opacity-50 cursor-not-allowed' : ''}" ${index === 0 ? 'disabled' : ''}>Previous</button>
+                    <button id="next-btn" class="bg-gray-800 hover:bg-gray-900 text-white font-bold py-2 px-4 rounded-r-lg transition-colors ${index === questions.length - 1 ? 'opacity-50 cursor-not-allowed' : ''}" ${index === questions.length - 1 ? 'disabled' : ''}>Next</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add a fade transition between questions
+    const currentContent = quizContainer.querySelector('.question-content');
+    if (currentContent) {
+        currentContent.classList.add('fade-out');
+        currentContent.classList.remove('fade-in');
+        setTimeout(() => {
+            quizContainer.innerHTML = newContent;
+            attachQuestionListeners();
+        }, 300);
+    } else {
+        quizContainer.innerHTML = newContent;
+        attachQuestionListeners();
+    }
+}
+
+// Attach event listeners for the current question
+function attachQuestionListeners() {
+    document.getElementById('prev-btn')?.addEventListener('click', () => navigateQuestion(-1));
+    document.getElementById('next-btn')?.addEventListener('click', () => navigateQuestion(1));
+    document.getElementById('mark-review-btn').addEventListener('click', toggleMarkForReview);
+    document.querySelector('.show-hint-btn').addEventListener('click', (e) => {
+        const hintBox = e.target.nextElementSibling;
+        hintBox.classList.toggle('expanded');
+        // A bit of styling to make the padding match the transition
+        hintBox.style.paddingTop = hintBox.classList.contains('expanded') ? '1rem' : '0';
+        hintBox.style.paddingBottom = hintBox.classList.contains('expanded') ? '1rem' : '0';
+    });
+
+    const optionsContainer = document.querySelector('.options-container');
+    optionsContainer.addEventListener('change', (e) => {
+        if (e.target.name === 'option') {
+            handleAnswerSelection(e.target);
+        }
+    });
+}
+
+// Handle user's answer selection
+function handleAnswerSelection(target) {
+    // FIX: Simplified logic now that all questions are single-choice.
+    const selection = target.value;
+    userAnswers[currentQuestionIndex].userSelection = selection;
+    
+    const currentStatus = userAnswers[currentQuestionIndex].status;
+    if (selection !== null) {
+        userAnswers[currentQuestionIndex].status = currentStatus === 'marked' || currentStatus === 'answeredAndMarked' ? 'answeredAndMarked' : 'answered';
+    } else {
+        userAnswers[currentQuestionIndex].status = currentStatus === 'answeredAndMarked' || currentStatus === 'marked' ? 'marked' : 'unanswered';
+    }
+    
+    renderPalette();
+}
+
+// Toggle 'Mark for Review' status
+function toggleMarkForReview() {
+    const currentStatus = userAnswers[currentQuestionIndex].status;
+    
+    if (currentStatus === 'marked') {
+        userAnswers[currentQuestionIndex].status = 'unanswered';
+    } else if (currentStatus === 'answeredAndMarked') {
+        userAnswers[currentQuestionIndex].status = 'answered';
+    } else if (currentStatus === 'answered') {
+        userAnswers[currentQuestionIndex].status = 'answeredAndMarked';
+    } else { // unanswered
+        userAnswers[currentQuestionIndex].status = 'marked';
+    }
+    document.getElementById('mark-review-btn').textContent = 
+        userAnswers[currentQuestionIndex].status === 'marked' || userAnswers[currentQuestionIndex].status === 'answeredAndMarked' 
+        ? 'Unmark Review' : 'Mark for Review';
+    renderPalette();
+}
+
+// Navigate between questions
+function navigateQuestion(direction) {
+    const newIndex = currentQuestionIndex + direction;
+    if (newIndex >= 0 && newIndex < questions.length) {
+        currentQuestionIndex = newIndex;
+        renderQuestion(currentQuestionIndex);
+        renderPalette();
+        document.querySelector(`.palette-item[data-index="${currentQuestionIndex}"]`).scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+}
+
+// Jump to a specific question from the palette
+function jumpToQuestion(index) {
+    currentQuestionIndex = index;
+    renderQuestion(currentQuestionIndex);
+    renderPalette();
+}
+
+// Render the bottom question palette
+function renderPalette() {
+    paletteContainer.innerHTML = userAnswers.map((answer, index) => {
+        let bgColor = 'bg-white border-gray-400';
+        let textColor = 'text-gray-700';
+        let scale = 'scale-100';
+        let dot = '';
+
+        switch (answer.status) {
+            case 'answered':
+                bgColor = 'bg-blue-600 border-blue-600';
+                textColor = 'text-white';
+                break;
+            case 'marked':
+                bgColor = 'bg-violet-500 border-violet-500';
+                textColor = 'text-white';
+                break;
+            case 'answeredAndMarked':
+                bgColor = 'bg-violet-500 border-violet-500';
+                textColor = 'text-white';
+                dot = '<div class="absolute top-1 right-1 w-2 h-2 bg-white rounded-full"></div>';
+                break;
+            case 'unanswered':
+            default:
+                bgColor = 'bg-white border-gray-400';
+                textColor = 'text-gray-700';
+        }
+
+        if (index === currentQuestionIndex) {
+            bgColor = 'bg-gray-900 border-gray-900';
+            textColor = 'text-white';
+            scale = 'scale-110';
+        }
+
+        return `
+            <div class="flex-shrink-0 relative">
+                <button class="palette-item w-9 h-9 flex items-center justify-center rounded-full font-semibold border-2 transition-transform ${bgColor} ${textColor} ${scale}" data-index="${index}">
+                    ${index + 1}
+                </button>
+                ${dot}
+            </div>
+        `;
+    }).join('');
+
+    document.querySelectorAll('.palette-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            jumpToQuestion(parseInt(e.currentTarget.dataset.index));
+        });
+    });
+}
+
+// End test confirmation
+function endTest() {
+    // FIX: Replaced blocking confirm() with a non-blocking modal for better compatibility.
+    confirmModal.classList.remove('hidden');
+}
+
+// Finalize the test and move to results
+function finishTest() {
+    confirmModal.classList.add('hidden');
+    clearInterval(timerInterval);
+    calculateAndShowResults();
+}
+
+// Calculate and display results
+function calculateAndShowResults() {
+    let score = 0;
+    let correct = 0;
+    let incorrect = 0;
+    let unanswered = 0;
+
+    questions.forEach((q, index) => {
+        const userAnswerData = userAnswers[index];
+        const userSelection = userAnswerData.userSelection;
+
+        if (userSelection === null) {
+            unanswered++;
+        } else {
+            // FIX: Simplified scoring logic as all questions are now single-choice.
+            const isCorrect = userSelection === q.correctOptionId;
+
+            if (isCorrect) {
+                correct++;
+                score += 2;
+            } else {
+                incorrect++;
+                score -= 0.67;
+            }
+        }
+    });
+
+    testScreen.classList.add('hidden');
+    resultsScreen.classList.remove('hidden');
+
+    document.getElementById('correct-count').textContent = correct;
+    document.getElementById('incorrect-count').textContent = incorrect;
+    document.getElementById('unanswered-count').textContent = unanswered;
+    document.getElementById('final-score').textContent = score.toFixed(2);
+
+    renderReview();
+}
+
+// Render the final review section
+function renderReview() {
+    const container = document.getElementById('review-answers-container');
+    container.innerHTML = questions.map((q, index) => {
+        const userAnswerData = userAnswers[index];
+        const userSelection = userAnswerData.userSelection;
+        
+        const getOptionText = (optId) => q.options.find(opt => opt.id === optId)?.text || '';
+
+        const renderOptionsReview = () => {
+            return q.options.map(opt => {
+                // FIX: Simplified logic for single-choice questions.
+                let isCorrect = opt.id === q.correctOptionId;
+                let isSelected = opt.id === userSelection;
+                
+                let classes = 'text-gray-700';
+                let icon = '';
+
+                if (isCorrect) {
+                    classes = 'text-green-700 font-semibold';
+                    icon = '<span class="text-green-500 mr-2">&#10004;</span>'; // Checkmark
+                }
+                if (isSelected && !isCorrect) {
+                    classes = 'text-red-700 font-semibold';
+                    icon = '<span class="text-red-500 mr-2">&#10008;</span>'; // X mark
+                }
+                
+                return `<li class="flex items-start ${classes}">${icon}${opt.text}</li>`;
+            }).join('');
+        };
+        
+        let userAnswerText;
+        if (userSelection === null) {
+            userAnswerText = '<span class="font-semibold text-gray-500">Not Answered</span>';
+        } else {
+            userAnswerText = `Your Answer: <span class="font-semibold">${getOptionText(userSelection)}</span>`;
+        }
+
+        const correctAnswerText = `Correct Answer: <span class="font-semibold text-green-700">${getOptionText(q.correctOptionId)}</span>`;
+        
+        return `
+            <div class="border border-gray-200 p-4 rounded-lg bg-gray-50">
+                <p class="font-bold text-gray-800 mb-2">Q${index + 1}: ${q.text}</p>
+                <div class="text-sm space-y-2 mb-4">
+                    <p>${userAnswerText}</p>
+                    <p>${correctAnswerText}</p>
+                </div>
+                <ul class="text-sm space-y-1 my-4">${renderOptionsReview()}</ul>
+                <button class="toggle-explanation-btn text-sm text-blue-600 hover:underline">Show Explanation</button>
+                <div class="explanation-box mt-2 text-sm bg-white p-3 border rounded-md">
+                    <p class="font-semibold">Explanation:</p>
+                    <p>${q.explanation}</p>
+                    <p class="mt-2 text-xs text-gray-500"><em>Reference: ${q.reference}</em></p>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    container.querySelectorAll('.toggle-explanation-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const box = btn.nextElementSibling;
+            box.classList.toggle('expanded');
+            btn.textContent = box.classList.contains('expanded') ? 'Hide Explanation' : 'Show Explanation';
+        });
+    });
+}
+
+// Initial event listeners
+startTestBtn.addEventListener('click', startTest);
+endTestBtn.addEventListener('click', endTest);
+modalConfirmBtn.addEventListener('click', finishTest);
+modalCancelBtn.addEventListener('click', () => confirmModal.classList.add('hidden'));
+
+});
+</script>
+
+</body>
+</html>
