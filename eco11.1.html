@@ -41,6 +41,38 @@
         .explanation.show {
             max-height: 1000px; /* Arbitrary large value */
         }
+        /* Palette Styles */
+        .palette-btn {
+            width: 2rem;
+            height: 2rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.2s ease-in-out;
+        }
+        .palette-unanswered {
+            border: 1px solid #9ca3af; /* gray-400 */
+            color: #4b5563; /* gray-600 */
+        }
+        .palette-unanswered:hover {
+            background-color: #f3f4f6; /* gray-100 */
+        }
+        .palette-answered {
+            background-color: #374151; /* gray-700 */
+            color: white;
+        }
+        .palette-answered:hover {
+            background-color: #1f2937; /* gray-800 */
+        }
+        .palette-current {
+            background-color: #111827; /* gray-900 */
+            color: white;
+            transform: scale(1.1);
+            border: 2px solid #9ca3af;
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -85,7 +117,29 @@
                         <span id="time-left">60:00</span>
                     </div>
                     <div class="text-lg font-medium text-gray-700">Question <span id="current-q-num">1</span> of 100</div>
-                    <button id="submit-btn-early" class="bg-red-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition duration-300 text-sm">End Test</button>
+                    
+                    <div class="flex items-center space-x-2">
+                        <!-- Palette Dropdown -->
+                        <div class="relative">
+                            <button id="toggle-palette-btn" class="bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition duration-300 text-sm">
+                                Palette
+                            </button>
+                            <div id="question-palette-container" class="hidden absolute right-0 mt-2 w-80 bg-white border rounded-lg shadow-xl z-20">
+                                <div class="p-3 border-b">
+                                    <h4 class="font-semibold text-gray-800 text-center">Question Palette</h4>
+                                </div>
+                                <div id="question-palette" class="grid grid-cols-10 gap-2 p-3 max-h-64 overflow-y-auto">
+                                    <!-- JS will inject buttons here -->
+                                </div>
+                                <div class="p-2 bg-gray-50 rounded-b-lg text-xs text-gray-600 flex justify-around">
+                                    <span class="flex items-center"><span class="w-3 h-3 bg-black rounded-full mr-1 border-2 border-gray-400"></span> Current</span>
+                                    <span class="flex items-center"><span class="w-3 h-3 bg-gray-700 rounded-full mr-1"></span> Answered</span>
+                                    <span class="flex items-center"><span class="w-3 h-3 border border-gray-400 rounded-full mr-1"></span> Unanswered</span>
+                                </div>
+                            </div>
+                        </div>
+                         <button id="submit-btn-early" class="bg-red-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition duration-300 text-sm">End Test</button>
+                    </div>
                 </div>
 
                 <!-- Question Container -->
@@ -167,13 +221,16 @@
         const modalCancelBtn = document.getElementById('modal-cancel-btn');
         const modalConfirmBtn = document.getElementById('modal-confirm-btn');
 
+        const togglePaletteBtn = document.getElementById('toggle-palette-btn');
+        const paletteContainer = document.getElementById('question-palette-container');
+        const questionPalette = document.getElementById('question-palette');
+
         let currentQuestionIndex = 0;
         let userAnswers = [];
         let timerInterval;
         let timeRemaining = 3600; 
 
         const questions = [
-            // Chapter 1: 100 Unique Questions
             { question: "According to Victor Alexander Bruce, the Viceroy in 1894, what was the significance of India to the British Empire?", options: ["A minor territory with limited resources", "A strategic military outpost", "The pivot of the Empire, without which it would collapse", "A partner in trade and governance"], correct: 2, chapter: 1, page: 4, explanation: "The quote at the beginning of the chapter explicitly states, '...if we lose India, the sun of our Empire will have set', highlighting its central importance." },
             { question: "What was the primary objective of the economic policies pursued by the colonial government in India?", options: ["To modernize the Indian economy", "To promote the welfare of the Indian people", "To protect and promote the economic interests of Britain", "To create a self-sufficient Indian economy"], correct: 2, chapter: 1, page: 5, explanation: "The text states that colonial policies 'were concerned more with the protection and promotion of the economic interests of their home country than with the development of the Indian economy'." },
             { question: "Before British rule, India was particularly well known for which type of industries?", options: ["Heavy machinery and capital goods", "Software and information technology", "Handicraft industries like cotton and silk textiles", "Automobile manufacturing"], correct: 2, chapter: 1, page: 4, explanation: "India was renowned for its handicraft industries in fields of cotton and silk textiles, metal, and precious stone works, which enjoyed a worldwide market." },
@@ -282,13 +339,65 @@
             startScreen.classList.add('hidden');
             resultScreen.classList.add('hidden');
             quizScreen.classList.remove('hidden');
+            renderPalette();
             displayQuestion();
             startTimer();
+        }
+
+        function renderPalette() {
+            questionPalette.innerHTML = '';
+            for (let i = 0; i < questions.length; i++) {
+                const button = document.createElement('button');
+                button.textContent = i + 1;
+                button.addEventListener('click', () => {
+                    currentQuestionIndex = i;
+                    displayQuestion();
+                    paletteContainer.classList.add('hidden'); 
+                });
+                questionPalette.appendChild(button);
+            }
+        }
+
+        function updatePalette() {
+            const buttons = questionPalette.querySelectorAll('button');
+            buttons.forEach((button, index) => {
+                // Reset classes to the base class
+                button.className = 'palette-btn';
+
+                if (userAnswers[index] !== null) {
+                    button.classList.add('palette-answered');
+                } else {
+                    button.classList.add('palette-unanswered');
+                }
+                
+                // Override with current class if it's the current question
+                if (index === currentQuestionIndex) {
+                    button.classList.remove('palette-answered', 'palette-unanswered');
+                    button.classList.add('palette-current');
+                }
+            });
         }
 
         function displayQuestion() {
             const question = questions[currentQuestionIndex];
             let optionsHtml = '';
+            
+            // Refactored logic to include 'selected' class directly in the HTML string
+            const renderOptions = (q) => {
+                let html = '';
+                q.options.forEach((option, index) => {
+                    const isSelected = userAnswers[currentQuestionIndex] === index;
+                    html += `
+                        <div>
+                            <input type="radio" name="option" value="${index}" id="option${index}" class="hidden">
+                            <label for="option${index}" class="option-label block border-2 border-gray-300 p-4 rounded-lg cursor-pointer ${isSelected ? 'selected' : ''}">
+                                ${option}
+                            </label>
+                        </div>
+                    `;
+                });
+                return html;
+            };
 
             if (question.statements) {
                  let statementsHtml = '<ul class="list-decimal list-inside space-y-2 mb-4">';
@@ -296,17 +405,7 @@
                      statementsHtml += `<li class="text-gray-700">${stmt}</li>`;
                  });
                  statementsHtml += '</ul><p class="mb-4 font-semibold text-gray-800">Select the correct answer using the code given below:</p>';
-
-                 question.options.forEach((option, index) => {
-                    optionsHtml += `
-                        <div>
-                            <input type="radio" name="option" value="${index}" id="option${index}" class="hidden">
-                            <label for="option${index}" class="option-label block border-2 border-gray-300 p-4 rounded-lg cursor-pointer">
-                                ${option}
-                            </label>
-                        </div>
-                    `;
-                });
+                 optionsHtml = renderOptions(question);
 
                 questionContainer.innerHTML = `
                     <div class="question-card p-4">
@@ -317,16 +416,7 @@
                 `;
 
             } else {
-                question.options.forEach((option, index) => {
-                    optionsHtml += `
-                        <div>
-                            <input type="radio" name="option" value="${index}" id="option${index}" class="hidden">
-                            <label for="option${index}" class="option-label block border-2 border-gray-300 p-4 rounded-lg cursor-pointer">
-                                ${option}
-                            </label>
-                        </div>
-                    `;
-                });
+                optionsHtml = renderOptions(question);
                 questionContainer.innerHTML = `
                     <div class="question-card p-4">
                         <p class="text-lg font-semibold mb-4 text-gray-900">Q${currentQuestionIndex + 1}: ${question.question}</p>
@@ -335,18 +425,9 @@
                 `;
             }
 
-            
             currentQNumEl.textContent = currentQuestionIndex + 1;
             updateNavButtons();
-            
-            // Re-apply selected state for the current question
-            const currentAnswer = userAnswers[currentQuestionIndex];
-            if (currentAnswer !== null) {
-                const selectedLabel = document.querySelector(`label[for="option${currentAnswer}"]`);
-                if(selectedLabel) {
-                    selectedLabel.classList.add('selected');
-                }
-            }
+            updatePalette();
             attachOptionListeners();
         }
 
@@ -356,8 +437,11 @@
                 label.addEventListener('click', () => {
                     const selectedValue = parseInt(label.htmlFor.replace('option', ''));
                     userAnswers[currentQuestionIndex] = selectedValue;
+                    
                     document.querySelectorAll('.option-label').forEach(l => l.classList.remove('selected'));
                     label.classList.add('selected');
+                    
+                    updatePalette();
                 });
             });
         }
@@ -493,6 +577,17 @@
         modalConfirmBtn.addEventListener('click', () => {
             confirmModal.classList.add('hidden');
             submitTest();
+        });
+
+        togglePaletteBtn.addEventListener('click', (event) => {
+            event.stopPropagation();
+            paletteContainer.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!paletteContainer.contains(event.target) && event.target !== togglePaletteBtn) {
+                paletteContainer.classList.add('hidden');
+            }
         });
 
     </script>
