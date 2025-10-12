@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPSC Practice Test - Indian Economic Development</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        html, body {
+            scroll-behavior: smooth;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        }
+        .timer-animation {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        .option-label {
+            transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+        }
+        .option-label.selected {
+            background-color: #eff6ff; /* blue-50 */
+            border-color: #3b82f6; /* blue-500 */
+        }
+        .explanation {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+        }
+        .explanation.show {
+            max-height: 1000px;
+        }
+        
+        /* --- Palette & Button Styles --- */
+        .palette-btn {
+            width: 2.25rem; height: 2.25rem;
+            display: inline-flex; align-items: center; justify-content: center;
+            border-radius: 9999px; font-size: 0.875rem; font-weight: 600;
+            transition: all 0.2s ease-in-out; flex-shrink: 0;
+        }
+        .palette-unanswered { border: 1px solid #9ca3af; color: #4b5563; }
+        .palette-unanswered:hover { background-color: #f3f4f6; }
+        .palette-answered { background-color: #3b82f6; color: white; } /* Blue */
+        .palette-answered:hover { background-color: #2563eb; }
+        .palette-marked { background-color: #8b5cf6; color: white; } /* Violet */
+        .palette-marked:hover { background-color: #7c3aed; }
+        .palette-answered-marked { background-color: #8b5cf6; color: white; position: relative; }
+        .palette-answered-marked::after {
+            content: ''; position: absolute; bottom: 4px; right: 4px;
+            width: 6px; height: 6px; border-radius: 50%; background-color: white;
+        }
+        .palette-current {
+            background-color: #111827; color: white; transform: scale(1.1);
+            border: 2px solid #6b7280;
+        }
+
+        /* --- Custom Scrollbar for Palette --- */
+        #question-palette::-webkit-scrollbar { height: 8px; }
+        #question-palette::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+        #question-palette::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        #question-palette::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* --- Smooth Transition for Questions --- */
+        #question-content-wrapper {
+            transition: opacity 0.15s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div id="main-container" class="container mx-auto p-4 sm:p-6 md:p-8 max-w-5xl">
+        <div id="test-area" class="bg-white p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-200 min-h-[80vh]">
+            <!-- Views will be rendered here -->
+        </div>
+    </div>
+    
+    <!-- Modal for confirmation -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white p-8 rounded-lg shadow-xl text-center max-w-sm mx-4">
+            <h3 class="text-xl font-bold mb-4 text-gray-900">Are you sure?</h3>
+            <p class="text-gray-600 mb-6">Do you really want to end and submit the test?</p>
+            <div class="flex justify-center space-x-4">
+                <button id="modal-cancel-btn" class="bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300">Cancel</button>
+                <button id="modal-confirm-btn" class="bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-700">End Test</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const state = {
+                currentView: 'start',
+                currentQuestionIndex: 0,
+                userAnswers: [],
+                markedForReview: [],
+                timeRemaining: 3600,
+                timerInterval: null,
+                questions: [
+                    // All 100 questions are here, redacted for brevity
+                    { question: "According to Victor Alexander Bruce, the Viceroy in 1894, what was the significance of India to the British Empire?", options: ["A minor territory with limited resources", "A strategic military outpost", "The pivot of the Empire, without which it would collapse", "A partner in trade and governance"], correct: 2, chapter: 1, page: 4, explanation: "The quote at the beginning of the chapter explicitly states, '...if we lose India, the sun of our Empire will have set', highlighting its central importance." },
+                    { question: "What was the primary objective of the economic policies pursued by the colonial government in India?", options: ["To modernize the Indian economy", "To promote the welfare of the Indian people", "To protect and promote the economic interests of Britain", "To create a self-sufficient Indian economy"], correct: 2, chapter: 1, page: 5, explanation: "The text states that colonial policies 'were concerned more with the protection and promotion of the economic interests of their home country than with the development of the Indian economy'." },
+                    { question: "Before British rule, India was particularly well known for which type of industries?", options: ["Heavy machinery and capital goods", "Software and information technology", "Handicraft industries like cotton and silk textiles", "Automobile manufacturing"], correct: 2, chapter: 1, page: 4, explanation: "India was renowned for its handicraft industries in fields of cotton and silk textiles, metal, and precious stone works, which enjoyed a worldwide market." },
+                    { question: "What was 'Daccai Muslin'?", options: ["A type of woollen shawl from Kashmir", "An exquisite type of cotton textile from Bengal", "A metal alloy used in making utensils", "A variety of indigo dye"], correct: 1, chapter: 1, page: 4, explanation: "'Daccai Muslin', originating from Bengal (around present-day Dhaka), had gained worldwide fame as an exquisite type of cotton textile." },
+                    { question: "Among the estimators of India's national income during the colonial period, whose estimates were considered 'very significant'?", options: ["Dadabhai Naoroji", "Findlay Shirras", "William Digby", "V.K.R.V. Rao"], correct: 3, chapter: 1, page: 5, explanation: "The text explicitly mentions, 'it was Rao, whose estimates during the colonial period was considered very significant.'" },
+                    { question: "What was the approximate growth of aggregate real output during the first half of the twentieth century in India?", options: ["Less than two per cent", "Around five per cent", "More than ten per cent", "The growth was stagnant at zero per cent"], correct: 0, chapter: 1, page: 5, explanation: "Most studies found that the country's growth of aggregate real output during this period 'was less than two per cent'." },
+                    { question: "What percentage of India's population lived in villages and derived their livelihood from agriculture under British rule?", options: ["About 50 per cent", "About 65 per cent", "About 85 per cent", "Over 95 per cent"], correct: 2, chapter: 1, page: 5, explanation: "The text states that under British colonial rule, India's economy remained fundamentally agrarian with 'about 85 per cent of the country's population' living in villages and depending on agriculture." },
+                    { question: "Which land settlement system, implemented in the Bengal Presidency, was a major cause of agricultural stagnation?", options: ["Ryotwari System", "Mahalwari System", "Zamindari System", "Taluqdari System"], correct: 2, chapter: 1, page: 6, explanation: "The stagnation was caused mainly by various land settlement systems, 'Particularly, under the zamindari system which was implemented in the then Bengal Presidency'." },
+                    { question: "Under the zamindari system, what was the main interest of the zamindars?", options: ["To improve the condition of agriculture", "To invest in new farming technologies", "To provide financial support to cultivators", "To collect rent regardless of the cultivators' economic condition"], correct: 3, chapter: 1, page: 6, explanation: "The main interest of the zamindars was 'only to collect rent regardless of the economic condition of the cultivators'." },
+                    { question: "What does the term 'commercialisation of agriculture' during the colonial period refer to?", options: ["The shift from subsistence farming to growing crops for the market", "The use of modern technology in agriculture", "The government taking over all agricultural land", "A focus on growing food crops for domestic consumption"], correct: 0, chapter: 1, page: 6, explanation: "It refers to the shift in cropping patterns where farmers started producing cash crops like cotton or indigo, which were to be ultimately used by British industries, instead of food crops." },
+                    { question: "Consider the following statements regarding the industrial sector during British rule:", statements: ["The world-famous handicraft industries declined.", "A corresponding modern industrial base was rapidly set up to replace handicrafts.", "The policy of systematically de-industrialising India was a primary objective of the colonial government."], options: ["1 and 2 only", "2 and 3 only", "1 and 3 only", "1, 2 and 3"], correct: 2, chapter: 1, page: 7, explanation: "Statement 2 is incorrect. While handicrafts declined, 'no corresponding modern industrial base was allowed to come up'. Statements 1 and 3 are correct descriptions of the colonial policy." },
+                    { question: "What was the two-fold motive behind the policy of de-industrialisation?", statements: ["To make India an exporter of raw materials for Britain.", "To turn India into a market for British finished goods.", "To encourage Indian entrepreneurs to set up competing industries."], options: ["1 and 2 only", "2 and 3 only", "1 and 3 only", "1, 2 and 3"], correct: 0, chapter: 1, page: 7, explanation: "Statement 3 is incorrect. The motive was to eliminate competition. The intention was to 'reduce India to the status of a mere exporter of important raw materials' and 'turn India into a sprawling market for the finished products'." },
+                    { question: "Modern industry began to take root in India during the second half of which century?", options: ["Seventeenth century", "Eighteenth century", "Nineteenth century", "Twentieth century"], correct: 2, chapter: 1, page: 7, explanation: "The text states, 'During the second half of the nineteenth century, modern industry began to take root in India but its progress remained very slow.'" },
+                    { question: "The early cotton textile mills were mainly located in which parts of India?", options: ["Bengal and Bihar", "Punjab and Haryana", "Maharashtra and Gujarat", "Madras Presidency"], correct: 2, chapter: 1, page: 7, explanation: "The cotton textile mills were located in the western parts of the country, namely, Maharashtra and Gujarat." },
+                    { question: "Jute mills established during the colonial period were mainly concentrated in which region?", options: ["Bombay", "Madras", "Bengal", "United Provinces"], correct: 2, chapter: 1, page: 7, explanation: "The jute mills, dominated by foreigners, were mainly concentrated in Bengal." },
+                    { question: "The Tata Iron and Steel Company (TISCO) was incorporated in which year?", options: ["1850", "1881", "1907", "1921"], correct: 2, chapter: 1, page: 7, explanation: "The Tata Iron and Steel Company (TISCO) was incorporated in 1907, marking a key development in the Indian steel industry." },
+                    { question: "What is a 'capital goods industry'?", options: ["An industry producing consumer goods like textiles and sugar.", "An industry producing machine tools used for further production.", "An industry that requires a large amount of financial capital.", "An industry owned and operated by the government."], correct: 1, chapter: 1, page: 7, explanation: "The text defines it as 'industries which can produce machine tools which are, in turn, used for producing articles for current consumption.' Colonial India had hardly any such industry." },
+                    { question: "The public sector during the colonial era was confined to which areas?", statements: ["Railways and power generation", "Communications and ports", "Textile and steel production"], options: ["1 only", "1 and 2 only", "2 and 3 only", "1, 2 and 3"], correct: 1, chapter: 1, page: 8, explanation: "Statement 3 is incorrect. Major manufacturing sectors like textile and steel were in the private sector. The public sector 'remained confined only to the railways, power generation, communications, ports and some other departmental undertakings.'" },
+                    { question: "How did colonial policies affect the structure of India's foreign trade?", options: ["India became an exporter of finished goods and importer of raw materials.", "India's trade was diversified with many countries globally.", "India became an exporter of primary products and importer of finished goods.", "India achieved a balanced trade with Britain."], correct: 2, chapter: 1, page: 8, explanation: "The restrictive policies led to India becoming an 'exporter of primary products such as raw silk, cotton, wool... and an importer of finished consumer goods like cotton, silk and woollen clothes'." },
+                    { question: "Which country maintained a monopoly control over India's exports and imports during the colonial period?", options: ["France", "Portugal", "Germany", "Britain"], correct: 3, chapter: 1, page: 8, explanation: "The text clearly states, 'For all practical purposes, Britain maintained a monopoly control over India’s exports and imports.'" },
+                    { question: "The opening of which canal in 1869 intensified British control over India's foreign trade?", options: ["Panama Canal", "Erie Canal", "Suez Canal", "Kiel Canal"], correct: 2, chapter: 1, page: 8, explanation: "The opening of the Suez Canal provided a direct and faster trade route, which 'further intensified British control over India’s foreign trade'." },
+                    { question: "What was the most important characteristic of India's foreign trade throughout the colonial period?", options: ["Generation of a large import surplus", "Generation of a large export surplus", "Trade focused only on agricultural goods", "Equal balance of payments"], correct: 1, chapter: 1, page: 8, explanation: "The most important characteristic of India's foreign trade throughout the colonial period was the generation of a large export surplus." },
+                    { question: "How did the large export surplus benefit the Indian economy?", options: ["It led to a massive flow of gold and silver into India.", "It was used to fund infrastructure and welfare projects in India.", "It did not result in any significant benefit as it was used to pay for British expenses.", "It was used to reduce taxes on the Indian population."], correct: 2, chapter: 1, page: 9, explanation: "The surplus came at a huge cost and did not benefit India. It 'did not result in any flow of gold or silver into India. Rather, this was used to make payments for the expenses incurred by an office set up by the colonial government in Britain...'" },
+                    { question: "The phenomenon where India's export surplus was used to fund British administrative and war expenses is known as:", options: ["Economic integration", "Capital flight", "Drain of Indian wealth", "Mercantilism"], correct: 2, chapter: 1, page: 9, explanation: "This process, where the surplus was used to pay for Britain's expenses, 'led to the drain of Indian wealth.'" },
+                    { question: "When was the first official census operation undertaken in British India?", options: ["1850", "1881", "1901", "1921"], correct: 1, chapter: 1, page: 9, explanation: "Various details about the population of British India were first collected through a census in 1881." },
+                    { question: "The year 1921 is known as the 'year of the great divide' in India's demographic history. Why?", statements: ["Before 1921, India was in the first stage of demographic transition with high birth and death rates.", "After 1921, the second stage began with declining death rates but high birth rates, leading to population growth.", "In 1921, the population of India recorded a negative growth rate for the first time."], options: ["1 and 2 only", "2 and 3 only", "1 and 3 only", "1, 2 and 3"], correct: 0, chapter: 1, page: 10, explanation: "Statement 3 is not explicitly mentioned as the reason for the 'divide', although population fluctuations did occur. The primary reason is the transition from the first stage (high birth/death rates) to the second stage (high birth/declining death rates), marking a shift in the demographic pattern." },
+                    { question: "What was the overall literacy level in India during the colonial period?", options: ["More than 50 per cent", "Around 30 per cent", "Less than 16 per cent", "About 25 per cent"], correct: 2, chapter: 1, page: 10, explanation: "The social development indicators were poor. 'The overall literacy level was less than 16 per cent.'" },
+                    { question: "What was the approximate female literacy level in colonial India?", options: ["About seven per cent", "About fifteen per cent", "About twenty per cent", "About one per cent"], correct: 0, chapter: 1, page: 10, explanation: "Out of the low overall literacy, 'the female literacy level was at a negligible low of about seven per cent.'" },
+                    { question: "What was the infant mortality rate in British India, highlighting the poor public health facilities?", options: ["About 44 per thousand", "About 110 per thousand", "About 218 per thousand", "About 300 per thousand"], correct: 2, chapter: 1, page: 10, explanation: "The infant mortality rate was 'quite alarming—about 218 per thousand in contrast to the present infant mortality rate'." },
+                    { question: "What was the average life expectancy in colonial India?", options: ["69 years", "55 years", "44 years", "32 years"], correct: 3, chapter: 1, page: 10, explanation: "Life expectancy was 'very low—32 years in contrast to the present 69 years.'" },
+                    { question: "The occupational structure of colonial India was characterized by:", statements: ["A vast majority of the workforce (70-75%) was in the agricultural sector.", "The manufacturing and service sectors each accounted for about 30% of the workforce.", "There was a significant and uniform shift of the workforce from agriculture to industry across all regions."], options: ["1 only", "1 and 2 only", "2 and 3 only", "1, 2 and 3"], correct: 0, chapter: 1, page: 11, explanation: "Statement 1 is correct. Statements 2 and 3 are incorrect. Manufacturing was only 10% and services 15-20%. The shift was not uniform; in fact, some regions saw an increase in agricultural dependence." },
+                    { question: "In which of the following regions was there a decline in the dependence of the workforce on the agricultural sector?", options: ["Orissa, Rajasthan, and Punjab", "Madras Presidency, Bombay, and Bengal", "Central Provinces and Berar", "United Provinces"], correct: 1, chapter: 1, page: 11, explanation: "Parts of the then Madras Presidency, Bombay and Bengal witnessed a decline in the dependence of the workforce on the agricultural sector." },
+                    { question: "What was the real motive behind the development of infrastructure like railways by the British?", options: ["To provide basic amenities to the people", "To foster a sense of national unity", "To subserve various colonial interests", "To promote tourism in India"], correct: 2, chapter: 1, page: 11, explanation: "The real motive 'was not to provide basic amenities to the people but to subserve various colonial interests' such as mobilizing the army and transporting raw materials." },
+                    { question: "The roads built by the British primarily served the purpose of:", options: ["Connecting all villages to major cities", "Mobilising the army and drawing out raw materials", "Facilitating pilgrimage and cultural travel", "Creating employment for the rural poor"], correct: 1, chapter: 1, page: 11, explanation: "The roads primarily served 'the purposes of mobilising the army within India and drawing out raw materials from the countryside'." },
+                    { question: "The introduction of railways in 1850 is considered a significant contribution. What was one of its adverse effects on the Indian economy?", options: ["It made long-distance travel difficult and expensive.", "It hindered the transport of goods across the country.", "It adversely affected the self-sufficiency of village economies.", "It led to the decline of major port cities."], correct: 2, chapter: 1, page: 11, explanation: "While it had social benefits, it 'fostered commercialisation of Indian agriculture which adversely affected the self-sufficiency of the village economies in India'." },
+                    { question: "The social benefits of the railways were outweighed by what?", options: ["The social conflicts it created", "The country's huge economic loss", "The environmental damage it caused", "The high cost of tickets for Indians"], correct: 1, chapter: 1, page: 12, explanation: "The text concludes that 'The social benefits...were thus outweighed by the country's huge economic loss.'" },
+                    { question: "What was the state of inland waterways during the colonial period?", options: ["They were highly developed and economical.", "They were often uneconomical and failed to compete with railways.", "They were the primary mode of transport for the British army.", "They connected all major rivers in India."], correct: 1, chapter: 1, page: 12, explanation: "These measures were far from satisfactory. The text gives the example of the Coast Canal on the Orissa coast which 'proved uneconomical... and had to be ultimately abandoned.'" },
+                    { question: "The introduction of the electric telegraph primarily served the purpose of:", options: ["Providing communication for the general public", "Promoting business and trade", "Maintaining law and order", "Educating the rural population"], correct: 2, chapter: 1, page: 12, explanation: "The introduction of the expensive system of electric telegraph in India, similarly, 'served the purpose of maintaining law and order.'" },
+                    { question: "By the time of independence, the agricultural sector was characterized by:", statements: ["High productivity due to technological advancements.", "Surplus labour and extremely low productivity.", "A diversified cropping pattern that ensured food security."], options: ["1 only", "2 only", "1 and 3 only", "2 and 3 only"], correct: 1, chapter: 1, page: 13, explanation: "The conclusion states that the agricultural sector 'was already saddled with surplus labour and extremely low productivity.' Statements 1 and 3 are incorrect." },
+                    { question: "At the time of independence, the industrial sector was in need of:", options: ["Reduced public investment", "Less diversification", "Modernisation, diversification, and increased public investment", "A focus solely on consumer goods"], correct: 2, chapter: 1, page: 13, explanation: "The industrial sector was 'crying for modernisation, diversification, capacity building and increased public investment'." },
+                    { question: "Which French traveller described Bengal in the seventeenth century as 'richer than Egypt'?", options: ["Marco Polo", "Ibn Battuta", "Bernier", "Vasco da Gama"], correct: 2, chapter: 1, page: 5, explanation: "The box item on page 5 quotes the French traveller, Bernier, who described seventeenth-century Bengal in glowing terms." },
+                    { question: "The failure of zamindars to deposit specified revenue sums by fixed dates led to what consequence?", options: ["They were given financial assistance by the government.", "They were forced to invest in agricultural improvement.", "They were to lose their zamindari rights.", "The revenue amount was reduced for the next year."], correct: 2, chapter: 1, page: 6, explanation: "The terms of the revenue settlement were strict: 'dates for depositing specified sums of revenue were fixed, failing which the zamindars were to lose their rights.'" },
+                    { question: "The decline of indigenous handicraft industries under British rule led to what major problems?", statements: ["Massive unemployment in India.", "A new demand in the consumer market, deprived of local goods.", "An increase in the export of Indian handicrafts."], options: ["1 and 2 only", "2 and 3 only", "1 and 3 only", "1, 2 and 3"], correct: 0, chapter: 1, page: 7, explanation: "Statement 3 is incorrect; exports of handicrafts declined. The decline 'created not only massive unemployment in India but also a new demand in the Indian consumer market', which was then met by British imports." },
+                    { question: "More than half of India's foreign trade during the colonial period was restricted to which country?", options: ["China", "Ceylon (Sri Lanka)", "Persia (Iran)", "Britain"], correct: 3, chapter: 1, page: 8, explanation: "As a result of Britain's monopoly, 'more than half of India’s foreign trade was restricted to Britain'." },
+                    { question: "What was a major negative consequence of the export surplus generated during the colonial era?", options: ["It led to hyperinflation in the domestic market.", "Essential commodities like food grains and kerosene became scarce in the domestic market.", "It forced Indian producers to lower the quality of their goods.", "It resulted in heavy taxation on exports."], correct: 1, chapter: 1, page: 8, explanation: "This surplus came at a huge cost, as 'Several essential commodities—food grains, clothes, kerosene etc. — were scarcely available in the domestic market.'" },
+                    { question: "What does the text suggest about the extent of poverty during the colonial period?", options: ["Poverty was completely eradicated.", "Poverty was limited to urban areas.", "The extent is difficult to specify due to a lack of reliable data, but it was extensive.", "Poverty levels were comparable to those in Britain."], correct: 2, chapter: 1, page: 10, explanation: "The text states, 'In the absence of reliable data, it is difficult to specify the extent of poverty at that time but there is no doubt that extensive poverty prevailed in India'." },
+                    { question: "In states like Orissa, Rajasthan, and Punjab, what trend was observed in the occupational structure during the colonial period?", options: ["A rapid shift from agriculture to manufacturing.", "A significant increase in the services sector workforce.", "An increase in the share of the workforce in agriculture.", "A balanced distribution of workforce across all three sectors."], correct: 2, chapter: 1, page: 11, explanation: "In contrast to some other regions, 'there had been an increase in the share of workforce in agriculture during the same time in states such as Orissa, Rajasthan and Punjab.'" },
+                    { question: "What was a key reason for the lack of improvement in agricultural productivity?", statements: ["Low levels of technology and lack of irrigation facilities.", "Negligible use of fertilisers.", "Active discouragement of cash crops by the government."], options: ["1 and 2 only", "2 and 3 only", "1 and 3 only", "1, 2 and 3"], correct: 0, chapter: 1, page: 6, explanation: "Statement 3 is incorrect; the government actually encouraged cash crops for their industries. 'low levels of technology, lack of irrigation facilities and negligible use of fertilisers, all added up to aggravate the plight of the farmers'." },
+                    { question: "Which of the following industries came up after the Second World War in India?", options: ["Iron and Steel", "Cotton Textiles", "Jute Mills", "Sugar, cement, paper"], correct: 3, chapter: 1, page: 7, explanation: "While textiles and steel came up earlier, 'A few other industries in the fields of sugar, cement, paper etc. came up after the Second World War.'" },
+                    { question: "What was the contribution of the new industrial sector to the Gross Domestic Product (GDP) during the colonial period?", options: ["It was very large, forming the backbone of the economy.", "It was moderate, contributing about 30% to the GDP.", "It remained very small.", "It was equal to the contribution from the agricultural sector."], correct: 2, chapter: 1, page: 8, explanation: "The growth rate of the new industrial sector and its contribution to the Gross Domestic Product (GDP) or Gross Value Added remained very small." },
+                    { question: "The famous Indian handicraft products enjoyed a worldwide market based on what?", options: ["Low prices and mass production", "The use of mechanised technology", "Reputation of fine quality material and high standards of craftsmanship", "British government subsidies"], correct: 2, chapter: 1, page: 4, explanation: "These products enjoyed a worldwide market 'based on the reputation of the fine quality of material used and the high standards of craftsmanship'." },
+                    { question: "Which of the following was NOT a primary product exported from India during the colonial rule?", options: ["Raw silk, cotton, wool", "Sugar, indigo, jute", "Light machinery, textiles", "Food grains"], correct: 2, chapter: 1, page: 8, explanation: "Light machinery and finished textiles were imported into India from Britain. The other items were primary products exported from India." },
+                    { question: "The Suez Canal provides a direct trade route between European ports and ports located in:", statements: ["South Asia", "East Africa", "South America"], options: ["1 and 2 only", "2 and 3 only", "1 and 3 only", "1, 2 and 3"], correct: 0, chapter: 1, page: 9, explanation: "Statement 3 is incorrect. The canal connects to Asia and East Africa, 'doing away with the need to sail around Africa'. It does not provide a direct route to South America." },
+                    { question: "What was the state of public health facilities for large parts of the population in colonial India?", options: ["They were widely available and highly advanced.", "They were free of cost for all citizens.", "They were either unavailable or highly inadequate.", "They were focused on preventing chronic lifestyle diseases."], correct: 2, chapter: 1, page: 10, explanation: "Public health facilities were either unavailable to large chunks of population or, when available, were highly inadequate." },
+                    { question: "The British introduced the railways in India in which year?", options: ["1757", "1850", "1885", "1905"], correct: 1, chapter: 1, page: 11, explanation: "The British introduced the railways in India in 1850." },
+                    { question: "What was one of the positive social impacts of the railways mentioned in the text?", options: ["It led to a significant increase in literacy rates.", "It enabled people to break geographical and cultural barriers.", "It completely eradicated the caste system.", "It guaranteed employment for all Indians."], correct: 1, chapter: 1, page: 11, explanation: "On the one hand it 'enabled people to undertake long distance travel and thereby break geographical and cultural barriers'." },
+                    { question: "Which of these was a major economic challenge for India at the time of independence?", options: ["A highly modernized industrial sector with excess capacity", "A trade surplus that led to huge gold reserves", "Prevalence of rampant poverty and unemployment", "An overdeveloped infrastructure network"], correct: 2, chapter: 1, page: 13, explanation: "The text concludes by listing challenges, including 'Prevalence of rampant poverty and unemployment required welfare orientation of public economic policy'." },
+                    { question: "The text mentions that even some zamindars did nothing to improve agriculture. What was a reason for their attitude?", options: ["They lacked the technical knowledge to improve agriculture.", "The cultivators refused to cooperate with them.", "The terms of the revenue settlement were very strict with fixed dates for payment.", "They believed agriculture was already at its peak productivity."], correct: 2, chapter: 1, page: 6, explanation: "The terms of the revenue settlement were also responsible for this attitude, as failure to pay by fixed dates meant losing their rights, encouraging a short-term rent-seeking approach." },
+                    { question: "The demand created by the decline of Indian handicrafts was profitably met by:", options: ["Imports of cheap manufactured goods from Britain", "A surge in production from new Indian industries", "Imports from other Asian countries like China", "The revival of a few select handicraft industries"], correct: 0, chapter: 1, page: 7, explanation: "This demand was profitably met by the increasing imports of cheap manufactured goods from Britain." },
+                    { question: "The first railway bridge built in 1854 linked which two places?", options: ["Calcutta and Howrah", "Delhi and Agra", "Madras and Arcot", "Bombay and Thane"], correct: 3, chapter: 1, page: 12, explanation: "The image caption on page 12 identifies the 'First Railway Bridge linking Bombay with Thane, 1854'." },
+                    { question: "Who established Tata Airlines in 1932, inaugurating the aviation sector in India?", options: ["The British Government", "A consortium of Indian princes", "Tata and Sons", "An Anglo-American company"], correct: 2, chapter: 1, page: 12, explanation: "The image caption on page 12 states: 'Tata Airlines, a division of Tata and Sons, was established in 1932 inaugurating the aviation sector in India'." },
+                    { question: "What does the text imply about the state of roads for rural areas during the rainy season?", options: ["They were well-maintained and accessible year-round.", "There was always an acute shortage of all-weather roads.", "Special transport was arranged by the government.", "Rural areas were completely cut off by design."], correct: 1, chapter: 1, page: 11, explanation: "There always remained an acute shortage of all-weather roads to reach out to the rural areas during the rainy season." },
+                    { question: "What was the consequence of the lack of good rural roads during natural calamities and famines?", options: ["Aid and relief could be delivered efficiently.", "People mostly living in these areas suffered grievously.", "The British army provided immediate assistance.", "It had little to no impact."], correct: 1, chapter: 1, page: 11, explanation: "Naturally, therefore, people mostly living in these areas suffered grievously during natural calamities and famines." },
+                    { question: "Consider the state of the Indian economy at independence. Which sectors needed upgradation, expansion, and public orientation?", statements: ["The famed railway network", "Other infrastructure facilities", "The agricultural sector's marketing system"], options: ["1 and 2 only", "2 and 3 only", "1 and 3 only", "1, 2 and 3"], correct: 0, chapter: 1, page: 13, explanation: "The conclusion states that 'Infrastructure facilities, including the famed railway network, needed upgradation, expansion and public orientation'. While agriculture needed help, the text specifically points to infrastructure in this context." },
+                    { question: "The term 'malmal' was used to refer to what?", options: ["A type of silk cloth", "The finest variety of muslin", "A blend of cotton and wool", "A special dye for textiles"], correct: 1, chapter: 1, page: 4, explanation: "The finest variety of muslin was called malmal." },
+                    { question: "During the colonial period, the growth in per capita output per year was a:", options: ["Meagre half per cent", "Robust two per cent", "Significant four per cent", "Negative one per cent"], correct: 0, chapter: 1, page: 5, explanation: "Most studies found growth in per capita output per year was a 'meagre half per cent'." },
+                    { question: "The colonial government's policies brought about a fundamental change in the structure of the Indian economy, transforming the country into:", options: ["An industrial powerhouse", "A supplier of raw materials and consumer of finished products", "A service-based economy", "A completely self-sufficient agrarian economy"], correct: 1, chapter: 1, page: 5, explanation: "Such policies 'transforming the country into supplier of raw materials and consumer of finished industrial products from Britain'." },
+                    { question: "Why could the commercialisation of agriculture hardly help farmers improve their economic condition?", options: ["The cash crops had no market in Britain.", "They were producing cash crops for British industries instead of food crops for themselves.", "The government imposed heavy taxes on cash crops.", "The productivity of cash crops was extremely low."], correct: 1, chapter: 1, page: 7, explanation: "It could hardly help farmers 'as, instead of producing food crops, now they were producing cash crops which were to be ultimately used by British industries back home.'" },
+                    { question: "What was a primary reason for the low agricultural productivity in colonial India?", statements: ["Lack of incentive for tenants and small farmers to invest.", "Absence of resources and technology for most farmers.", "Government ban on all forms of irrigation."], options: ["1 and 2 only", "2 and 3 only", "1 and 3 only", "1, 2 and 3"], correct: 0, chapter: 1, page: 7, explanation: "Statement 3 is incorrect. The text states that a 'large section of tenants, small farmers and sharecroppers neither had resources and technology nor had incentive to invest in agriculture'." },
+                    { question: "The postal services in colonial India, despite serving a useful public purpose, were:", options: ["Highly efficient and available everywhere", "Free for all Indian citizens", "Remained all through inadequate", "Exclusively for British officials"], correct: 2, chapter: 1, page: 12, explanation: "The postal services, on the other hand, despite serving a useful public purpose, remained all through inadequate." },
+                    { question: "At independence, foreign trade was oriented to:", options: ["Feed the Industrial Revolution in Britain", "Develop trade partnerships with other Asian nations", "Promote self-sufficiency in India", "Create a global market for Indian finished goods"], correct: 0, chapter: 1, page: 13, explanation: "The conclusion states: 'Foreign trade was oriented to feed the Industrial Revolution in Britain'." },
+                    { question: "What was the condition of agricultural productivity despite some growth in the aggregate area under cultivation?", options: ["It became very high.", "It remained stagnant or deteriorated.", "It doubled due to expansion.", "It became equal to that of Britain."], correct: 1, chapter: 1, page: 6, explanation: "Agricultural productivity became low though, in absolute terms, the sector experienced some growth due to the expansion of the aggregate area under cultivation." },
+                    { question: "Which of these was NOT a field where India's handicraft industries were well-known?", options: ["Cotton and silk textiles", "Metal and precious stone works", "Heavy industrial machinery", "Exquisite craftsmanship"], correct: 2, chapter: 1, page: 4, explanation: "India was known for handicrafts like textiles and metal works, not heavy industrial machinery, which was a feature of the British industrial base." },
+                    { question: "The unevenness in India’s population growth was first revealed through:", options: ["Estimates by economists", "The census of 1881", "British parliamentary reports", "Records of princely states"], correct: 1, chapter: 1, page: 9, explanation: "Various details about the population... were first collected through a census in 1881... it revealed the unevenness in India’s population growth." },
+                    { question: "The second stage of demographic transition in India began after which year?", options: ["1881", "1901", "1921", "1947"], correct: 2, chapter: 1, page: 10, explanation: "The second stage of transition began after 1921." },
+                    { question: "The high mortality rates in colonial India were a consequence of:", statements: ["Rampant water and air-borne diseases.", "Highly inadequate or unavailable public health facilities.", "A government policy of population control."], options: ["1 and 2 only", "2 and 3 only", "1 and 3 only", "1, 2 and 3"], correct: 0, chapter: 1, page: 10, explanation: "Statement 3 is incorrect. High mortality was due to neglect. 'Public health facilities were... highly inadequate. Consequently, water and air-borne diseases were rampant and took a huge toll on life.'" },
+                    { question: "What was the approximate share of the manufacturing sector in the workforce during the colonial period?", options: ["10 per cent", "25 per cent", "40 per cent", "5 per cent"], correct: 0, chapter: 1, page: 11, explanation: "The manufacturing... sector accounted for only 10 per cent." },
+                    { question: "The share of the services sector in the workforce was approximately:", options: ["5-10 per cent", "15-20 per cent", "25-30 per cent", "Over 35 per cent"], correct: 1, chapter: 1, page: 11, explanation: "The services sector accounted for... 15-20 per cent respectively." },
+                    { question: "The 'drain of wealth' included payments for:", options: ["Expenses of the colonial government office in Britain", "Expenses on wars fought by the British government", "Import of invisible items", "All of the above"], correct: 3, chapter: 1, page: 9, explanation: "The export surplus was used to make payments for all these things, constituting the drain of Indian wealth." },
+                    { question: "What was the primary reason a modern industrial base was not allowed to develop in India?", options: ["Lack of Indian entrepreneurs", "To avoid competition with British manufactured goods", "Scarcity of raw materials in India", "Indian workers were not skilled enough"], correct: 1, chapter: 1, page: 7, explanation: "The primary motive was to protect British industries. Allowing a modern base in India would have created competition and reduced India's utility as a captive market." },
+                    { question: "The text suggests that the structure of India's present-day economy has its roots in:", options: ["The post-independence five-year plans only", "The period when India was under British rule", "Ancient Indian economic systems", "The globalization policies of the 1990s"], correct: 1, chapter: 1, page: 4, explanation: "The structure of India’s present-day economy... has its roots steeped in history, particularly in the period when India was under British rule." },
+                    { question: "The colonial government's sincerity in estimating India's national income can be described as:", options: ["They made very sincere and accurate attempts.", "They never made any sincere attempt.", "They collaborated with Indian economists for accurate data.", "They published annual economic surveys."], correct: 1, chapter: 1, page: 5, explanation: "The colonial government never made any sincere attempt to estimate India’s national and per capita income." },
+                    { question: "Which of these was a direct impact of the de-industrialisation policy on the Indian consumer?", options: ["Consumers had a wide variety of high-quality Indian goods.", "Goods became very expensive due to lack of supply.", "The market was deprived of locally made goods.", "Consumers preferred to import goods from France and Germany."], correct: 2, chapter: 1, page: 7, explanation: "The decline of indigenous industries created 'a new demand in the Indian consumer market, which was now deprived of the supply of locally made goods'." },
+                    { question: "What was the status of the capital goods industry in colonial India?", options: ["It was a rapidly growing sector.", "It was dominated by public sector undertakings.", "There was hardly any capital goods industry.", "It produced machinery for export to Britain."], correct: 2, chapter: 1, page: 7, explanation: "However, there was hardly any capital goods industry to help promote further industrialisation in India." },
+                    { question: "The economic policies of the colonial government led to a 'fundamental change in the structure of the Indian economy'. This change involved India becoming:", statements: ["A supplier of raw materials.", "A consumer of finished industrial products from Britain.", "A competitor to Britain in the global market."], options: ["1 and 2 only", "2 and 3 only", "1 and 3 only", "1, 2 and 3"], correct: 0, chapter: 1, page: 5, explanation: "Statement 3 is incorrect. The policies were designed to prevent competition. The economy was transformed into a 'supplier of raw materials and consumer of finished industrial products from Britain'." },
+                    { question: "What was the state of India's economy before the advent of British rule?", options: ["A stagnant, dependent economy", "An independent economy with various manufacturing activities", "An economy based solely on subsistence agriculture", "An economy that relied heavily on imports from Europe"], correct: 1, chapter: 1, page: 4, explanation: "India had an independent economy before the advent of the British rule... the country’s economy was characterised by various kinds of manufacturing activities." },
+                    { question: "The opening of the Suez Canal reduced transportation costs and made what easier?", options: ["Indian access to European markets", "Access to the Indian market for Britain", "Trade between India and the Americas", "Indian exports of finished goods"], correct: 1, chapter: 1, page: 9, explanation: "Its opening in 1869 reduced the cost of transportation and made access to the Indian market easier for the British." },
+                    { question: "Census operations in British India after 1881 were carried out:", options: ["Every five years", "Every ten years", "Every twenty years", "Irregularly, without a fixed schedule"], correct: 1, chapter: 1, page: 10, explanation: "Subsequently, every ten years such census operations were carried out." },
+                    { question: "The limited area of operation of the public sector was a significant drawback of which sector?", options: ["Agricultural Sector", "New Industrial Sector", "Service Sector", "Foreign Trade Sector"], correct: 1, chapter: 1, page: 8, explanation: "Another significant drawback of the new industrial sector was the very limited area of operation of the public sector." },
+                    { question: "Which of the following does the text identify as a crucial economic challenge at the time of independence?", options: ["Managing surplus food grain production.", "The need for upgradation and expansion of infrastructure.", "Controlling the rapid growth of the industrial sector.", "Finding markets for India's excess finished goods."], correct: 1, chapter: 1, page: 13, explanation: "The conclusion states that 'Infrastructure facilities, including the famed railway network, needed upgradation, expansion and public orientation'." },
+                    { question: "The main reason for the stagnation of the agricultural sector was identified as:", options: ["Frequent droughts and floods", "The cultivators' lack of interest in farming", "The various systems of land settlement introduced by the British", "The decline in global demand for Indian agricultural products"], correct: 2, chapter: 1, page: 6, explanation: "This stagnation in the agricultural sector was caused mainly because of the various systems of land settlement that were introduced by the colonial government." },
+                    { question: "Why were a small section of farmers changing their cropping pattern from food crops to commercial crops?", options: ["To improve their own economic condition significantly", "To support British industries back home", "To achieve food self-sufficiency for their villages", "To protest against the zamindari system"], correct: 1, chapter: 1, page: 7, explanation: "While a small section changed their pattern, the ultimate use for these cash crops was for British industries. The text implies this served colonial interests more than the farmers' own prosperity." },
+                    { question: "The growth rate of the new industrial sector and its contribution to GDP was described as:", options: ["Rapid and substantial", "Very small", "Negative", "Equal to the agricultural sector"], correct: 1, chapter: 1, page: 8, explanation: "Furthermore, the growth rate of the new industrial sector and its contribution to the Gross Domestic Product (GDP)... remained very small." },
+                    { question: "The overall mortality rate in colonial India was very high. Which specific rate was mentioned as 'quite alarming'?", options: ["Maternal mortality rate", "Infant mortality rate", "Adult mortality rate", "Senile mortality rate"], correct: 1, chapter: 1, page: 10, explanation: "...the infant mortality rate was quite alarming—about 218 per thousand..." },
+                    { question: "Which statement accurately reflects the regional variations in occupational structure?", statements: ["Some areas saw a decline in agricultural workforce and an increase in manufacturing.", "Some areas saw an increase in the share of the agricultural workforce.", "All regions experienced a uniform shift towards the service sector."], options: ["1 and 2 only", "2 and 3 only", "1 and 3 only", "1, 2 and 3"], correct: 0, chapter: 1, page: 11, explanation: "Statement 3 is incorrect. The text highlights a 'growing regional variation'. Madras, Bombay, and Bengal saw a decline in agricultural dependence, while Orissa, Rajasthan, and Punjab saw an increase." },
+                    { question: "The text suggests the Indian economy on the eve of independence was characterized by:", options: ["A vibrant and modern industrial base", "A prosperous and equitable agricultural sector", "A well-integrated system serving India's needs", "A crippled economy with enormous social and economic challenges"], correct: 3, chapter: 1, page: 13, explanation: "The concluding paragraph summarizes the state of the economy by highlighting surplus labor, low productivity, need for modernization, and rampant poverty, indicating enormous challenges." },
+                    { question: "What was the purpose of the Coast Canal on the Orissa coast, and what was its fate?", options: ["It was built for irrigation and was highly successful.", "It was built for inland trade but failed to compete with the railways.", "It was a strategic military canal and is still in use.", "It was built to control floods and served its purpose well."], correct: 1, chapter: 1, page: 12, explanation: "The inland waterways, at times, also proved uneconomical as in the case of the Coast Canal on the Orissa coast... it failed to compete with the railways... and had to be ultimately abandoned." },
+                    { question: "The economic relationship between India and Britain under colonial rule can be best described as:", options: ["A partnership of equals", "An exploitative relationship for Britain's benefit", "A relationship focused on mutual development", "A relationship where India held economic dominance"], correct: 1, chapter: 1, page: 4, explanation: "An understanding of the 'exploitative nature of this relationship is essential' to assess India's development." },
+                    { question: "What was the main outcome for India of generating a large export surplus during the colonial period?", options: ["A significant increase in national wealth and prosperity.", "A drain of wealth to Britain.", "The development of a strong domestic market.", "The ability to invest in modernizing its industries."], correct: 1, chapter: 1, page: 9, explanation: "The export surplus did not benefit India; instead, it led to the 'drain of Indian wealth' as it was used to pay for British expenses." },
+                    { question: "What does the conclusion of the chapter state about the legacy of British rule on the Indian economy?", options: ["The British left a strong foundation for rapid industrial growth.", "The impact was minimal and easily overcome after independence.", "The social and economic challenges before the country were enormous.", "India was well-prepared to be a major economic power immediately after independence."], correct: 2, chapter: 1, page: 13, explanation: "The chapter concludes with 'In a nutshell, the social and economic challenges before the country were enormous'." }
+
+                ]
+            };
+
+            const testArea = document.getElementById('test-area');
+            const confirmModal = document.getElementById('confirm-modal');
+
+            const templates = {
+                startScreen: `
+                    <div id="start-screen">
+                        <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-center text-gray-800">Test Instructions</h2>
+                        <div class="space-y-4 text-gray-700 text-sm sm:text-base">
+                            <p>1. This test contains <strong>${state.questions.length} multiple-choice questions</strong>.</p>
+                            <p>2. The time limit for the test is <strong>60 minutes</strong>.</p>
+                            <p>3. Marking Scheme (UPSC Style):</p>
+                            <ul class="list-disc list-inside ml-4 bg-gray-100 p-4 rounded-lg">
+                                <li><strong>Correct Answer:</strong> +2 Marks</li>
+                                <li><strong>Incorrect Answer:</strong> -0.67 Marks (1/3rd penalty)</li>
+                                <li><strong>Unanswered:</strong> 0 Marks</li>
+                            </ul>
+                            <p>4. Use the <strong>"Mark for Review"</strong> button to revisit questions later.</p>
+                            <p>5. Click the "Start Test" button to begin.</p>
+                        </div>
+                        <div class="text-center mt-8">
+                            <button data-action="start" class="bg-gray-900 text-white font-bold py-3 px-8 rounded-lg hover:bg-black focus:outline-none focus:ring-4 focus:ring-gray-300 transition">Start Test</button>
+                        </div>
+                    </div>`,
+                quizScreen: `
+                    <div id="quiz-screen">
+                        <div class="flex justify-between items-center mb-6 p-3 sm:p-4 bg-gray-100 rounded-lg sticky top-4 z-10">
+                            <div class="text-lg sm:text-xl font-bold timer-animation w-24"><span id="time-left"></span></div>
+                            <div class="text-sm sm:text-lg font-medium text-gray-700">Q <span id="current-q-num"></span>/${state.questions.length}</div>
+                            <button data-action="show-submit-confirm" class="bg-red-600 text-white font-semibold py-2 px-3 sm:px-4 rounded-lg hover:bg-red-700 transition text-xs sm:text-sm">End Test</button>
+                        </div>
+                        <div id="question-content-wrapper" class="p-2 sm:p-4 min-h-[30vh]"></div>
+                        <div class="flex justify-between items-center mt-8">
+                            <button data-action="prev" class="bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300 transition">Previous</button>
+                            <div class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                                <button data-action="mark" class="font-bold py-2 px-4 rounded-lg transition text-sm"></button>
+                                <button data-action="next" class="bg-gray-900 text-white font-bold py-2 px-6 rounded-lg hover:bg-black transition">Next</button>
+                                <button data-action="show-submit-confirm" class="bg-gray-900 text-white font-bold py-2 px-6 rounded-lg hover:bg-black">Submit Test</button>
+                            </div>
+                        </div>
+                        <div class="mt-8 pt-4 border-t">
+                            <div class="flex justify-between items-center mb-3">
+                                <h4 class="font-semibold text-gray-800">Question Palette</h4>
+                                <div class="text-xs text-gray-600 flex items-center flex-wrap gap-x-3 gap-y-1">
+                                    <span class="flex items-center"><span class="w-3 h-3 bg-blue-500 rounded-full mr-1.5"></span>Ans</span>
+                                    <span class="flex items-center"><span class="w-3 h-3 bg-violet-500 rounded-full mr-1.5"></span>Marked</span>
+                                </div>
+                            </div>
+                            <div id="question-palette" class="flex items-center gap-3 overflow-x-auto pb-3"></div>
+                        </div>
+                    </div>`
+            };
+
+            const actions = {
+                start() {
+                    state.currentView = 'quiz';
+                    state.userAnswers = new Array(state.questions.length).fill(null);
+                    state.markedForReview = new Array(state.questions.length).fill(false);
+                    state.timeRemaining = 3600;
+                    startTimer();
+                    render();
+                },
+                selectOption(index) {
+                    state.userAnswers[state.currentQuestionIndex] = index;
+                    updateOptionsDisplay();
+                    updatePaletteDisplay();
+                },
+                navigate(direction) {
+                    const newIndex = state.currentQuestionIndex + direction;
+                    if (newIndex >= 0 && newIndex < state.questions.length) {
+                        state.currentQuestionIndex = newIndex;
+                        updateQuestionDisplayWithTransition();
+                    }
+                },
+                paletteJump(index) {
+                    state.currentQuestionIndex = index;
+                    updateQuestionDisplayWithTransition();
+                },
+                mark() {
+                    state.markedForReview[state.currentQuestionIndex] = !state.markedForReview[state.currentQuestionIndex];
+                    updateMarkButton();
+                    updatePaletteDisplay();
+                },
+                submit() {
+                    clearInterval(state.timerInterval);
+                    state.currentView = 'result';
+                    render();
+                },
+                restart() {
+                    state.currentView = 'start';
+                    render();
+                },
+                toggleExplanation(button) {
+                    const explanationDiv = button.nextElementSibling;
+                    explanationDiv.classList.toggle('show');
+                    button.textContent = explanationDiv.classList.contains('show') ? 'Hide Explanation' : 'Show Explanation';
+                }
+            };
+            
+            function render() {
+                if (state.currentView === 'start') {
+                    testArea.innerHTML = templates.startScreen;
+                } else if (state.currentView === 'quiz') {
+                    testArea.innerHTML = templates.quizScreen;
+                    updateQuestionDisplay();
+                    updateTimerDisplay();
+                } else if (state.currentView === 'result') {
+                    renderResultScreen();
+                }
+            }
+            
+            function updateQuestionDisplayWithTransition() {
+                const wrapper = document.getElementById('question-content-wrapper');
+                if (wrapper) {
+                    wrapper.style.opacity = '0';
+                    setTimeout(() => {
+                        updateQuestionDisplay();
+                        wrapper.style.opacity = '1';
+                    }, 150);
+                }
+            }
+
+            function updateQuestionDisplay() {
+                updateQuestionContent();
+                updateNavControls();
+                updatePaletteDisplay();
+                const currentPaletteBtn = document.querySelector('.palette-current');
+                if (currentPaletteBtn) {
+                    currentPaletteBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                }
+            }
+            
+            function updateQuestionContent() {
+                const q = state.questions[state.currentQuestionIndex];
+                let questionContentHTML = `<p class="text-lg font-semibold mb-${q.statements ? '2' : '4'} text-gray-900">Q${state.currentQuestionIndex + 1}: ${q.question}</p>`;
+                if (q.statements) {
+                    questionContentHTML += '<ul class="list-decimal list-inside space-y-2 mb-4">';
+                    q.statements.forEach(stmt => { questionContentHTML += `<li class="text-gray-700">${stmt}</li>`; });
+                    questionContentHTML += '</ul><p class="mb-4 font-semibold text-gray-800">Select the correct answer:</p>';
+                }
+                const getOptionsHTML = () => {
+                    let html = '';
+                    q.options.forEach((option, index) => {
+                        const isSelected = state.userAnswers[state.currentQuestionIndex] === index;
+                        html += `<div><label class="option-label block border-2 border-gray-300 p-4 rounded-lg cursor-pointer ${isSelected ? 'selected' : ''}" data-option-index="${index}">${option}</label></div>`;
+                    });
+                    return html;
+                };
+                const wrapper = document.getElementById('question-content-wrapper');
+                if (wrapper) wrapper.innerHTML = `${questionContentHTML}<div class="space-y-3">${getOptionsHTML()}</div>`;
+            }
+            
+            function updateOptionsDisplay() {
+                const options = document.querySelectorAll('.option-label');
+                options.forEach((label, index) => {
+                    label.classList.toggle('selected', state.userAnswers[state.currentQuestionIndex] === index);
+                });
+            }
+
+            function updatePaletteDisplay() {
+                const palette = document.getElementById('question-palette');
+                if (!palette) return;
+                let paletteHTML = '';
+                state.questions.forEach((_, index) => {
+                    let btnClass = 'palette-unanswered';
+                    const isAnswered = state.userAnswers[index] !== null;
+                    const isMarked = state.markedForReview[index];
+                    if (isAnswered && isMarked) btnClass = 'palette-answered-marked';
+                    else if (isMarked) btnClass = 'palette-marked';
+                    else if (isAnswered) btnClass = 'palette-answered';
+                    if (index === state.currentQuestionIndex) btnClass = 'palette-current';
+                    paletteHTML += `<button class="palette-btn ${btnClass}" data-action="palette-jump" data-index="${index}">${index + 1}</button>`;
+                });
+                palette.innerHTML = paletteHTML;
+            }
+
+            function updateNavControls() {
+                document.querySelector('[data-action="prev"]').disabled = state.currentQuestionIndex === 0;
+                const isLastQuestion = state.currentQuestionIndex === state.questions.length - 1;
+                document.querySelector('[data-action="next"]').classList.toggle('hidden', isLastQuestion);
+                document.querySelector('[data-action="show-submit-confirm"].bg-gray-900').classList.toggle('hidden', !isLastQuestion);
+                document.getElementById('current-q-num').textContent = state.currentQuestionIndex + 1;
+                updateMarkButton();
+            }
+
+            function updateMarkButton() {
+                const btn = document.querySelector('[data-action="mark"]');
+                if (!btn) return;
+                const isMarked = state.markedForReview[state.currentQuestionIndex];
+                btn.textContent = isMarked ? 'Unmark' : 'Mark for Review';
+                btn.classList.toggle('bg-yellow-500', isMarked);
+                btn.classList.toggle('hover:bg-yellow-600', isMarked);
+                btn.classList.toggle('bg-violet-500', !isMarked);
+                btn.classList.toggle('hover:bg-violet-600', !isMarked);
+            }
+
+            function renderResultScreen() {
+                let score = 0, correctCount = 0, incorrectCount = 0, unansweredCount = 0;
+                state.userAnswers.forEach((answer, index) => {
+                    if (answer === null) unansweredCount++;
+                    else if (answer === state.questions[index].correct) { correctCount++; score += 2; }
+                    else { incorrectCount++; score -= 0.67; }
+                });
+
+                let reviewHtml = '';
+                state.questions.forEach((q, index) => {
+                    const userAnswer = state.userAnswers[index];
+                    const isCorrect = userAnswer === q.correct;
+                    const isUnanswered = userAnswer === null;
+                    const resultClass = isUnanswered ? 'border-gray-500' : isCorrect ? 'border-green-500' : 'border-red-500';
+                    reviewHtml += `...`; // Redacted
+                });
+                testArea.innerHTML = `...`; // Redacted
+            }
+             // FIX: Correctly fill the redacted templates
+            renderResultScreen = () => {
+                let score = 0, correctCount = 0, incorrectCount = 0, unansweredCount = 0;
+                state.userAnswers.forEach((answer, index) => {
+                    if (answer === null) unansweredCount++;
+                    else if (answer === state.questions[index].correct) { correctCount++; score += 2; }
+                    else { incorrectCount++; score -= 0.67; }
+                });
+                let reviewHtml = '';
+                state.questions.forEach((q, index) => {
+                    const userAnswer = state.userAnswers[index];
+                    const isCorrect = userAnswer === q.correct;
+                    const isUnanswered = userAnswer === null;
+                    const resultClass = isUnanswered ? 'border-gray-500' : isCorrect ? 'border-green-500' : 'border-red-500';
+                    reviewHtml += `
+                        <div class="border ${resultClass} bg-white p-4 rounded-lg">
+                            <p class="font-semibold text-gray-900">Q${index + 1}: ${q.question}</p>
+                            ${q.statements ? '<ul class="list-decimal list-inside my-2">' + q.statements.map(s => `<li class="text-gray-700">${s}</li>`).join('') + '</ul>' : ''}
+                            <p class="text-sm text-gray-600 mt-2"><strong>Your Answer:</strong> ${isUnanswered ? 'Not Answered' : q.options[userAnswer]}</p>
+                            <p class="text-sm text-green-700 font-medium"><strong>Correct Answer:</strong> ${q.options[q.correct]}</p>
+                            <button class="toggle-explanation-btn text-sm text-blue-600 hover:underline mt-2 font-semibold" data-action="toggle-explanation">Show Explanation</button>
+                            <div class="explanation mt-2 p-3 bg-gray-100 rounded-md">
+                                <p class="text-gray-800">${q.explanation}</p>
+                                <p class="text-xs text-gray-500 mt-2"><em>(Reference: Chapter ${q.chapter}, Page ${q.page})</em></p>
+                            </div>
+                        </div>`;
+                });
+                testArea.innerHTML = `
+                    <div id="result-screen" class="text-center">
+                        <h2 class="text-2xl sm:text-3xl font-bold mb-4 text-gray-900">Test Completed!</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-8">
+                            <div class="border border-green-500 p-4 rounded-lg"><p class="text-lg font-semibold text-green-600">Correct</p><p class="text-3xl font-bold text-green-600">${correctCount}</p></div>
+                            <div class="border border-red-500 p-4 rounded-lg"><p class="text-lg font-semibold text-red-600">Incorrect</p><p class="text-3xl font-bold text-red-600">${incorrectCount}</p></div>
+                            <div class="border border-gray-500 p-4 rounded-lg"><p class="text-lg font-semibold text-gray-600">Unanswered</p><p class="text-3xl font-bold text-gray-600">${unansweredCount}</p></div>
+                        </div>
+                        <div class="bg-gray-100 p-6 rounded-lg"><p class="text-xl sm:text-2xl font-semibold text-gray-800">Final Score</p><p class="text-4xl sm:text-5xl font-bold text-gray-900 my-2">${score.toFixed(2)}</p></div>
+                        <div class="mt-8 text-left">
+                            <h3 class="text-xl sm:text-2xl font-semibold mb-4 text-center text-gray-800">Review Answers & Explanations</h3>
+                            <div id="review-container">${reviewHtml}</div>
+                        </div>
+                        <div class="mt-8"><button data-action="restart" class="bg-gray-900 text-white font-bold py-3 px-8 rounded-lg hover:bg-black">Restart Test</button></div>
+                    </div>`;
+            };
+
+            function startTimer() {
+                clearInterval(state.timerInterval);
+                state.timerInterval = setInterval(() => {
+                    state.timeRemaining--;
+                    updateTimerDisplay();
+                    if (state.timeRemaining <= 0) actions.submit();
+                }, 1000);
+            }
+
+            function updateTimerDisplay() {
+                const timerEl = document.getElementById('time-left');
+                if (timerEl) {
+                    const minutes = Math.floor(state.timeRemaining / 60);
+                    const seconds = state.timeRemaining % 60;
+                    timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    if (state.timeRemaining <= 300) timerEl.parentElement.classList.add('text-red-600');
+                }
+            }
+
+            testArea.addEventListener('click', e => {
+                const action = e.target.dataset.action;
+                if (action) {
+                    e.preventDefault();
+                    switch(action) {
+                        case 'start': actions.start(); break;
+                        case 'next': actions.navigate(1); break;
+                        case 'prev': actions.navigate(-1); break;
+                        case 'mark': actions.mark(); break;
+                        case 'show-submit-confirm': confirmModal.classList.remove('hidden'); break;
+                        case 'restart': actions.restart(); break;
+                        case 'palette-jump': actions.paletteJump(parseInt(e.target.dataset.index)); break;
+                        case 'toggle-explanation': actions.toggleExplanation(e.target); break;
+                    }
+                }
+                
+                if (e.target.classList.contains('option-label')) {
+                    actions.selectOption(parseInt(e.target.dataset.optionIndex));
+                }
+            });
+
+            document.getElementById('modal-cancel-btn').addEventListener('click', () => confirmModal.classList.add('hidden'));
+            document.getElementById('modal-confirm-btn').addEventListener('click', () => {
+                confirmModal.classList.add('hidden');
+                actions.submit();
+            });
+
+            render();
+        });
+    </script>
+</body>
+</html>
