@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPSC Practice Test: Economic Reforms Since 1991</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for a cleaner scrollbar and smoother transitions */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Custom modal backdrop */
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        /* FIX: Custom grid for the question palette for robustness */
+        .grid-cols-15 {
+            grid-template-columns: repeat(15, minmax(0, 1fr));
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <!-- Main Application Container -->
+    <div id="app-container" class="max-w-7xl mx-auto p-4">
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="text-center bg-white p-8 rounded-lg shadow-lg fade-in">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">UPSC Practice Test</h1>
+            <h2 class="text-2xl font-semibold text-gray-700 mb-6">Topic: Economic Reforms Since 1991</h2>
+            <div class="text-left max-w-2xl mx-auto my-8 p-6 border border-gray-200 rounded-lg">
+                <h3 class="text-xl font-bold mb-3 text-gray-800">Instructions:</h3>
+                <ul class="list-disc list-inside space-y-2 text-gray-600">
+                    <li>This test contains <strong>15 multiple-choice questions</strong>.</li>
+                    <li>You will have <strong>60 minutes</strong> to complete the test.</li>
+                    <li>The question palette at the bottom helps you navigate and track your progress.</li>
+                    <li>Click the "End Test" button when you are finished. Your results will be displayed immediately.</li>
+                    <li>There is no negative marking in this practice test.</li>
+                </ul>
+            </div>
+            <button id="start-btn" class="bg-blue-600 text-white font-bold py-3 px-10 rounded-lg hover:bg-blue-700 transition-transform transform hover:scale-105">
+                Start Test
+            </button>
+        </div>
+
+        <!-- Test Screen -->
+        <div id="test-screen" class="hidden">
+            <!-- Sticky Header -->
+            <header class="sticky top-0 bg-white shadow-md z-10 p-4 rounded-lg mb-4">
+                <div class="flex justify-between items-center flex-wrap gap-4">
+                    <h1 class="text-xl font-bold text-gray-800">Indian Economy</h1>
+                    <div class="flex items-center space-x-4 sm:space-x-6">
+                        <div id="question-counter" class="text-lg font-semibold text-gray-700">Question 1/15</div>
+                        <div id="timer" class="text-lg font-bold text-red-600 bg-red-100 px-4 py-1 rounded-md">60:00</div>
+                        <button id="end-test-btn" class="bg-red-600 text-white font-semibold py-2 px-6 rounded-md hover:bg-red-700">End Test</button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content Area -->
+            <main id="question-area" class="bg-white p-6 rounded-lg shadow-lg mb-40 min-h-[calc(100vh-250px)]">
+                <!-- Question will be loaded here -->
+            </main>
+
+            <!-- Sticky Footer / Question Palette -->
+            <footer class="fixed bottom-0 left-0 right-0 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-10">
+                <div class="max-w-7xl mx-auto p-4">
+                    <div class="flex justify-between items-center mb-3 flex-wrap gap-2">
+                        <div>
+                            <button id="prev-btn" class="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-md hover:bg-gray-400">Previous</button>
+                            <button id="next-btn" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-md hover:bg-blue-700 ml-2">Next</button>
+                        </div>
+                        <div id="palette-legend" class="hidden md:flex items-center space-x-4 text-sm">
+                            <span class="flex items-center"><span class="w-4 h-4 bg-green-500 rounded-full mr-2"></span>Answered</span>
+                            <span class="flex items-center"><span class="w-4 h-4 bg-gray-400 rounded-full mr-2"></span>Unanswered</span>
+                             <span class="flex items-center"><span class="w-4 h-4 bg-purple-500 rounded-full mr-2"></span>Marked</span>
+                            <span class="flex items-center"><span class="w-4 h-4 bg-yellow-400 rounded-full mr-2"></span>Answered & Marked</span>
+                        </div>
+                        <button id="mark-review-btn" class="bg-purple-600 text-white font-bold py-2 px-6 rounded-md hover:bg-purple-700">Mark for Review</button>
+                    </div>
+                    <div id="question-palette" class="grid grid-cols-15 gap-2 text-center">
+                        <!-- Palette buttons will be generated here -->
+                    </div>
+                </div>
+            </footer>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-screen" class="hidden bg-white p-8 rounded-lg shadow-lg fade-in">
+            <h1 class="text-4xl font-bold text-center text-gray-800 mb-6">Test Results</h1>
+            <div class="flex justify-around items-center bg-gray-50 p-6 rounded-lg mb-8 max-w-3xl mx-auto flex-wrap gap-4">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-600">Score</h3>
+                    <p id="score" class="text-5xl font-bold text-blue-600">10/15</p>
+                </div>
+                <div class="border-l border-gray-300 h-20 hidden sm:block"></div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-600">Correct</h3>
+                    <p id="correct-count" class="text-3xl font-bold text-green-600">10</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-600">Incorrect</h3>
+                    <p id="incorrect-count" class="text-3xl font-bold text-red-600">5</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-600">Unanswered</h3>
+                    <p id="unanswered-count" class="text-3xl font-bold text-gray-500">0</p>
+                </div>
+            </div>
+
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">Review Answers</h2>
+            <div id="review-section" class="space-y-6">
+                <!-- Review content will be loaded here -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal" class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop">
+        <div class="bg-white rounded-lg shadow-2xl p-8 max-w-sm mx-auto">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Confirm Submission</h3>
+            <p class="text-gray-600 mb-6">Are you sure you want to end the test? You cannot make any changes after this.</p>
+            <div class="flex justify-end space-x-4">
+                <button id="cancel-end-test" class="bg-gray-300 text-gray-800 font-semibold py-2 px-6 rounded-md hover:bg-gray-400">Cancel</button>
+                <button id="confirm-end-test" class="bg-red-600 text-white font-semibold py-2 px-6 rounded-md hover:bg-red-700">Submit</button>
+            </div>
+        </div>
+    </div>
+
+
+<script>
+// ---------- DATA SOURCE ----------
+// All questions, options, and explanations are generated directly from the provided PDF (keec103.pdf).
+const testData = [
+    {
+        id: 1,
+        type: 'mcq',
+        text: `What was the immediate trigger for the introduction of economic reforms in India in 1991?`,
+        options: [
+            { id: 'a', text: `A political decision to open the economy for global competition.` },
+            { id: 'b', text: `A crisis in the balance of payments and dwindling foreign exchange reserves.` },
+            { id: 'c', text: `Pressure from domestic private industries to remove licensing.` },
+            { id: 'd', text: `A surplus in foreign exchange reserves that encouraged liberalization.` }
+        ],
+        correctOptionId: 'b',
+        hint: `Think about India's external debt situation and foreign currency reserves at the time.`,
+        explanation: `In 1991, India faced a severe economic crisis related to its external debt. The government was unable to make repayments on its borrowings from abroad, and foreign exchange reserves dropped to a level insufficient to cover even a fortnight's worth of imports. This balance of payments crisis was the immediate catalyst for the New Economic Policy.`,
+        reference: `Page 2, 4`
+    },
+    {
+        id: 2,
+        type: 'mcq',
+        text: `The New Economic Policy (NEP) announced in 1991 can be broadly classified into which two groups of measures?`,
+        options: [
+            { id: 'a', text: `Agricultural Reforms and Industrial Reforms.` },
+            { id: 'b', text: `Short-term Fiscal Policies and Long-term Monetary Policies.` },
+            { id: 'c', text: `Stabilisation Measures and Structural Reform Measures.` },
+            { id: 'd', text: `Deregulation Measures and Nationalisation Measures.` }
+        ],
+        correctOptionId: 'c',
+        hint: `One group was for immediate crisis management, and the other was for long-term efficiency.`,
+        explanation: `The set of policies under the NEP can be broadly classified into two groups: stabilisation measures and structural reform measures. Stabilisation measures are short-term actions intended to correct weaknesses in the balance of payments and control inflation. Structural reform policies are long-term measures aimed at improving the economy's efficiency and international competitiveness.`,
+        reference: `Page 5`
+    },
+    {
+        id: 3,
+        type: 'mcq',
+        text: `Under the liberalisation policy post-1991, industrial licensing was abolished for almost all product categories except for a few. Which of the following falls into that exception?`,
+        options: [
+            { id: 'a', text: `Textiles, automobiles, and consumer electronics.` },
+            { id: 'b', text: `Information Technology and software services.` },
+            { id: 'c', text: `Alcohol, hazardous chemicals, and industrial explosives.` },
+            { id: 'd', text: `Food processing and agricultural products.` }
+        ],
+        correctOptionId: 'c',
+        hint: `The government retained control over industries with significant safety, health, or security implications.`,
+        explanation: `The reform policies introduced in and after 1991 removed many restrictions, including industrial licensing. However, licensing was retained for a few specific product categories, including alcohol, cigarettes, hazardous chemicals, industrial explosives, electronics, aerospace, and drugs and pharmaceuticals.`,
+        reference: `Page 6`
+    },
+    {
+        id: 4,
+        type: 'mcq',
+        text: `What is the specific term used for the process of privatising public sector enterprises by selling off part of their equity to the public?`,
+        options: [
+            { id: 'a', text: `Globalisation` },
+            { id: 'b', text: `Liberalisation` },
+            { id: 'c', text: `Nationalisation` },
+            { id: 'd', text: `Disinvestment` }
+        ],
+        correctOptionId: 'd',
+        hint: `This process is a key component of the privatisation policy.`,
+        explanation: `Privatisation of the public sector enterprises by selling off part of the equity of PSEs to the public is known as disinvestment. The stated purpose was mainly to improve financial discipline, facilitate modernisation, and leverage private capital and managerial skills.`,
+        reference: `Page 9`
+    },
+    {
+        id: 5,
+        type: 'mcq',
+        text: `According to the provided text, what are the primary reasons India has become a major destination for global outsourcing?`,
+        options: [
+            { id: 'a', text: `Favourable climate and geographical location.` },
+            { id: 'b', text: `Government subsidies for all foreign companies.` },
+            { id: 'c', text: `Low wage rates and availability of skilled manpower.` },
+            { id: 'd', text: `Strict domestic regulations that push services abroad.` }
+        ],
+        correctOptionId: 'c',
+        hint: `Consider the cost and human resource advantages India offers.`,
+        explanation: `The text explicitly states that most multinational corporations outsource their services to India where they can be availed at a cheaper cost with a reasonable degree of skill and accuracy. The low wage rates and availability of skilled manpower in India have made it a destination for global outsourcing in the post-reform period.`,
+        reference: `Page 11`
+    },
+    {
+        id: 6,
+        type: 'mcq',
+        text: `The World Trade Organisation (WTO) was founded in 1995 as the successor to which organization?`,
+        options: [
+            { id: 'a', text: `The World Bank (IBRD)` },
+            { id: 'b', text: `The International Monetary Fund (IMF)` },
+            { id: 'c', text: `The General Agreement on Trade and Tariff (GATT)` },
+            { id: 'd', text: `The United Nations Conference on Trade and Development (UNCTAD)` }
+        ],
+        correctOptionId: 'c',
+        hint: `This predecessor organization was established in 1948 to administer multilateral trade agreements.`,
+        explanation: `The WTO was founded in 1995 as the successor organisation to the General Agreement on Trade and Tariff (GATT). GATT itself was established in 1948 with 23 countries to administer global trade agreements.`,
+        reference: `Page 11`
+    },
+    {
+        id: 7,
+        type: 'mcq',
+        text: `Which of the following is cited as a negative impact of the economic reforms on the agricultural sector in India?`,
+        options: [
+            { id: 'a', text: `A significant increase in public investment in irrigation and power.` },
+            { id: 'b', text: `A fall in public investment in infrastructure like irrigation and roads.` },
+            { id: 'c', text: `A government-mandated shift from cash crops to food grains.` },
+            { id: 'd', text: `A sharp increase in fertiliser subsidies, reducing costs for all farmers.` }
+        ],
+        correctOptionId: 'b',
+        hint: `Consider how government spending in the agricultural sector changed after 1991.`,
+        explanation: `The reforms have not been able to benefit agriculture, where the growth rate has been decelerating. A key reason cited is that public investment in the agriculture sector, especially in infrastructure (which includes irrigation, power, roads, etc.), has fallen since 1991.`,
+        reference: `Page 15`
+    },
+    {
+        id: 8,
+        type: 'mcq',
+        text: `What is one of the primary reasons mentioned for the slowdown in India's industrial growth during the reform period?`,
+        options: [
+            { id: 'a', text: `Lack of skilled labor for advanced manufacturing.` },
+            { id: 'b', text: `An overwhelming increase in demand for domestic goods over imports.` },
+            { id: 'c', text: `Competition from cheaper imports and inadequate infrastructure investment.` },
+            { id: 'd', text: `Prohibitive export duties placed on Indian manufactured goods.` }
+        ],
+        correctOptionId: 'c',
+        hint: `Think about the effects of opening the economy to foreign goods and the state of domestic facilities.`,
+        explanation: `Industrial growth recorded a slowdown due to decreasing demand for industrial products. This was caused by various reasons, including cheaper imports replacing the demand for domestic goods and inadequate investment in infrastructure facilities like power supply.`,
+        reference: `Page 15`
+    },
+    {
+        id: 9,
+        type: 'mcq',
+        text: `A major aim of the financial sector reforms was to change the role of the Reserve Bank of India (RBI) from a 'regulator' to what?`,
+        options: [
+            { id: 'a', text: `An owner of all commercial banks.` },
+            { id: 'b', text: `A facilitator of the financial sector.` },
+            { id: 'c', text: `A direct lender to large corporations.` },
+            { id: 'd', text: `An enforcer of government-mandated price controls.` }
+        ],
+        correctOptionId: 'b',
+        hint: `The goal was to give banks more autonomy in their decision-making.`,
+        explanation: `One of the major aims of financial sector reforms is to reduce the role of the RBI from regulator to facilitator of the financial sector. This means the financial sector would be allowed to take decisions on many matters without consulting the RBI.`,
+        reference: `Page 6`
+    },
+    {
+        id: 10,
+        type: 'mcq',
+        text: `What immediate measure was taken in the foreign exchange market in 1991 to resolve the balance of payments crisis?`,
+        options: [
+            { id: 'a', text: `The rupee was revalued to strengthen its global position.` },
+            { id: 'b', text: `The determination of the rupee's value was completely fixed by the government.` },
+            { id: 'c', text: `The rupee was devalued against foreign currencies.` },
+            { id: 'd', text: `India temporarily adopted the US dollar as its official currency.` }
+        ],
+        correctOptionId: 'c',
+        hint: `This measure was intended to make exports cheaper and imports more expensive, thereby boosting foreign exchange inflow.`,
+        explanation: `In 1991, as an immediate measure to resolve the balance of payments crisis, the rupee was devalued against foreign currencies. This action led to an increase in the inflow of foreign exchange.`,
+        reference: `Page 7`
+    },
+    {
+        id: 11,
+        type: 'mcq',
+        text: `What was the primary purpose of granting 'maharatna', 'navratna', and 'miniratna' status to certain Public Sector Enterprises (PSEs)?`,
+        options: [
+            { id: 'a', text: `To prepare them for immediate privatization and sale to foreign companies.` },
+            { id: 'b', text: `To exempt them from all forms of corporate taxation.` },
+            { id: 'c', text: `To improve efficiency by granting greater managerial and operational autonomy.` },
+            { id: 'd', text: `To restrict their operations solely to the domestic market to avoid competition.` }
+        ],
+        correctOptionId: 'c',
+        hint: `This policy was designed to help them compete more effectively in a liberalized environment.`,
+        explanation: `To improve efficiency, infuse professionalism, and enable them to compete more effectively in the liberalised global environment, the government identifies PSEs and grants them status like maharatnas, navratnas, and miniratnas. They were given greater managerial and operational autonomy to run the company efficiently and increase their profits.`,
+        reference: `Page 9`
+    },
+    {
+        id: 12,
+        type: 'mcq',
+        text: `According to the text, what was the rationale behind the continuous reduction in taxes on individual incomes since 1991?`,
+        options: [
+            { id: 'a', text: `To discourage individual savings and increase government dependency.` },
+            { id: 'b', text: `It was felt that high tax rates were an important reason for tax evasion.` },
+            { id: 'c', text: `To completely eliminate the need for indirect taxes like GST.` },
+            { id: 'd', text: `To comply with a mandatory directive from the World Trade Organisation.` }
+        ],
+        correctOptionId: 'b',
+        hint: `The government aimed to encourage better compliance from taxpayers.`,
+        explanation: `Since 1991, there has been a continuous reduction in the taxes on individual incomes as it was felt that high rates of income tax were an important reason for tax evasion. It is now widely accepted that moderate rates of income tax encourage savings and voluntary disclosure of income.`,
+        reference: `Page 7`
+    },
+    {
+        id: 13,
+        type: 'mcq',
+        text: `Prior to the 1991 reforms, what was a key criticism of the regulatory mechanisms like industrial licensing?`,
+        options: [
+            { id: 'a', text: `They were too lenient and allowed for uncontrolled industrial growth.` },
+            { id: 'b', text: `They ended up hampering the process of growth and development.` },
+            { id: 'c', text: `They only applied to the agricultural sector and not the industrial sector.` },
+            { id: 'd', text: `They were highly effective in eliminating poverty and unemployment.` }
+        ],
+        correctOptionId: 'b',
+        hint: `The rules intended to control the economy were seen by some scholars as counterproductive.`,
+        explanation: `Some scholars argue that, over the years, the policy of a mixed economy resulted in a variety of rules and laws which were aimed at controlling and regulating the economy, but ended up instead in hampering the process of growth and development.`,
+        reference: `Page 4`
+    },
+    {
+        id: 14,
+        type: 'mcq',
+        text: `The opening of the Indian economy after 1991 led to a significant increase in which two types of financial inflows?`,
+        options: [
+            { id: 'a', text: `Foreign aid and government grants.` },
+            { id: 'b', text: `Domestic savings and internal government borrowing.` },
+            { id: 'c', text: `Foreign direct investment (FDI) and foreign institutional investment (FII).` },
+            { id: 'd', text: `Revenue from export duties and import tariffs.` }
+        ],
+        correctOptionId: 'c',
+        hint: `This involves investment from abroad, both for long-term projects and in financial markets.`,
+        explanation: `The opening of the economy has led to a rapid increase in foreign direct investment and foreign exchange reserves. Foreign investment, which includes foreign direct investment (FDI) and foreign institutional investment (FII), has increased from about US $100 million in 1990-91 to US $30 billion in 2017-18.`,
+        reference: `Page 13`
+    },
+    {
+        id: 15,
+        type: 'mcq',
+        text: `What is a major criticism of market-driven globalisation mentioned in the conclusion of the chapter?`,
+        options: [
+            { id: 'a', text: `It has equally benefited all nations and all sections of their societies.` },
+            { id: 'b', text: `It has successfully reduced the economic disparities among nations and people.` },
+            { id: 'c', text: `It has widened economic disparities and compromised the welfare of poor countries.` },
+            { id: 'd', text: `It has forced a focus on vital sectors like agriculture over the services sector.` }
+        ],
+        correctOptionId: 'c',
+        hint: `Critics argue that the benefits of globalization are not evenly distributed.`,
+        explanation: `Critics argue that globalisation is a strategy of the developed countries to expand their markets in other countries. It has further been pointed out that market-driven globalisation has widened the economic disparities among nations and people and compromised the welfare and identity of people belonging to poor countries.`,
+        reference: `Page 17`
+    }
+];
+
+// ---------- APPLICATION LOGIC ----------
+document.addEventListener('DOMContentLoaded', () => {
+    // State
+    let currentQuestionIndex = 0;
+    let userAnswers = new Array(testData.length).fill(null);
+    let markedForReview = new Array(testData.length).fill(false);
+    let timeLeft = 3600; // 60 minutes
+    let timerInterval;
+
+    // DOM Elements
+    const startScreen = document.getElementById('start-screen');
+    const testScreen = document.getElementById('test-screen');
+    const resultsScreen = document.getElementById('results-screen');
+    const startBtn = document.getElementById('start-btn');
+    const questionCounter = document.getElementById('question-counter');
+    const timerDisplay = document.getElementById('timer');
+    const endTestBtn = document.getElementById('end-test-btn');
+    const questionArea = document.getElementById('question-area');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const markReviewBtn = document.getElementById('mark-review-btn');
+    const questionPalette = document.getElementById('question-palette');
+    const modal = document.getElementById('confirmation-modal');
+    const cancelEndTestBtn = document.getElementById('cancel-end-test');
+    const confirmEndTestBtn = document.getElementById('confirm-end-test');
+
+    // Functions
+    const startTest = () => {
+        startScreen.classList.add('hidden');
+        testScreen.classList.remove('hidden');
+        loadQuestion(currentQuestionIndex);
+        updatePalette();
+        startTimer();
+    };
+
+    const startTimer = () => {
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            if (timeLeft <= 0) {
+                endTest();
+            }
+        }, 1000);
+    };
+
+    const loadQuestion = (index) => {
+        const question = testData[index];
+        questionArea.innerHTML = ''; // Clear previous question
+        questionArea.classList.remove('fade-in');
+        void questionArea.offsetWidth; // Trigger reflow
+        questionArea.classList.add('fade-in');
+
+        const questionText = document.createElement('div');
+        questionText.className = 'text-xl font-semibold text-gray-800 mb-6';
+        questionText.textContent = `Q${question.id}: ${question.text}`;
+
+        const optionsContainer = document.createElement('div');
+        optionsContainer.className = 'space-y-4';
+
+        question.options.forEach(option => {
+            const optionWrapper = document.createElement('div');
+            optionWrapper.className = 'flex items-center p-4 border rounded-lg cursor-pointer hover:bg-blue-50 transition-colors';
+            
+            const radio = document.createElement('input');
+            radio.type = 'radio';
+            radio.name = `question-${question.id}`;
+            radio.id = `option-${option.id}`;
+            radio.value = option.id;
+            radio.className = 'h-5 w-5 mr-4 text-blue-600 focus:ring-blue-500 border-gray-300';
+            radio.checked = userAnswers[index] === option.id;
+
+            // FIX: Added change event listener for robustness
+            radio.addEventListener('change', () => selectOption(option.id));
+
+            const label = document.createElement('label');
+            label.htmlFor = `option-${option.id}`;
+            label.textContent = option.text;
+            label.className = 'text-gray-700 w-full cursor-pointer';
+
+            optionWrapper.appendChild(radio);
+            optionWrapper.appendChild(label);
+            optionsContainer.appendChild(optionWrapper);
+
+            optionWrapper.addEventListener('click', () => {
+                if (!radio.checked) {
+                    radio.checked = true;
+                    // Manually trigger change event for consistency
+                    radio.dispatchEvent(new Event('change'));
+                }
+            });
+        });
+
+        const helpContainer = document.createElement('div');
+        helpContainer.className = 'mt-6';
+        const hintBtn = document.createElement('button');
+        hintBtn.textContent = 'Show Hint';
+        hintBtn.className = 'text-sm text-blue-600 hover:underline';
+        const hintText = document.createElement('p');
+        hintText.textContent = question.hint;
+        hintText.className = 'hidden mt-2 p-3 bg-yellow-100 text-yellow-800 rounded-md';
+
+        hintBtn.onclick = () => { hintText.classList.toggle('hidden'); };
+        
+        helpContainer.appendChild(hintBtn);
+        helpContainer.appendChild(hintText);
+
+        questionArea.appendChild(questionText);
+        questionArea.appendChild(optionsContainer);
+        questionArea.appendChild(helpContainer);
+
+        questionCounter.textContent = `Question ${index + 1}/${testData.length}`;
+        prevBtn.disabled = index === 0;
+        prevBtn.classList.toggle('opacity-50', index === 0);
+        nextBtn.disabled = index === testData.length - 1;
+        nextBtn.classList.toggle('opacity-50', index === testData.length - 1);
+        markReviewBtn.textContent = markedForReview[index] ? 'Unmark' : 'Mark for Review';
+    };
+
+    const selectOption = (optionId) => {
+        userAnswers[currentQuestionIndex] = optionId;
+        updatePalette();
+    };
+
+    const navigate = (direction) => {
+        const newIndex = currentQuestionIndex + direction;
+        if (newIndex >= 0 && newIndex < testData.length) {
+            currentQuestionIndex = newIndex;
+            loadQuestion(currentQuestionIndex);
+            updatePalette();
+        }
+    };
+
+    const jumpToQuestion = (index) => {
+        currentQuestionIndex = index;
+        loadQuestion(index);
+        updatePalette();
+    };
+
+    const toggleMarkForReview = () => {
+        markedForReview[currentQuestionIndex] = !markedForReview[currentQuestionIndex];
+        markReviewBtn.textContent = markedForReview[currentQuestionIndex] ? 'Unmark' : 'Mark for Review';
+        updatePalette();
+    };
+
+    const updatePalette = () => {
+        questionPalette.innerHTML = '';
+        testData.forEach((_, index) => {
+            const btn = document.createElement('button');
+            btn.textContent = index + 1;
+            btn.className = 'w-10 h-10 rounded-md text-white font-bold transition-transform transform hover:scale-110 focus:outline-none';
+            
+            const isAnswered = userAnswers[index] !== null;
+            const isMarked = markedForReview[index];
+            
+            let colorClass = 'bg-gray-400'; // Unanswered
+            if(isAnswered && isMarked) colorClass = 'bg-yellow-400';
+            else if (isAnswered) colorClass = 'bg-green-500';
+            else if (isMarked) colorClass = 'bg-purple-500';
+            
+            btn.classList.add(colorClass);
+
+            if (index === currentQuestionIndex) {
+                btn.classList.add('ring-2', 'ring-blue-500', 'ring-offset-2');
+            }
+
+            btn.onclick = () => jumpToQuestion(index);
+            questionPalette.appendChild(btn);
+        });
+    };
+
+    const showConfirmationModal = () => modal.classList.replace('hidden', 'flex');
+    const hideConfirmationModal = () => modal.classList.replace('flex', 'hidden');
+
+    const endTest = () => {
+        clearInterval(timerInterval);
+        hideConfirmationModal();
+        calculateAndShowResults();
+        testScreen.classList.add('hidden');
+        resultsScreen.classList.remove('hidden');
+    };
+
+    const calculateAndShowResults = () => {
+        let correct = 0;
+        let incorrect = 0;
+        let unanswered = 0;
+
+        userAnswers.forEach((answer, index) => {
+            if (answer === null) {
+                unanswered++;
+            } else if (answer === testData[index].correctOptionId) {
+                correct++;
+            } else {
+                incorrect++;
+            }
+        });
+
+        document.getElementById('score').textContent = `${correct}/${testData.length}`;
+        document.getElementById('correct-count').textContent = correct;
+        document.getElementById('incorrect-count').textContent = incorrect;
+        document.getElementById('unanswered-count').textContent = unanswered;
+
+        const reviewSection = document.getElementById('review-section');
+        reviewSection.innerHTML = '';
+        testData.forEach((question, index) => {
+            const userAnswer = userAnswers[index];
+            const isCorrect = userAnswer === question.correctOptionId;
+            const container = document.createElement('div');
+            container.className = `p-4 border rounded-lg ${isCorrect ? 'border-green-300 bg-green-50' : userAnswer === null ? 'border-gray-300 bg-gray-50' : 'border-red-300 bg-red-50'}`;
+            
+            let reviewHTML = `<p class="text-lg font-semibold text-gray-800 mb-2">Q${index + 1}: ${question.text}</p><div class="space-y-1 mb-4">`;
+
+            question.options.forEach(option => {
+                let optionClass = 'text-gray-700';
+                let indicator = '';
+
+                if (option.id === question.correctOptionId) {
+                    optionClass = 'font-bold text-green-700';
+                    indicator = ' (Correct Answer)';
+                }
+                if (option.id === userAnswer && !isCorrect) {
+                    optionClass = 'font-bold text-red-700';
+                    indicator = ' (Your Answer)';
+                } else if (option.id === userAnswer && isCorrect) {
+                     indicator = ' (Your Answer)';
+                }
+                reviewHTML += `<p class="${optionClass}">${option.id.toUpperCase()}. ${option.text}${indicator}</p>`;
+            });
+
+            reviewHTML += `</div><div class="mt-4 pt-4 border-t border-gray-200"><p class="font-bold text-gray-800">Explanation:</p><p class="text-gray-700">${question.explanation}</p><p class="text-sm text-gray-500 mt-2">Reference: ${question.reference}</p></div>`;
+            container.innerHTML = reviewHTML;
+            reviewSection.appendChild(container);
+        });
+    };
+
+    // Event Listeners
+    startBtn.addEventListener('click', startTest);
+    prevBtn.addEventListener('click', () => navigate(-1));
+    nextBtn.addEventListener('click', () => navigate(1));
+    markReviewBtn.addEventListener('click', toggleMarkForReview);
+    endTestBtn.addEventListener('click', showConfirmationModal);
+    cancelEndTestBtn.addEventListener('click', hideConfirmationModal);
+    confirmEndTestBtn.addEventListener('click', endTest);
+});
+</script>
+
+</body>
+</html>
