@@ -427,6 +427,65 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.7; }
         }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            body {
+                -webkit-text-size-adjust: 100%; /* Prevent font scaling in landscape mode */
+            }
+
+            /* Reduce font sizes for mobile */
+            .text-4xl { font-size: 2rem; line-height: 2.5rem; }
+            .text-3xl { font-size: 1.5rem; line-height: 2rem; }
+            .text-2xl { font-size: 1.25rem; line-height: 1.75rem; }
+            .text-xl { font-size: 1.125rem; line-height: 1.75rem; }
+            .text-lg { font-size: 1rem; line-height: 1.5rem; }
+
+            /* Adjust padding for smaller screens */
+            .p-8 { padding: 1.5rem; }
+            .px-8 { padding-left: 1rem; padding-right: 1rem; }
+            .px-6 { padding-left: 1rem; padding-right: 1rem; }
+            .py-6 { padding-top: 1rem; padding-bottom: 1rem; }
+            .p-6 { padding: 1rem; }
+
+            /* Make quiz header responsive */
+            #quizScreen > div:first-child {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.75rem;
+                padding-top: 0.75rem;
+                padding-bottom: 0.75rem;
+            }
+            #quizScreen > div:first-child > div:last-child {
+                width: 100%;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            /* Adjust navigation buttons layout on mobile */
+            .nta-nav-button {
+                padding: 10px 16px;
+                font-size: 0.875rem;
+            }
+
+            /* Make results screen stats more compact */
+            #resultsScreen .gap-8 { gap: 1.5rem; }
+            #scoreDisplay { font-size: 3rem; }
+
+            /* Make review screen filters wrap better */
+            .filter-btn {
+                flex-grow: 1;
+            }
+            
+            .nta-question-header {
+                font-size: 1rem;
+                padding: 12px 16px;
+            }
+            
+            .nta-option-container {
+                padding: 10px 12px;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900 h-screen overflow-hidden m-0 p-0">
@@ -491,19 +550,19 @@
         <div class="bg-white shadow-md border-b-2 border-gray-300 px-6 py-4 flex items-center justify-between sticky top-0 z-10 w-full">
             <div class="flex items-center space-x-6">
                 <div class="text-lg font-bold text-gray-800">UPSC Practice Test</div>
-                <div class="text-sm text-gray-600">Human Capital Formation</div>
+                <div class="text-sm text-gray-600 hidden sm:block">Human Capital Formation</div>
             </div>
-            <div class="flex items-center space-x-8">
+            <div class="flex items-center space-x-4 sm:space-x-8">
                 <div class="text-center">
-                    <div class="text-xs text-gray-500 uppercase tracking-wide">Time Remaining</div>
-                    <div id="timer" class="text-xl font-mono font-bold text-gray-800">60:00</div>
+                    <div class="text-xs text-gray-500 uppercase tracking-wide">Time</div>
+                    <div id="timer" class="text-lg sm:text-xl font-mono font-bold text-gray-800">60:00</div>
                 </div>
                 <div class="text-center">
                     <div class="text-xs text-gray-500 uppercase tracking-wide">Question</div>
-                    <div id="questionCounter" class="text-lg font-semibold text-gray-800">1 of 100</div>
+                    <div id="questionCounter" class="text-lg font-semibold text-gray-800">1/100</div>
                 </div>
                 <button onclick="endTest()" class="nta-nav-button" style="background: #dc2626; color: white; border-color: #dc2626;">
-                    Submit Test
+                    Submit
                 </button>
             </div>
         </div>
@@ -1645,11 +1704,11 @@
             
             // Apply NTA style timer warnings
             if (timeLeft <= 300) { // 5 minutes
-                timerElement.className = 'text-xl font-mono font-bold timer-critical';
+                timerElement.className = 'text-lg sm:text-xl font-mono font-bold timer-critical';
             } else if (timeLeft <= 900) { // 15 minutes
-                timerElement.className = 'text-xl font-mono font-bold timer-warning';
+                timerElement.className = 'text-lg sm:text-xl font-mono font-bold timer-warning';
             } else {
-                timerElement.className = 'text-xl font-mono font-bold text-gray-800';
+                timerElement.className = 'text-lg sm:text-xl font-mono font-bold text-gray-800';
             }
         }
         
@@ -1667,7 +1726,7 @@
             
             setTimeout(() => {
                 // Update question counter
-                document.getElementById('questionCounter').textContent = `${index + 1} of 100`;
+                document.getElementById('questionCounter').textContent = `${index + 1}/${questions.length}`;
                 
                 // Generate NTA-style question HTML
                 let html = `
@@ -1715,21 +1774,21 @@
                             </div>
                             
                             <!-- NTA Navigation Buttons -->
-                            <div class="mt-8 flex items-center justify-between w-full gap-4">
+                            <div class="mt-8 flex items-center justify-between w-full gap-2 sm:gap-4">
                                 <button onclick="previousQuestion()" 
                                         ${index === 0 ? 'disabled' : ''}
                                         class="nta-nav-button disabled:opacity-50 disabled:cursor-not-allowed">
-                                    ← Previous
+                                    ← Prev
                                 </button>
                                 <button onclick="toggleMarkForReview(${index})" 
                                         class="nta-nav-button review ${
                                             markedForReview.has(index) ? 'active' : ''
                                         }">
-                                    ${markedForReview.has(index) ? '★ Marked for Review' : 'Mark for Review'}
+                                    ${markedForReview.has(index) ? '★ Marked' : 'Mark'}
                                 </button>
                                 <button onclick="nextQuestion()" 
                                         class="nta-nav-button primary">
-                                    ${index === questions.length - 1 ? 'Submit Test' : 'Next'} →
+                                    ${index === questions.length - 1 ? 'Submit' : 'Next'} →
                                 </button>
                             </div>
                         </div>
@@ -1739,24 +1798,24 @@
                             <div class="nta-palette">
                                 <h4 class="text-base font-semibold text-gray-800 mb-4 flex items-center">
                                     <span class="mr-2">📋</span> Question Navigation Palette
-                                    <span class="ml-auto text-sm font-normal text-gray-600">Click any number to navigate</span>
+                                    <span class="ml-auto text-sm font-normal text-gray-600 hidden sm:block">Click any number to navigate</span>
                                 </h4>
-                                <div class="mb-4 flex flex-wrap gap-2 text-sm">
-                                    <div class="flex items-center mr-4">
-                                        <div class="w-4 h-4 bg-white border-2 border-gray-300 rounded mr-2"></div>
+                                <div class="mb-4 flex flex-wrap gap-2 text-xs sm:text-sm">
+                                    <div class="flex items-center mr-2">
+                                        <div class="w-3 h-3 sm:w-4 sm:h-4 bg-white border-2 border-gray-300 rounded mr-1 sm:mr-2"></div>
                                         <span>Not Answered</span>
                                     </div>
-                                    <div class="flex items-center mr-4">
-                                        <div class="w-4 h-4 bg-green-600 rounded mr-2"></div>
+                                    <div class="flex items-center mr-2">
+                                        <div class="w-3 h-3 sm:w-4 sm:h-4 bg-green-600 rounded mr-1 sm:mr-2"></div>
                                         <span>Answered</span>
                                     </div>
-                                    <div class="flex items-center mr-4">
-                                        <div class="w-4 h-4 bg-purple-600 rounded mr-2"></div>
-                                        <span>Marked for Review</span>
+                                    <div class="flex items-center mr-2">
+                                        <div class="w-3 h-3 sm:w-4 sm:h-4 bg-purple-600 rounded mr-1 sm:mr-2"></div>
+                                        <span>Marked</span>
                                     </div>
                                     <div class="flex items-center">
-                                        <div class="w-4 h-4 bg-gray-800 rounded mr-2"></div>
-                                        <span>Current Question</span>
+                                        <div class="w-3 h-3 sm:w-4 sm:h-4 bg-gray-800 rounded mr-1 sm:mr-2"></div>
+                                        <span>Current</span>
                                     </div>
                                 </div>
                                 <div class="palette-container overflow-y-auto w-full">
@@ -1953,12 +2012,12 @@
             
             // Calculate percentages and other metrics
             const attempted = correct + incorrect;
-            const percentage = Math.round((totalScore / (questions.length * 2)) * 100);
+            const percentage = Math.max(0, Math.round((totalScore / (questions.length * 2)) * 100));
             const accuracyRate = attempted > 0 ? Math.round((correct / attempted) * 100) : 0;
             const avgTimePerQuestion = attempted > 0 ? Math.round(totalTimeUsed / attempted) : 0;
             
             // Update basic displays
-            document.getElementById('scoreDisplay').textContent = Math.round(totalScore * 100) / 100;
+            document.getElementById('scoreDisplay').textContent = totalScore.toFixed(2);
             document.getElementById('percentageScore').textContent = percentage + '%';
             document.getElementById('correctCount').textContent = correct;
             document.getElementById('incorrectCount').textContent = incorrect;
@@ -2413,3 +2472,4 @@ UPSC Practice Test Results - Human Capital Formation in India
     </script>
 </body>
 </html>
+
