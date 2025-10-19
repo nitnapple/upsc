@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UPSC History Class 10 Quiz | Enhanced Edition</title>
+    <title>UPSC History Class 10 Quiz | In-Depth Analysis Edition</title>
     <!-- Tailwind CSS for modern styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts for a clean, readable UI -->
@@ -139,7 +139,7 @@
 
             <div class="flex justify-center items-center space-x-4 mt-10">
                  <button onclick="showReview()" class="bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300 transform hover:scale-105">
-                    Review Answers
+                    In-Depth Analysis
                 </button>
                  <button onclick="location.reload()" class="bg-slate-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-slate-700 transition-all duration-300 transform hover:scale-105">
                     Restart Quiz
@@ -150,9 +150,9 @@
         <!-- Review Section -->
         <section id="reviewSection" class="hidden">
              <div class="flex justify-between items-center mb-6">
-                <h1 class="text-3xl font-bold text-slate-900">Review Answers</h1>
+                <h1 class="text-3xl font-bold text-slate-900">In-Depth Analysis</h1>
                 <button onclick="backToResults()" class="bg-slate-200 text-slate-800 font-semibold py-2 px-6 rounded-lg hover:bg-slate-300 transition-colors duration-300">
-                    ← Back to Results
+                    ← Back to Summary
                 </button>
             </div>
             <!-- Review Dashboard -->
@@ -1129,6 +1129,8 @@
         let currentQuestionIndex = 0;
         let userAnswers = new Array(questions.length).fill(null);
         let markedForReview = new Array(questions.length).fill(false);
+        let timeSpentPerQuestion = new Array(questions.length).fill(0);
+        let questionStartTime = 0;
         let timeLeft = 90 * 60; // 90 minutes in seconds
         let timerInterval;
         let startTime;
@@ -1188,11 +1190,25 @@
         }
 
         /**
+         * Records the time spent on the current question before navigating away.
+         */
+        function recordTimeSpent() {
+             if (questionStartTime > 0) {
+                const timeSpent = (Date.now() - questionStartTime) / 1000; // in seconds
+                timeSpentPerQuestion[currentQuestionIndex] += timeSpent;
+            }
+        }
+
+
+        /**
          * Displays a specific question and updates the navigation palette.
          * @param {number} index - The index of the question to display.
          */
         function showQuestion(index) {
+            recordTimeSpent(); // Record time for the previous question
             currentQuestionIndex = index;
+            questionStartTime = Date.now(); // Start timer for the new question
+
             const question = questions[index];
             
             questionContainer.innerHTML = `
@@ -1277,7 +1293,7 @@
 
         function selectOption(optionIndex) {
             userAnswers[currentQuestionIndex] = optionIndex;
-            showQuestion(currentQuestionIndex);
+            showQuestion(currentQuestionIndex); // This re-renders, which isn't ideal but works for this scope.
             setTimeout(() => {
                 if(currentQuestionIndex < questions.length - 1) {
                     nextQuestion();
@@ -1287,7 +1303,7 @@
 
         function toggleMarkForReview() {
             markedForReview[currentQuestionIndex] = !markedForReview[currentQuestionIndex];
-            showQuestion(currentQuestionIndex);
+            updatePalette(); // Just update palette, no need to re-render whole question
         }
 
         function previousQuestion() {
@@ -1303,7 +1319,9 @@
         }
         
         function jumpToQuestion(index) {
-            showQuestion(index);
+            if (index !== currentQuestionIndex) {
+                showQuestion(index);
+            }
         }
 
         function showSubmitModal() {
@@ -1331,6 +1349,7 @@
         }
         
         function confirmSubmit() {
+            recordTimeSpent(); // Record time for the final question
             clearInterval(timerInterval);
             hideSubmitModal();
 
@@ -1369,22 +1388,85 @@
             resultSection.classList.add('hidden');
             reviewSection.classList.remove('hidden');
 
-            const correct = userAnswers.filter((a, i) => a === questions[i].correct).length;
-            const incorrect = userAnswers.filter((a, i) => a !== null && a !== questions[i].correct).length;
-            const unattempted = userAnswers.filter(a => a === null).length;
-            const attempted = correct + incorrect;
-            const accuracy = attempted > 0 ? ((correct / attempted) * 100).toFixed(2) : 0;
+            // --- IN-DEPTH ANALYSIS LOGIC ---
 
+            // 1. Basic Stats
+            const correctIndices = [];
+            const incorrectIndices = [];
+            questions.forEach((q, i) => {
+                if(userAnswers[i] === q.correct) correctIndices.push(i);
+                else if (userAnswers[i] !== null) incorrectIndices.push(i);
+            });
+            const attempted = correctIndices.length + incorrectIndices.length;
+            const accuracy = attempted > 0 ? ((correctIndices.length / attempted) * 100).toFixed(2) : 0;
+
+            // 2. Time Analysis
+            const totalTime = timeSpentPerQuestion.reduce((a, b) => a + b, 0);
+            const timePerCorrect = correctIndices.length > 0 ? (correctIndices.reduce((sum, i) => sum + timeSpentPerQuestion[i], 0) / correctIndices.length) : 0;
+            const timePerIncorrect = incorrectIndices.length > 0 ? (incorrectIndices.reduce((sum, i) => sum + timeSpentPerQuestion[i], 0) / incorrectIndices.length) : 0;
+            const avgTime = attempted > 0 ? totalTime / attempted : 0;
+
+            // 3. Chapter-wise Analysis
+            const chapterStats = {};
+            const chapterRegex = /(Chapter [IVXLC]+ \(.+?\))/;
+            questions.forEach((q, i) => {
+                const match = q.explanation.match(chapterRegex);
+                const chapterName = match ? match[1] : "Miscellaneous";
+                if (!chapterStats[chapterName]) {
+                    chapterStats[chapterName] = { total: 0, correct: 0 };
+                }
+                chapterStats[chapterName].total++;
+                if (userAnswers[i] === q.correct) {
+                    chapterStats[chapterName].correct++;
+                }
+            });
+
+            // --- RENDER DASHBOARD ---
             const reviewDashboard = document.getElementById('reviewDashboard');
+            let chapterHTML = Object.entries(chapterStats).map(([name, stats]) => {
+                const percent = stats.total > 0 ? (stats.correct / stats.total) * 100 : 0;
+                let barColor = 'bg-slate-300';
+                if (percent > 75) barColor = 'bg-green-500';
+                else if (percent > 40) barColor = 'bg-yellow-500';
+                else if (stats.total > 0) barColor = 'bg-red-500';
+
+                return `
+                    <div class="mb-3">
+                        <div class="flex justify-between items-center text-sm mb-1">
+                            <span class="font-medium text-slate-700">${name}</span>
+                            <span class="font-semibold text-slate-500">${stats.correct}/${stats.total} (${percent.toFixed(0)}%)</span>
+                        </div>
+                        <div class="w-full bg-slate-200 rounded-full h-2.5">
+                            <div class="${barColor} h-2.5 rounded-full" style="width: ${percent}%"></div>
+                        </div>
+                    </div>`;
+            }).join('');
+
             reviewDashboard.innerHTML = `
-                <h2 class="text-2xl font-bold text-slate-800 mb-4 text-center">Review Dashboard</h2>
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 text-center">
-                    <div class="bg-blue-50 p-3 rounded-lg"><p class="font-bold text-2xl text-blue-600">${accuracy}%</p><p class="text-sm text-blue-700">Accuracy</p></div>
-                    <div class="bg-green-50 p-3 rounded-lg"><p class="font-bold text-2xl text-green-600">${correct}</p><p class="text-sm text-green-700">Correct</p></div>
-                    <div class="bg-red-50 p-3 rounded-lg"><p class="font-bold text-2xl text-red-600">${incorrect}</p><p class="text-sm text-red-700">Incorrect</p></div>
-                    <div class="bg-slate-50 p-3 rounded-lg"><p class="font-bold text-2xl text-slate-600">${unattempted}</p><p class="text-sm text-slate-700">Unattempted</p></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-800 mb-4 border-b pb-2">Overall Performance</h3>
+                        <div class="grid grid-cols-2 gap-4 text-center">
+                            <div class="bg-blue-50 p-4 rounded-lg"><p class="font-bold text-3xl text-blue-600">${accuracy}%</p><p class="text-sm font-medium text-blue-700">Accuracy</p></div>
+                            <div class="bg-green-50 p-4 rounded-lg"><p class="font-bold text-3xl text-green-600">${correctIndices.length}</p><p class="text-sm font-medium text-green-700">Correct</p></div>
+                            <div class="bg-red-50 p-4 rounded-lg"><p class="font-bold text-3xl text-red-600">${incorrectIndices.length}</p><p class="text-sm font-medium text-red-700">Incorrect</p></div>
+                             <div class="bg-slate-100 p-4 rounded-lg"><p class="font-bold text-3xl text-slate-600">${questions.length - attempted}</p><p class="text-sm font-medium text-slate-700">Unattempted</p></div>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-800 mt-6 mb-4 border-b pb-2">Time Analysis</h3>
+                        <div class="grid grid-cols-3 gap-4 text-center">
+                            <div class="bg-slate-50 p-3 rounded-lg"><p class="font-bold text-2xl text-slate-600">${avgTime.toFixed(1)}s</p><p class="text-xs font-medium text-slate-700">Avg. Time</p></div>
+                            <div class="bg-slate-50 p-3 rounded-lg"><p class="font-bold text-2xl text-slate-600">${timePerCorrect.toFixed(1)}s</p><p class="text-xs font-medium text-slate-700">Avg. Correct</p></div>
+                            <div class="bg-slate-50 p-3 rounded-lg"><p class="font-bold text-2xl text-slate-600">${timePerIncorrect.toFixed(1)}s</p><p class="text-xs font-medium text-slate-700">Avg. Incorrect</p></div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-800 mb-4 border-b pb-2">Chapter-wise Performance</h3>
+                        <div class="max-h-64 overflow-y-auto pr-2 palette-scroll">
+                            ${chapterHTML}
+                        </div>
+                    </div>
                 </div>
-                <div class="flex flex-wrap justify-center gap-2">
+                 <div class="flex flex-wrap justify-center gap-2 mt-8 border-t pt-4">
                     <button data-filter="all" onclick="filterReview('all')" class="review-filter-btn bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors">Show All</button>
                     <button data-filter="correct" onclick="filterReview('correct')" class="review-filter-btn bg-slate-200 text-slate-700 font-semibold py-2 px-4 rounded-lg text-sm transition-colors">Correct</button>
                     <button data-filter="incorrect" onclick="filterReview('incorrect')" class="review-filter-btn bg-slate-200 text-slate-700 font-semibold py-2 px-4 rounded-lg text-sm transition-colors">Incorrect</button>
@@ -1392,6 +1474,7 @@
                 </div>
             `;
 
+            // RENDER REVIEW QUESTIONS
             const container = document.getElementById('reviewContainer');
             container.innerHTML = questions.map((q, i) => {
                 const userAnswer = userAnswers[i];
