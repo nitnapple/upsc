@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPSC | Online Test Portal</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-blue: #003366;
+            --primary-blue-dark: #002244;
+            --secondary-gray: #4b5563;
+            --danger-red: #dc3545;
+            --success-green: #16a34a;
+            --warning-yellow: #f59e0b;
+            --light-gray-bg: #f9fafb;
+            --border-color: #e5e7eb;
+            --font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: #f3f4f6;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .app-shell {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+        
+        .main-container {
+            flex-grow: 1;
+            background-color: white;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.05);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header-official {
+            background-color: #ffffff;
+            border-bottom: 3px solid var(--primary-blue);
+        }
+
+        .header-font {
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+        .option {
+            transition: all 0.2s ease-in-out;
+            border: 1px solid var(--border-color);
+        }
+        .option.selected {
+            background-color: var(--primary-blue); 
+            color: white;
+            border-color: var(--primary-blue);
+            box-shadow: 0 4px 12px rgba(0, 51, 102, 0.2);
+            transform: translateY(-2px);
+        }
+        .option.selected p { color: white; }
+        .option:not(.selected):hover {
+            border-color: var(--primary-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .btn { 
+            transition: all 0.2s ease-in-out; 
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+        }
+        .btn:active { transform: translateY(0); box-shadow: none; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .btn-primary { background-color: var(--primary-blue); color: white; }
+        .btn-primary:hover { background-color: var(--primary-blue-dark); }
+        .btn-secondary { background-color: var(--secondary-gray); color: white; }
+        .btn-secondary:hover { background-color: #374151; }
+        .btn-danger { background-color: var(--danger-red); color: white; }
+        .btn-danger:hover { background-color: #b91c1c; }
+        .btn-light { background-color: #f9fafb; border: 1px solid var(--border-color); color: #374151; }
+        .btn-light:hover { background-color: #f3f4f6; }
+
+        .results-container .correct { background-color: #f0fdf4; border-left: 4px solid var(--success-green); }
+        .results-container .incorrect { background-color: #fef2f2; border-left: 4px solid var(--danger-red); }
+        .results-container .unanswered { background-color: #f8fafc; border-left: 4px solid var(--secondary-gray); }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.02); }
+        }
+        .timer-pulse { animation: pulse 1.5s ease-in-out infinite; }
+
+        .palette-btn {
+            position: relative;
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+        .palette-btn-answered { border-color: var(--success-green); background-color: #f0fdf4; }
+        .palette-btn-unanswered { border-color: var(--border-color); }
+        .palette-btn-marked::after {
+            content: ''; position: absolute; bottom: 4px; right: 4px;
+            width: 8px; height: 8px; background-color: #8b5cf6; border-radius: 50%;
+        }
+        .palette-btn-current { 
+            background-color: var(--primary-blue); color: white; 
+            border-color: var(--primary-blue-dark); transform: scale(1.1); 
+            box-shadow: 0 0 12px rgba(0, 51, 102, 0.4); z-index: 10;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+    </style>
+</head>
+<body class="p-4 md:p-6">
+
+    <div class="app-shell">
+        <header class="header-official p-4 flex justify-between items-center rounded-t-xl">
+            <div class="flex items-center gap-4">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Emblem_of_India.svg/1200px-Emblem_of_India.svg.png" alt="Emblem of India" class="h-10 md:h-12">
+                <img src="https://upsc.gov.in/sites/all/themes/upsc/logo.png" alt="UPSC Logo" class="h-8 md:h-10">
+            </div>
+            <div class="text-right">
+                <h2 class="text-lg md:text-xl font-bold text-gray-700">संघ लोक सेवा आयोग</h2>
+                <h2 class="text-base md:text-lg font-bold text-gray-700">Union Public Service Commission</h2>
+            </div>
+        </header>
+
+        <main class="main-container flex-grow">
+            <!-- App content will be injected here by JS -->
+            <div id="app-content" class="flex-grow flex flex-col"></div>
+        </main>
+    </div>
+    
+    <!-- TEMPLATES -->
+    <template id="start-page-template">
+        <section class="p-8 md:p-12 text-center flex-grow flex flex-col justify-center items-center fade-in">
+            <h1 class="header-font text-3xl md:text-5xl">Modern History Practice Test</h1>
+            <p class="text-center text-gray-500 mt-3 text-lg">Based on NCERT "Our Pasts - Part 2"</p>
+            <div class="mt-10 text-left max-w-3xl w-full bg-light-gray-bg p-8 rounded-xl border border-gray-200">
+                <h3 class="font-bold text-xl mb-5 text-gray-800">Test Instructions</h3>
+                <ul class="space-y-3 text-gray-600">
+                    <li class="flex items-start"><span class="mr-3 text-primary-blue font-bold">✓</span>This is a full-length practice test with <strong>100 questions</strong>.</li>
+                    <li class="flex items-start"><span class="mr-3 text-primary-blue font-bold">✓</span>The total duration for the test is <strong>90 minutes</strong>.</li>
+                    <li class="flex items-start"><span class="mr-3 text-primary-blue font-bold">✓</span>Navigate using keyboard arrows or on-screen buttons.</li>
+                    <li class="flex items-start"><span class="mr-3 text-primary-blue font-bold">✓</span>The test submits automatically when time expires.</li>
+                </ul>
+            </div>
+            <button id="begin-test-btn" class="btn btn-primary font-semibold py-4 px-16 text-xl mt-12">Begin Test</button>
+        </section>
+    </template>
+
+    <template id="quiz-page-template">
+        <section class="flex flex-col flex-grow fade-in">
+            <div id="timer-bar" class="sticky top-0 bg-white/80 backdrop-blur-md z-20 p-3 border-b border-gray-200 flex justify-between items-center">
+                 <h2 class="header-font text-lg md:text-xl hidden sm:block">Modern History Practice Test</h2>
+                 <div class="flex items-center gap-2 text-base md:text-lg font-semibold text-gray-700 mx-auto sm:mx-0">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                     <span>Time Left: <span id="timer" class="text-blue-800 font-bold w-16 inline-block">90:00</span></span>
+                 </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 p-4 md:p-6 flex-grow">
+                <div class="lg:col-span-3">
+                    <div class="bg-white p-6 rounded-xl h-full flex flex-col">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-5 pb-5 border-b border-gray-200">
+                            <div id="question-counter" class="text-xl font-bold text-gray-800 mb-3 sm:mb-0"></div>
+                            <div class="flex flex-wrap gap-2">
+                                <button id="show-hint-btn" class="btn btn-light text-xs sm:text-sm py-2 px-4">Show Hint</button>
+                                <button id="clear-response-btn" class="btn btn-light text-xs sm:text-sm py-2 px-4">Clear Response</button>
+                                <button id="mark-review-btn" class="btn btn-light text-xs sm:text-sm py-2 px-4"></button>
+                            </div>
+                        </div>
+                        <div id="question-text" class="text-xl md:text-2xl text-gray-800 mb-8 leading-relaxed flex-grow min-h-[120px]"></div>
+                        <div id="options-container" class="space-y-4"></div>
+                        <div id="hint-box" class="mt-6"></div>
+                        <div class="mt-auto pt-8 flex justify-between items-center">
+                            <button id="prev-btn" class="btn btn-light font-bold py-3 px-8 flex items-center gap-2 text-base"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>Previous</button>
+                            <button id="next-btn" class="btn btn-primary font-bold py-3 px-8 flex items-center gap-2 text-base">Next<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></button>
+                        </div>
+                    </div>
+                </div>
+                <aside class="lg:col-span-1 bg-light-gray-bg p-4 rounded-xl border border-gray-200 flex flex-col">
+                    <h3 class="text-center font-bold text-gray-700 mb-4 text-lg">Question Palette</h3>
+                    <div id="question-palette" class="custom-scrollbar grid grid-cols-5 sm:grid-cols-6 lg:grid-cols-5 gap-3 flex-grow overflow-y-auto pr-2 min-h-[250px]"></div>
+                    <div class="mt-4 pt-4 border-t text-sm text-gray-500 space-y-2 font-medium">
+                        <div class="flex items-center gap-3"><div class="w-5 h-5 rounded-md border-2 border-green-500 bg-green-50"></div> Answered</div>
+                        <div class="flex items-center gap-3"><div class="w-5 h-5 rounded-md border-2 border-gray-300 bg-white relative"><div class="absolute w-2 h-2 rounded-full bg-purple-500 bottom-1 right-1"></div></div> Marked for Review</div>
+                        <div class="flex items-center gap-3"><div class="w-5 h-5 rounded-md border-2 border-gray-300 bg-white"></div> Not Answered</div>
+                    </div>
+                    <button id="submit-test-btn" class="btn btn-danger w-full font-bold py-3 mt-4 text-lg">Submit Test</button>
+                </aside>
+            </div>
+        </section>
+    </template>
+    
+    <template id="results-page-template">
+         <section class="p-6 md:p-8 fade-in">
+                <div id="summary-page">
+                     <h1 class="header-font text-3xl md:text-4xl text-center">Test Results Summary</h1>
+                    <div class="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+                        <div class="bg-blue-50 p-5 rounded-xl border border-blue-200 text-center"><div class="text-5xl font-bold text-blue-800" id="final-score"></div><div class="text-md font-semibold text-blue-600 mt-2">Final Score</div></div>
+                        <div class="bg-green-50 p-5 rounded-xl border border-green-200 text-center"><div class="text-5xl font-bold text-green-800" id="correct-count"></div><div class="text-md font-semibold text-green-600 mt-2">Correct</div></div>
+                        <div class="bg-red-50 p-5 rounded-xl border border-red-200 text-center"><div class="text-5xl font-bold text-red-800" id="incorrect-count"></div><div class="text-md font-semibold text-red-600 mt-2">Incorrect</div></div>
+                        <div class="bg-gray-100 p-5 rounded-xl border border-gray-300 text-center"><div class="text-5xl font-bold text-gray-800" id="unattempted-count"></div><div class="text-md font-semibold text-gray-600 mt-2">Unattempted</div></div>
+                    </div>
+                    <div class="mt-8 text-xl text-center text-gray-500">Total time taken: <span id="time-taken" class="font-bold text-gray-700"></span></div>
+                    <div class="mt-12 flex flex-wrap justify-center gap-4">
+                        <button id="restart-quiz-btn" class="btn btn-light font-bold py-3 px-8 text-lg">Restart Quiz</button>
+                        <button id="analysis-btn" class="btn btn-primary font-bold py-3 px-8 text-lg">View In-Depth Analysis</button>
+                    </div>
+                </div>
+                <div id="analysis-page" class="hidden">
+                    <div class="flex justify-between items-center mb-10">
+                         <button id="back-to-summary-btn" class="btn btn-light font-bold py-2 px-6 text-sm">← Summary</button>
+                         <h1 class="header-font text-3xl md:text-4xl text-center">In-Depth Analysis</h1>
+                         <div class="w-28"></div> <!-- Spacer -->
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+                        <div class="bg-light-gray-bg p-6 rounded-xl border lg:col-span-3"><h3 class="font-bold text-xl mb-4 text-gray-800">Overall Performance</h3><div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center"><div class="bg-white p-4 rounded-lg border"><div class="text-3xl font-bold text-blue-800" id="accuracy-percent"></div><div class="text-sm font-semibold text-gray-500 mt-1">Accuracy</div></div><div class="bg-white p-4 rounded-lg border"><div class="text-3xl font-bold text-green-800" id="analysis-correct"></div><div class="text-sm font-semibold text-gray-500 mt-1">Correct</div></div><div class="bg-white p-4 rounded-lg border"><div class="text-3xl font-bold text-red-800" id="analysis-incorrect"></div><div class="text-sm font-semibold text-gray-500 mt-1">Incorrect</div></div><div class="bg-white p-4 rounded-lg border"><div class="text-3xl font-bold text-gray-800" id="analysis-unattempted"></div><div class="text-sm font-semibold text-gray-500 mt-1">Unattempted</div></div></div></div>
+                        <div class="bg-light-gray-bg p-6 rounded-xl border"><h3 class="font-bold text-xl mb-4 text-gray-800">Time Analysis</h3><div class="space-y-4"><div class="flex justify-between items-center text-md"><span class="text-gray-600">Avg. Time / Question:</span> <span id="avg-time-all" class="font-bold text-gray-800 text-lg"></span></div><div class="flex justify-between items-center text-md"><span class="text-gray-600">Avg. Time (Correct):</span> <span id="avg-time-correct" class="font-bold text-green-700 text-lg"></span></div><div class="flex justify-between items-center text-md"><span class="text-gray-600">Avg. Time (Incorrect):</span> <span id="avg-time-incorrect" class="font-bold text-red-700 text-lg"></span></div></div></div>
+                        <div id="topic-performance" class="bg-light-gray-bg p-6 rounded-xl border lg:col-span-2"><h3 class="font-bold text-xl mb-4 text-gray-800">Topic Performance</h3><div id="topic-bars" class="space-y-4 custom-scrollbar max-h-48 overflow-y-auto pr-2"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex flex-wrap justify-center items-center gap-3 mb-6 border-b pb-5"><h3 class="font-bold text-xl text-gray-800 mr-4">Review Questions:</h3><button data-filter="all" class="filter-btn py-2 px-5 rounded-md text-sm font-medium btn"></button><button data-filter="correct" class="filter-btn py-2 px-5 rounded-md text-sm font-medium btn"></button><button data-filter="incorrect" class="filter-btn py-2 px-5 rounded-md text-sm font-medium btn"></button><button data-filter="unattempted" class="filter-btn py-2 px-5 rounded-md text-sm font-medium btn"></button></div>
+                        <div id="analysis-list" class="results-container space-y-5 custom-scrollbar max-h-[60vh] overflow-y-auto p-2 -mx-2"></div>
+                    </div>
+                </div>
+            </section>
+    </template>
+
+    <div id="confirmation-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md fade-in"><h3 class="text-2xl font-bold text-gray-800">Confirm Submission</h3><p class="text-gray-600 mt-4 text-lg">Are you sure you want to submit the test?</p><div id="modal-summary" class="mt-5 text-left bg-light-gray-bg p-4 rounded-lg border text-md space-y-2"></div><div class="mt-8 flex justify-end gap-3"><button id="cancel-submit-btn" class="btn btn-light font-bold py-2 px-6 text-md">Cancel</button><button id="confirm-submit-btn" class="btn btn-danger font-bold py-2 px-6 text-md">Confirm & Submit</button></div></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const quizData=[{id:1,question:"What was 'muslin'?",category:"Chapter VII: Weavers, Iron Smelters",options:["A type of spice","A finely woven textile","A British ship","A type of pottery"],answer:1,explanation:"European traders first encountered fine cotton cloth from India carried by Arab merchants in Mosul in present-day Iraq. So they began referring to all finely woven textiles as 'muslin'. (Page 80)"},{id:2,question:"The word 'calico' is derived from which Indian city?",category:"Chapter VII: Weavers, Iron Smelters",options:["Calcutta","Calicut","Cochin","Cambay"],answer:1,explanation:"When the Portuguese first came to India in search of spices they landed in Calicut on the Kerala coast. The cotton textiles which they took back to Europe came to be called 'calico'. (Page 80)"},{id:3,question:"The Calico Act of 1720 was enacted by the British government to:",category:"Chapter VII: Weavers, Iron Smelters",options:["Promote Indian textile imports","Ban the use of printed cotton textiles (chintz) in England","Reduce taxes on Indian goods","Encourage trade with Calicut"],answer:1,explanation:"In 1720, the British government enacted a legislation banning the use of printed cotton textiles – chintz – in England. Interestingly, this Act was known as the Calico Act. (Page 83)"},{id:4,question:"Who is credited with the invention of the spinning jenny in 1764?",category:"Chapter VII: Weavers, Iron Smelters",options:["Richard Arkwright","James Hargreaves","John Kaye","Eli Whitney"],answer:2,explanation:"In 1764, the spinning jenny was invented by John Kaye which increased the productivity of the traditional spindles. (Page 83)"},{id:5,question:"What was Wootz steel?",category:"Chapter VII: Weavers, Iron Smelters",options:["A type of British steel imported to India","A special type of high carbon steel produced in South India","An alloy used for making coins","Steel used for building railways"],answer:1,explanation:"The quality of Tipu's sword came from a special type of high carbon steel called Wootz which was produced all over south India. (Page 88)"},{id:6,question:"The first cotton mill in India was established in which city in 1854?",category:"Chapter VII: Weavers, Iron Smelters",options:["Calcutta","Ahmedabad","Madras","Bombay"],answer:3,explanation:"The first cotton mill in India was set up as a spinning mill in Bombay in 1854. (Page 87)"},{id:7,question:"The Tata Iron and Steel Company (TISCO) began producing steel in which year?",category:"Chapter VII: Weavers, Iron Smelters",options:["1900","1905","1912","1920"],answer:2,explanation:"The Tata Iron and Steel Company (TISCO) that came up began producing steel in 1912. (Page 91)"},{id:8,question:"Which community of iron smelters was instrumental in discovering iron ore for the Bhilai Steel Plant?",category:"Chapter VII: Weavers, Iron Smelters",options:["Gonds","Agarias","Baigas","Santhals"],answer:1,explanation:"One day, after travelling for many hours in the forests, Weld and Dorabji came upon a small village and found a group of men and women carrying basketloads of iron ore. These people were the Agarias. (Page 91)"},{id:9,question:"The term 'aurang' in Persian refers to a:",category:"Chapter VII: Weavers, Iron Smelters",options:["Tax collector","Warehouse or workshop","Religious scholar","Village headman"],answer:1,explanation:"Aurang - A Persian term for a warehouse – a place where goods are collected before being sold; also refers to a workshop. (Page 85)"},{id:10,question:"The word 'bandanna' originates from the Hindi word 'bandhna', which signifies:",category:"Chapter VII: Weavers, Iron Smelters",options:["To weave","To print","To dye","To tie"],answer:3,explanation:"Originally, the term derived from the word 'bandhna' (Hindi for tying), and referred to a variety of brightly coloured cloth produced through a method of tying and dying. (Page 82)"},{id:11,question:"The 'charkha' and 'takli' were household tools used for:",category:"Chapter VII: Weavers, Iron Smelters",options:["Weaving","Printing","Spinning","Dyeing"],answer:2,explanation:"The charkha and the takli were household spinning instruments. The thread was spun on the charkha and rolled on the takli. (Page 85)"},{id:12,question:"Who were the 'tanti' weavers of Bengal and 'julahas' of north India?",category:"Chapter VII: Weavers, Iron Smelters",options:["Communities that specialised in weaving","Traders who sold textiles","Specialist block printers","Dyers of thread"],answer:0,explanation:"The tanti weavers of Bengal, the julahas or momin weavers of north India, sale and kaikollar and devangs of south India are some of the communities famous for weaving. (Page 85)"},{id:13,question:"What were 'piece goods' in the context of European trade with India?",category:"Chapter VII: Weavers, Iron Smelters",options:["Spices sold in small pieces","Jewelry pieces","Woven cloth pieces of a standard size","Samples of Indian tea"],answer:2,explanation:"These were known by their common name in the European trade as piece goods – usually woven cloth pieces that were 20 yards long and 1 yard wide. (Page 80)"},{id:14,question:"What was a primary reason for the decline of Indian textiles in the 19th century?",category:"Chapter VII: Weavers, Iron Smelters",options:["Lack of raw cotton","Competition from British mill-made cloth","A ban on exports","Outdated weaving techniques"],answer:1,explanation:"The development of cotton industries in Britain affected textile producers in India in several ways. Indian textiles now had to compete with British textiles in the European and American markets. (Page 83)"},{id:15,question:"Who founded the Asiatic Society of Bengal?",category:"Chapter VIII: Educating the Nation",options:["Warren Hastings","William Jones","Thomas Macaulay","James Mill"],answer:1,explanation:"Together with them, Jones set up the Asiatic Society of Bengal, and started a journal called Asiatick Researches. (Page 96)"},{id:16,question:"Orientalists were scholars with profound knowledge of:",category:"Chapter VIII: Educating the Nation",options:["The language and culture of Europe","The language and culture of Asia","Modern science and technology","Classical Greek and Latin"],answer:1,explanation:"Orientalists - Those with a scholarly knowledge of the language and culture of Asia. (Page 97)"},{id:17,question:"The Hindu College was established in which city in 1791 to study ancient Sanskrit texts?",category:"Chapter VIII: Educating the Nation",options:["Calcutta","Delhi","Madras","Benaras"],answer:3,explanation:"...and the Hindu College was established in Benaras in 1791 to encourage the study of ancient Sanskrit texts... (Page 96)"},{id:18,question:"Thomas Macaulay's influential 'Minute' of 1835 strongly advocated for:",category:"Chapter VIII: Educating the Nation",options:["Sanskrit and Persian education","The English language and Western education","Vernacular education in local languages","Religious education in madrasas"],answer:1,explanation:"Following Macaulay’s minute, the English Education Act of 1835 was introduced. The decision was to make English the medium of instruction for higher education... (Page 98)"},{id:19,question:"Wood's Despatch of 1854 is renowned for:",category:"Chapter VIII: Educating the Nation",options:["Shutting down all local schools","Outlining the educational policy for India, emphasizing European learning","Promoting only Sanskrit education","Establishing the first university for women"],answer:1,explanation:"In 1854, the Court of Directors of the East India Company in London sent an educational despatch to the Governor-General in India... it has come to be known as Wood’s Despatch. Outlining the educational policy that was to be followed in India, it emphasised once again the practical benefits of a system of European learning... (Page 98)"},{id:20,question:"Who founded the institution of Santiniketan in 1901?",category:"Chapter VIII: Educating the Nation",options:["Mahatma Gandhi","Sri Aurobindo Ghose","Rabindranath Tagore","Ishwarchandra Vidyasagar"],answer:2,explanation:"Rabindranath Tagore started the institution in 1901. As a child, Tagore hated going to school. He found it suffocating and oppressive. (Page 104)"},{id:21,question:"Mahatma Gandhi strongly argued that colonial education:",category:"Chapter VIII: Educating the Nation",options:["Helped modernize India","Created a sense of inferiority in the minds of Indians","Was beneficial for rural areas","Promoted Indian languages"],answer:1,explanation:"Mahatma Gandhi argued that colonial education created a sense of inferiority in the minds of Indians. It made them see Western civilisation as superior... (Page 103)"},{id:22,question:"The term 'vernacular' was used by the British to denote:",category:"Chapter VIII: Educating the Nation",options:["The English language","Classical languages like Sanskrit","Local languages of everyday use","The language of the courts"],answer:2,explanation:"Vernacular - A term generally used to refer to a local language or dialect as distinct from what is seen as the standard language. In colonial countries like India, the British used the term to mark the difference between the local languages of everyday use and English... (Page 97)"},{id:23,question:"What was the subject of William Adam's reports in the 1830s?",category:"Chapter VIII: Educating the Nation",options:["The progress of English education","The state of vernacular schools (pathshalas) in Bengal and Bihar","The curriculum of British universities","The establishment of Christian missionary schools"],answer:1,explanation:"In the 1830s, William Adam, a Scottish missionary, toured the districts of Bengal and Bihar. He had been asked by the Company to report on the progress of education in vernacular schools. The report Adam produced is interesting. (Page 101)"},{id:24,question:"According to Mahatma Gandhi, what should education primarily develop?",category:"Chapter VIII: Educating the Nation",options:["Only literacy and writing skills","A person's mind and soul through practical knowledge and crafts","Knowledge of Western science exclusively","Admiration for British rule"],answer:1,explanation:"He argued that education ought to develop a person’s mind and soul. Literacy – or simply learning to read and write – by itself did not count as education. (Page 103)"},{id:25,question:"In the 'pathshalas' system described by William Adam, when were classes typically suspended?",category:"Chapter VIII: Educating the Nation",options:["During the monsoon season","During religious festivals","During harvest time","During winter months"],answer:2,explanation:"For instance, classes were not held during harvest time when rural children often worked in the fields. (Page 101)"},{id:26,question:"What was the primary purpose of establishing a madrasa in Calcutta in 1781?",category:"Chapter VIII: Educating the Nation",options:["To promote the study of English","To promote the study of Arabic, Persian and Islamic law","To teach modern science","To train British officials"],answer:1,explanation:"With this object in view a madrasa was set up in Calcutta in 1781 to promote the study of Arabic, Persian and Islamic law... (Page 96)"},{id:27,question:"Rabindranath Tagore envisioned Santiniketan as an abode of peace where living in harmony with nature was key. What was his view on Western education?",category:"Chapter VIII: Educating the Nation",options:["He rejected it completely","He wanted to combine elements of Western education with Indian traditions","He thought it was superior in every way","He was indifferent to it"],answer:1,explanation:"He wanted to combine elements of modern Western civilisation with what he saw as the best within Indian tradition. He emphasised the need to teach science and technology at Santiniketan along with art, music and dance. (Page 105)"},{id:28,question:"Who was the founder of the Brahmo Sabha, later known as the Brahmo Samaj?",category:"Chapter IX: Women, Caste, Reform",options:["Ishwarchandra Vidyasagar","Swami Dayanand Saraswati","Raja Rammohun Roy","Keshub Chunder Sen"],answer:2,explanation:"One such reformer was Raja Rammohun Roy (1772-1833). He founded a reform association known as the Brahmo Sabha (later known as the Brahmo Samaj) in Calcutta. (Page 109)"},{id:29,question:"The practice of 'sati' was officially banned in which year?",category:"Chapter IX: Women, Caste, Reform",options:["1829","1856","1875","1901"],answer:0,explanation:"In 1829, sati was banned. (Page 110)"},{id:30,question:"Who used ancient texts to argue that widows could remarry, leading to the Widow Remarriage Act of 1856?",category:"Chapter IX: Women, Caste, Reform",options:["Raja Rammohun Roy","Swami Dayanand Saraswati","Jyotirao Phule","Ishwarchandra Vidyasagar"],answer:3,explanation:"For instance, one of the most famous reformers, Ishwarchandra Vidyasagar, used the ancient texts to suggest that widows could remarry. His suggestion was adopted by British officials, and a law was passed in 1856 permitting widow remarriage. (Page 111)"},{id:31,question:"Jyotirao Phule founded which association to promote caste equality?",category:"Chapter IX: Women, Caste, Reform",options:["Arya Samaj","Brahmo Samaj","Satyashodhak Samaj","Ramakrishna Mission"],answer:2,explanation:"The Satyashodhak Samaj, an association Phule founded, propagated caste equality. (Page 117)"},{id:32,question:"What was the name of the book written by Jyotirao Phule in 1873, critiquing the caste system?",category:"Chapter IX: Women, Caste, Reform",options:["Stripurushtulna","Gulamgiri","Amar Jiban","The Cultivator's Whipcord"],answer:1,explanation:"In 1873, Phule wrote a book named Gulamgiri, meaning slavery. (Page 117)"},{id:33,question:"Pandita Ramabai established a widows' home in which city to provide shelter?",category:"Chapter IX: Women, Caste, Reform",options:["Calcutta","Bombay","Madras","Poona"],answer:3,explanation:"She founded a widows’ home at Poona to provide shelter to widows who had been treated badly by their husbands’ relatives. (Page 113)"},{id:34,question:"The Child Marriage Restraint Act was passed in 1929, establishing the minimum marriage age for men and women at:",category:"Chapter IX: Women, Caste, Reform",options:["18 for men, 16 for women","21 for men, 18 for women","16 for men, 14 for women","20 for men, 18 for women"],answer:0,explanation:"In 1929 the Child Marriage Restraint Act was passed... According to the Act no man below the age of 18 and woman below the age of 16 could marry. (Page 114)"},{id:35,question:"Who initiated the temple entry movement in 1927?",category:"Chapter IX: Women, Caste, Reform",options:["Mahatma Gandhi","E.V. Ramaswamy Naicker (Periyar)","B.R. Ambedkar","Shri Narayana Guru"],answer:2,explanation:"In 1927, Ambedkar started a temple entry movement, in which his Mahar caste followers participated. (Page 118)"},{id:36,question:"Periyar founded which movement after leaving the Congress to protest caste discrimination?",category:"Chapter IX: Women, Caste, Reform",options:["The Justice Party","The Self Respect Movement","The Dravidian Movement","The Non-Brahman Movement"],answer:1,explanation:"Convinced that untouchables had to fight for their dignity, Periyar founded the Self Respect Movement. (Page 119)"},{id:37,question:"The Mohammedan Anglo-Oriental College, which became Aligarh Muslim University, was founded by whom in 1875?",category:"Chapter IX: Women, Caste, Reform",options:["Mohammad Ali Jinnah","Maulana Azad","Sayyid Ahmed Khan","The Begums of Bhopal"],answer:2,explanation:"The Mohammedan Anglo-Oriental College, founded by Sayyid Ahmed Khan in 1875 at Aligarh, later became the Aligarh Muslim University. (Page 121)"},{id:38,question:"Who was the author of 'Stripurushtulna' (A Comparison between Women and Men)?",category:"Chapter IX: Women, Caste, Reform",options:["Pandita Ramabai","Rokeya Sakhawat Hossain","Rashsundari Debi","Tarabai Shinde"],answer:3,explanation:"Tarabai Shinde, a woman educated at home at Poona, published a book, Stripurushtulna, (A Comparison between Women and Men), criticising the social differences between men and women. (Page 113)"},{id:39,question:"The Prarthana Samaj, established in 1867 in Bombay, advocated for:",category:"Chapter IX: Women, Caste, Reform",options:["Promoting idolatry and sacrifice","Strengthening caste restrictions","Removing caste restrictions and abolishing child marriage","Opposing women's education"],answer:2,explanation:"Established in 1867 at Bombay, the Prarthana Samaj sought to remove caste restrictions, abolish child marriage, encourage the education of women, and end the ban on widow remarriage. (Page 120)"},{id:40,question:"The Singh Sabha Movement was a reform organization of which religious community?",category:"Chapter IX: Women, Caste, Reform",options:["Muslims","Hindus","Sikhs","Parsis"],answer:2,explanation:"Reform organisations of the Sikhs, the first Singh Sabhas were formed at Amritsar in 1873 and at Lahore in 1879. (Page 121)"},{id:41,question:"Shri Narayana Guru belonged to which 'low' caste from present-day Kerala?",category:"Chapter IX: Women, Caste, Reform",options:["Nair","Brahman","Ezhava","Mahar"],answer:2,explanation:"In what is present-day Kerala, a guru from Ezhava caste, Shri Narayana Guru, proclaimed the ideals of unity for his people. (Page 116)"},{id:42,question:"The Satnami movement in Central India was founded by:",category:"Chapter IX: Women, Caste, Reform",options:["Haridas Thakur","Ghasidas","Jyotirao Phule","B.R. Ambedkar"],answer:1,explanation:"The Satnami movement in Central India was founded by Ghasidas who worked among the leatherworkers and organised a movement to improve their social status. (Page 116)"},{id:43,question:"Which term described the practice of a widow burning herself on her husband's funeral pyre?",category:"Chapter IX: Women, Caste, Reform",options:["Jauhar","Sati","Devadasi","Kanyadan"],answer:1,explanation:"...widows were praised if they chose death by burning themselves on the funeral pyre of their husbands. Women who died in this manner... were called 'sati'. (Page 108)"},{id:44,question:"In 1893, Swami Vivekananda delivered a famous speech at the World Parliament of Religions in which city?",category:"Chapter IX: Women, Caste, Reform",options:["London","New York","Paris","Chicago"],answer:3,explanation:"After hearing him in the World Parliament of Religions at Chicago in 1893, the New York Herald reported, 'We feel how foolish it is to send missionaries to this learned nation'. (Page 120)"},{id:45,question:"The picturesque style of painting, popular among European artists, portrayed India as:",category:"Chapter X: World of Visual Arts",options:["A modern, industrialised land","A quaint, rugged, and wild land","A land of grand, new buildings","A land identical to Europe"],answer:1,explanation:"This style of painting depicted India as a quaint land, to be explored by travelling British artists; its landscape was rugged and wild, seemingly untamed by human hands. (Page 124)"},{id:46,question:"The art of painting life-size, realistic portraits was a tradition introduced to India by:",category:"Chapter X: World of Visual Arts",options:["Mughal court artists","Local village painters","European artists","Japanese artists"],answer:2,explanation:"Unlike the existing Indian tradition of painting portraits in miniature, colonial portraits were life-size images that looked lifelike and real. (Page 125)"},{id:47,question:"What are 'Company paintings'?",category:"Chapter X: World of Visual Arts",options:["Paintings by the directors of the East India Company","Images of local life and nature produced by local painters for the British","A style of painting from the Company school in London","Portraits of Indian Nawabs only"],answer:1,explanation:"These pictures, eagerly collected by the East India Company officials, came to be known as Company paintings. (Page 131)"},{id:48,question:"Kalighat painting originated around a famous temple in which city?",category:"Chapter X: World of Visual Arts",options:["Bombay","Madras","Delhi","Calcutta"],answer:3,explanation:"In Bengal, around the pilgrimage centre of the temple of Kalighat, local village scroll painters (called patuas) and potters (called kumors...) began developing a new style of art. (Page 132)"},{id:49,question:"Raja Ravi Varma became famous for creating paintings that were:",category:"Chapter X: World of Visual Arts",options:["Abstract and non-realistic","Based on Japanese styles","Modern in the Western style but with themes from Indian mythology","Exclusively portraits of British officials"],answer:2,explanation:"Raja Ravi Varma was one of the first artists who tried to create a style that was both modern and national. He mastered the Western art of oil painting and realistic life study, but painted themes from Indian mythology. (Page 137)"},{id:50,question:"Abanindranath Tagore and his followers rejected Ravi Varma's art, seeking inspiration from:",category:"Chapter X: World of Visual Arts",options:["British oil painting techniques","Photography","Medieval Indian miniatures and Ajanta murals","French Impressionism"],answer:2,explanation:"They rejected the art of Ravi Varma as imitative and westernised... They felt that a genuine Indian style of painting had to draw inspiration from non-Western art traditions, and try to capture the spiritual essence of the East. (Page 137)"},{id:51,question:"What is 'history painting' in the context of British imperial art?",category:"Chapter X: World of Visual Arts",options:["Paintings of ancient Indian history","Paintings that dramatised episodes of British imperial history and victories","A style of painting focused on natural history","Paintings depicting the daily life of Indians"],answer:1,explanation:"There was a third category of imperial art, called 'history painting'. This tradition sought to dramatise and recreate various episodes of British imperial history... (Page 127)"},{id:52,question:"The use of perspective in painting is a technique that creates a sense of:",category:"Chapter X: World of Visual Arts",options:["Flatness","Bold colors","Distance and depth","Abstract shapes"],answer:2,explanation:"Perspective - The way that objects appear smaller when they are further away and the way parallel lines appear to meet each other at a point in the distance. (Page 131)"},{id:53,question:"Tipu Sultan resisted British cultural traditions by commissioning what kind of art for his palace walls?",category:"Chapter X: World of Visual Arts",options:["Oil portraits of himself","Mural paintings by local artists celebrating his victories over the British","Picturesque landscapes","Imported British art"],answer:1,explanation:"He continued to encourage local traditions, and had the walls of his palace at Seringapatam covered with mural paintings done by local artists. (Page 130)"},{id:54,question:"The Calcutta Art Studio was known for producing:",category:"Chapter X: World of Visual Arts",options:["Non-realistic Kalighat paintings","Abstract art","Lifelike images of personalities and mythological pictures","Only pictures of plants and animals"],answer:2,explanation:"One of the most successful of these presses that were set up in late-nineteenth-century Calcutta was the Calcutta Art Studio. It produced lifelike images of eminent Bengali personalities as well as mythological pictures. (Page 133)"},{id:55,question:"The architectural style featuring pointed arches, seen in buildings like Victoria Terminus, is known as:",category:"Chapter X: World of Visual Arts",options:["Classical","Gothic","Mughal","Indo-Saracenic"],answer:1,explanation:"The pointed arches in the buildings and the elongated structures are typical of a style known as Gothic. (Page 136)"},{id:56,question:"Kalighat painters often depicted scenes that:",category:"Chapter X: World of Visual Arts",options:["Only showed religious figures","Were realistic portraits of the rich","Commented on social and political life of the time","Were copies of European paintings"],answer:2,explanation:"Many of these pictures were not merely decorative. They commented on the social life of the period, and the changes that were taking place in Calcutta society. (Page 132)"},{id:57,question:"The Arms Act, which disallowed Indians from possessing arms, was passed in what year?",category:"Chapter XI: The National Movement",options:["1857","1878","1885","1905"],answer:1,explanation:"The Arms Act was passed in 1878, disallowing Indians from possessing arms. (Page 142)"},{id:58,question:"The Indian National Congress held its first meeting in 1885 in:",category:"Chapter XI: The National Movement",options:["Calcutta","Delhi","Madras","Bombay"],answer:3,explanation:"The Indian National Congress was established when 72 delegates from all over the country met at Bombay in December 1885. (Page 143)"},{id:59,question:"Who among the following was a prominent 'Moderate' leader of the early Congress?",category:"Chapter XI: The National Movement",options:["Bal Gangadhar Tilak","Bepin Chandra Pal","Lala Lajpat Rai","Dadabhai Naoroji"],answer:3,explanation:"The early leadership – Dadabhai Naoroji, Pherozeshah Mehta, Badruddin Tyabji, W.C. Bonnerji, Surendranath Banerji, Romesh Chandra Dutt, S. Subramania Iyer, among others – was largely from Bombay and Calcutta. (Page 143)"},{id:60,question:"The slogan 'Freedom is my birthright and I shall have it!' was famously raised by:",category:"Chapter XI: The National Movement",options:["Mahatma Gandhi","Jawaharlal Nehru","Bal Gangadhar Tilak","Subhas Chandra Bose"],answer:2,explanation:"Tilak raised the slogan, 'Freedom is my birthright and I shall have it!' (Page 144)"},{id:61,question:"The partition of Bengal in 1905 was orchestrated by which Viceroy?",category:"Chapter XI: The National Movement",options:["Lord Dalhousie","Lord Curzon","Lord Ripon","Lord Lytton"],answer:1,explanation:"In 1905 Viceroy Curzon partitioned Bengal. (Page 145)"},{id:62,question:"The struggle that emerged following the partition of Bengal was known as the:",category:"Chapter XI: The National Movement",options:["Non-Cooperation Movement","Civil Disobedience Movement","Quit India Movement","Swadeshi Movement"],answer:3,explanation:"The struggle that unfolded came to be known as the Swadeshi movement, strongest in Bengal but with echoes elsewhere too... (Page 145)"},{id:63,question:"The All India Muslim League was formed in which city in 1906?",category:"Chapter XI: The National Movement",options:["Aligarh","Dacca","Lahore","Calcutta"],answer:1,explanation:"A group of Muslim landlords and nawabs formed the All India Muslim League at Dacca in 1906. (Page 146)"},{id:64,question:"The significant Lucknow Pact of 1916 was an agreement between:",category:"Chapter XI: The National Movement",options:["The Congress and the British","The Moderates and the Radicals","The Congress and the Muslim League","The Muslim League and the British"],answer:2,explanation:"Next year the Congress and the Muslim League signed the historic Lucknow Pact and decided to work together for representative government in the country. (Page 146)"},{id:65,question:"Mahatma Gandhi returned to India from South Africa in which year?",category:"Chapter XI: The National Movement",options:["1905","1915","1919","1920"],answer:1,explanation:"As you may know, Gandhiji, aged 46, arrived in India in 1915 from South Africa. (Page 147)"},{id:66,question:"The Jallianwala Bagh massacre in Amritsar occurred on which day in 1919?",category:"Chapter XI: The National Movement",options:["Diwali","Holi","Baisakhi","Eid"],answer:2,explanation:"The Jallianwala Bagh atrocities, inflicted by General Dyer in Amritsar on Baisakhi day (13 April), were a part of this repression. (Page 148)"},{id:67,question:"The Non-Cooperation Movement was abruptly halted by Gandhi due to violence at:",category:"Chapter XI: The National Movement",options:["Dandi","Chauri Chaura","Bardoli","Champaran"],answer:1,explanation:"He abruptly called off the Non-Cooperation Movement when in February 1922 a crowd of peasants set fire to a police station in Chauri Chaura. (Page 151)"},{id:68,question:"The Congress resolved to fight for 'Purna Swaraj' (complete independence) in which year's session?",category:"Chapter XI: The National Movement",options:["1922","1927","1929","1931"],answer:2,explanation:"The decade closed with the Congress resolving to fight for Purna Swaraj (complete independence) in 1929 under the presidentship of Jawaharlal Nehru. (Page 152)"},{id:69,question:"The historic Salt March or Dandi March was led by Mahatma Gandhi in:",category:"Chapter XI: The National Movement",options:["1928","1930","1932","1935"],answer:1,explanation:"In 1930, Gandhiji declared that he would lead a march to break the salt law. (Page 153)"},{id:70,question:"The Government of India Act of 1935 prescribed:",category:"Chapter XI: The National Movement",options:["Complete independence","Dominion status","Provincial autonomy","Separate electorates for all communities"],answer:2,explanation:"The combined struggles of the Indian people bore fruit when the Government of India Act of 1935 prescribed provincial autonomy... (Page 154)"},{id:71,question:"The slogan for the Quit India Movement given by Gandhi was:",category:"Chapter XI: The National Movement",options:["'Freedom is my birthright'","'Inquilab Zindabad'","'Do or Die'","'Simon Go Back'"],answer:2,explanation:"To the people he said, 'do or die' in your effort to fight the British – but you must fight non-violently. (Page 155)"},{id:72,question:"Who was known as Badshah Khan and founded the Khudai Khidmatgars?",category:"Chapter XI: The National Movement",options:["Mohammad Ali Jinnah","Maulana Azad","Shaukat Ali","Khan Abdul Ghaffar Khan"],answer:3,explanation:"Also known as Badshah Khan, he was the founder of the Khudai Khidmatgars, a powerful non-violent movement among the Pathans of his province. (Page 157)"},{id:73,question:"Subhas Chandra Bose raised the Azad Hind Fauj, also known as the:",category:"Chapter XI: The National Movement",options:["Indian Republican Army","Hindustan Socialist Republican Association","Indian National Army (INA)","Ghadar Party"],answer:2,explanation:"In January 1941, he secretly left his Calcutta home, went to Singapore, via Germany, and raised the Azad Hind Fauj or the Indian National Army (INA). (Page 155)"},{id:74,question:"The Muslim League announced 'Direct Action Day' on which date, sparking riots in Calcutta?",category:"Chapter XI: The National Movement",options:["15 August 1947","26 January 1950","16 August 1946","3 June 1947"],answer:2,explanation:"It announced 16 August 1946 as 'Direct Action Day'. On this day riots broke out in Calcutta... (Page 158)"},{id:75,question:"The Simon Commission, which arrived in India in 1928, faced boycotts because:",category:"Chapter XI: The National Movement",options:["It supported the partition of India","It had no Indian representative","It proposed to increase taxes","It was headed by a radical leader"],answer:1,explanation:"In 1927 the British government in England decided to send a commission headed by Lord Simon to decide India’s political future. The Commission had no Indian representative. The decision created an outrage in India. (Page 152)"},{id:76,question:"In the Khilafat Movement, Indian Muslims were protesting against the harsh treaty imposed on the Sultan of which country?",category:"Chapter XI: The National Movement",options:["Saudi Arabia","Iran","Turkey","Egypt"],answer:2,explanation:"In 1920 the British imposed a harsh treaty on the Turkish Sultan or Khalifa. (Page 149)"},{id:77,question:"In the 1937 provincial elections, how many provinces did the Congress form governments in?",category:"Chapter XI: The National Movement",options:["2 out of 11","5 out of 11","7 out of 11","11 out of 11"],answer:2,explanation:"The Congress formed governments in 7 out of 11 provinces. (Page 154)"},{id:78,question:"Who was the first Indian woman to become President of the Indian National Congress (in 1925)?",category:"Chapter XI: The National Movement",options:["Ambabai","Sarojini Naidu","Kasturba Gandhi","Kamala Nehru"],answer:1,explanation:"She was the first Indian woman to become President of the Indian National Congress (1925). (Page 154)"},{id:79,question:"The Ilbert Bill controversy in 1883 highlighted what deep-seated issue in British India?",category:"Chapter XI: The National Movement",options:["Economic exploitation","Racial attitudes of the British","Lack of education","Religious interference"],answer:1,explanation:"The event highlighted the racial attitudes of the British in India. (Page 142)"},{id:80,question:"The book 'Poverty and Un-British Rule in India', which criticized the economic impact of British rule, was authored by:",category:"Chapter XI: The National Movement",options:["W.C. Bonnerji","Surendranath Banerji","Dadabhai Naoroji","Romesh Chandra Dutt"],answer:2,explanation:"Naoroji's book Poverty and Un-British Rule in India offered a scathing criticism of the economic impact of British rule. (Page 143)"},{id:81,question:"When India became independent, approximately how many refugees entered the country from Pakistan?",category:"Chapter XII: India After Independence",options:["1 million","3 million","5 million","8 million"],answer:3,explanation:"As a result of Partition, 8 million refugees had come into the country from what was now Pakistan. (Page 160)"},{id:82,question:"Who assassinated Mahatma Gandhi on 30 January 1948?",category:"Chapter XII: India After Independence",options:["A British official","A Muslim fanatic","Nathuram Godse","A member of the princely states"],answer:2,explanation:"On 30 January 1948, Mahatma Gandhi was assassinated by a fanatic, Nathuram Godse... (Page 160)"},{id:83,question:"The Indian Constitution was adopted and came into effect on which date?",category:"Chapter XII: India After Independence",options:["15 August 1947","30 January 1948","26 November 1949","26 January 1950"],answer:3,explanation:"These discussions resulted in the framing of the Indian Constitution, which came into effect on 26 January 1950. (Page 161)"},{id:84,question:"What groundbreaking step regarding voting rights was adopted in the Indian Constitution?",category:"Chapter XII: India After Independence",options:["Only men of property could vote","Only educated men could vote","Universal Adult Franchise","Voting rights only for Hindus"],answer:2,explanation:"One feature of the Constitution was its adoption of universal adult franchise. All Indians above the age of 21 would be allowed to vote in state and national elections. (Page 161)"},{id:85,question:"Who served as the Chairman of the Drafting Committee of the Indian Constitution?",category:"Chapter XII: India After Independence",options:["Jawaharlal Nehru","Sardar Vallabhbhai Patel","B.R. Ambedkar","Rajendra Prasad"],answer:2,explanation:"...perhaps the most important role was played by Dr B.R. Ambedkar, who was Chairman of the Drafting Committee... (Page 164)"},{id:86,question:"The formation of which state on a linguistic basis in 1953 triggered the reorganisation of other states?",category:"Chapter XII: India After Independence",options:["Punjab","Andhra","Gujarat","Karnataka"],answer:1,explanation:"Thus, on 1 October 1953, the new state of Andhra came into being, which subsequently became Andhra Pradesh. (Page 166)"},{id:87,question:"The Planning Commission was set up in 1950 to help design and execute policies for what economic model?",category:"Chapter XII: India After Independence",options:["Capitalist economy","Socialist economy","Mixed economy","Feudal economy"],answer:2,explanation:"There was a broad agreement on what was called a 'mixed economy' model. Here, both the State and the private sector would play important and complementary roles... (Page 168)"},{id:88,question:"The Second Five Year Plan, formulated in 1956, placed a strong emphasis on:",category:"Chapter XII: India After Independence",options:["Agriculture and rural development","Primary education","Development of heavy industries and large dams","Information technology"],answer:2,explanation:"In 1956, the Second Five Year Plan was formulated. This focused strongly on the development of heavy industries such as steel, and on the building of large dams. (Page 168)"},{id:89,question:"In the Constituent Assembly, who warned against the imposition of Hindi on South India?",category:"Chapter XII: India After Independence",options:["B.R. Ambedkar","Sardar Patel","Jawaharlal Nehru","T.T. Krishnamachari"],answer:3,explanation:"Speaking in the Assembly, T.T. Krishnamachari conveyed 'a warning on behalf of people of the South', some of whom threatened to separate from India if Hindi was imposed on them. (Page 164)"},{id:90,question:"What was the cornerstone of India's foreign policy, as formulated by Jawaharlal Nehru?",category:"Chapter XII: India After Independence",options:["Alignment with the USA","Alignment with the USSR","Non-alignment","Isolationism"],answer:2,explanation:"Non-alignment formed the bedrock of this foreign policy. (Page 170)"},{id:91,question:"The bilingual state of Bombay was divided in 1960 into separate states for which two linguistic groups?",category:"Chapter XII: India After Independence",options:["Marathi and Konkani","Gujarati and Rajasthani","Marathi and Gujarati","Hindi and Marathi"],answer:2,explanation:"A little later, in 1960, the bilingual state of Bombay was divided into separate states for Marathi and Gujarati speakers. (Page 166)"},{id:92,question:"The Union List in the Indian Constitution pertained to which subjects?",category:"Chapter XII: India After Independence",options:["Education and Health","Forests and Agriculture","Taxes, Defence, and Foreign Affairs","Police and Local Government"],answer:2,explanation:"The Constitution sought to balance these competing claims by providing three lists of subjects: a Union List, with subjects such as taxes, defence and foreign affairs... (Page 164)"},{id:93,question:"Which two superpowers led the major alliances during the Cold War era?",category:"Chapter XII: India After Independence",options:["Britain and France","Germany and Japan","China and India","USA and USSR"],answer:3,explanation:"The 1950s and 1960s saw the emergence of the Cold War, that is, power rivalries and ideological conflicts between the USA and the USSR... (Page 170)"},{id:94,question:"The States Reorganisation Commission was set up in 1953 to look into the demand for:",category:"Chapter XII: India After Independence",options:["Economic development","Separate states on linguistic lines","More power to princely states","A new capital city"],answer:1,explanation:"A States Reorganisation Commission was set up, which submitted its report in 1956, recommending the redrawing of district and provincial boundaries to form compact provinces of Assamese, Bengali, Oriya, Tamil, Malayalam, Kannada and Telugu speakers respectively. (Page 166)"},{id:95,question:"What was the initial voting age for Indians as per the Universal Adult Franchise?",category:"Chapter XII: India After Independence",options:["18","21","25","No age limit"],answer:1,explanation:"One feature of the Constitution was its adoption of universal adult franchise. All Indians above the age of 21 would be allowed to vote in state and national elections. (This was later lowered to 18). (Page 161)"},{id:96,question:"What technology, introduced by Richard Arkwright, revolutionized cotton textile spinning?",category:"Chapter VII: Weavers, Iron Smelters",options:["Power loom","Water frame","Steam engine","Cotton gin"],answer:2,explanation:"The invention of the steam engine by Richard Arkwright in 1786 revolutionised cotton textile weaving. Cloth could now be woven in immense quantities and cheaply too. (Page 83)"},{id:97,question:"Which group of people did Raja Rammohun Roy campaign against the practice of sati for?",category:"Chapter IX: Women, Caste, Reform",options:["Men","Children","Women","Foreigners"],answer:2,explanation:"Rammohun Roy was particularly moved by the problems widows faced in their lives. He began a campaign against the practice of sati. (Page 109)"},{id:98,question:"What was the 'drain of wealth' theory put forward by Dadabhai Naoroji?",category:"Chapter XI: The National Movement",options:["India's wealth was physically draining into the sea","British policies were draining India's economic resources","Indian monsoons were causing economic loss","Indian traders were hiding their wealth"],answer:1,explanation:"The moderate leaders wanted to develop public awareness about the unjust nature of British rule. They published newspapers, wrote articles, and showed how British rule was leading to the economic ruin of the country. This included the 'drain of wealth' theory. (Page 143)"},{id:99,question:"The Bhilai steel plant, a major industrial development post-independence, was set up with the help of which country?",category:"Chapter XII: India After Independence",options:["USA","United Kingdom","Soviet Union","Germany"],answer:2,explanation:"The Bhilai steel plant was set up with the help of the former Soviet Union in 1959. The setting up of several steel plants was a major part of the Second Five-Year Plan. (Page 169)"},{id:100,question:"What was the main administrative language under the Mughals, which influenced many regional languages?",category:"Chapter X: World of Visual Arts",options:["Arabic","Turkish","Persian","Urdu"],answer:2,explanation:"Persian was the language of administration under the Mughals. As Mughal power extended to different regions, local languages were influenced by Persian. (Similar concepts covered across chapters)"}];
+
+            let state = {};
+            const dom = { appContent: document.getElementById('app-content'), confirmationModal: document.getElementById('confirmation-modal'), modalSummary: document.getElementById('modal-summary') };
+            const templates = {
+                start: document.getElementById('start-page-template'),
+                quiz: document.getElementById('quiz-page-template'),
+                results: document.getElementById('results-page-template'),
+            };
+
+            function init() {
+                resetState();
+                renderPage('start');
+                document.getElementById('begin-test-btn').addEventListener('click', startQuiz);
+            }
+
+            function resetState() {
+                if (state.timerInterval) clearInterval(state.timerInterval);
+                state = { currentQuestionIndex: 0, userAnswers: new Array(quizData.length).fill(null), markedForReview: new Array(quizData.length).fill(false), timeSpent: new Array(quizData.length).fill(0), questionStartTime: 0, timeLeft: 90 * 60, timerInterval: null };
+            }
+
+            function renderPage(pageId) {
+                const template = templates[pageId.startsWith('result') ? 'results' : pageId];
+                const pageContent = template.content.cloneNode(true);
+                dom.appContent.innerHTML = '';
+                dom.appContent.appendChild(pageContent);
+            }
+
+            function startQuiz() {
+                resetState();
+                renderPage('quiz');
+                bindQuizEvents();
+                renderQuestionPalette();
+                loadQuestion(0);
+                startTimer();
+            }
+
+            function loadQuestion(index) {
+                if (state.questionStartTime > 0) state.timeSpent[state.currentQuestionIndex] += Math.round((Date.now() - state.questionStartTime) / 1000);
+                
+                state.currentQuestionIndex = index;
+                const question = quizData[index];
+                
+                const qCounter = dom.appContent.querySelector('#question-counter');
+                const qText = dom.appContent.querySelector('#question-text');
+                const optsContainer = dom.appContent.querySelector('#options-container');
+                const hintBox = dom.appContent.querySelector('#hint-box');
+
+                qCounter.textContent = `Question ${index + 1} of ${quizData.length}`;
+                qText.textContent = question.question;
+                hintBox.innerHTML = '';
+                optsContainer.innerHTML = '';
+                
+                question.options.forEach((option, i) => {
+                    const optEl = document.createElement('div');
+                    optEl.className = 'option p-4 rounded-lg cursor-pointer';
+                    optEl.innerHTML = `<p class="text-base text-gray-700 font-medium">${String.fromCharCode(65 + i)}. ${option}</p>`;
+                    if (state.userAnswers[index] === i) optEl.classList.add('selected');
+                    optEl.addEventListener('click', () => selectOption(i));
+                    optsContainer.appendChild(optEl);
+                });
+
+                updateNavigationButtons();
+                updatePaletteHighlighting();
+                state.questionStartTime = Date.now();
+            }
+
+            function selectOption(optionIndex) {
+                state.userAnswers[state.currentQuestionIndex] = optionIndex;
+                loadQuestion(state.currentQuestionIndex);
+            }
+
+            function clearResponse() {
+                state.userAnswers[state.currentQuestionIndex] = null;
+                updatePaletteButton(state.currentQuestionIndex);
+                loadQuestion(state.currentQuestionIndex);
+            }
+
+            function updateNavigationButtons() {
+                const prevBtn = dom.appContent.querySelector('#prev-btn');
+                const nextBtn = dom.appContent.querySelector('#next-btn');
+                prevBtn.disabled = state.currentQuestionIndex === 0;
+                nextBtn.disabled = state.currentQuestionIndex === quizData.length - 1;
+            }
+
+            function renderQuestionPalette() {
+                const palette = dom.appContent.querySelector('#question-palette');
+                palette.innerHTML = '';
+                quizData.forEach((_, i) => {
+                    const btn = document.createElement('button');
+                    btn.textContent = i + 1;
+                    btn.id = `q-btn-${i}`;
+                    btn.className = 'palette-btn h-10 w-10 flex items-center justify-center rounded-lg font-semibold';
+                    btn.addEventListener('click', () => loadQuestion(i));
+                    palette.appendChild(btn);
+                    updatePaletteButton(i);
+                });
+            }
+
+            function updatePaletteButton(index) {
+                const btn = dom.appContent.querySelector(`#q-btn-${index}`);
+                if (!btn) return;
+                btn.className = 'palette-btn h-10 w-10 flex items-center justify-center rounded-lg font-semibold'; // Reset
+                btn.classList.add(state.userAnswers[index] !== null ? 'palette-btn-answered' : 'palette-btn-unanswered');
+                if (state.markedForReview[index]) btn.classList.add('palette-btn-marked');
+            }
+            
+            function updatePaletteHighlighting() {
+                dom.appContent.querySelectorAll('.palette-btn-current').forEach(b => b.classList.remove('palette-btn-current'));
+                const currentBtn = dom.appContent.querySelector(`#q-btn-${state.currentQuestionIndex}`);
+                if(currentBtn) currentBtn.classList.add('palette-btn-current');
+
+                const markBtn = dom.appContent.querySelector('#mark-review-btn');
+                markBtn.textContent = state.markedForReview[state.currentQuestionIndex] ? 'Unmark Review' : 'Mark for Review';
+            }
+            
+            function startTimer() {
+                const timerEl = dom.appContent.querySelector('#timer');
+                state.timerInterval = setInterval(() => {
+                    state.timeLeft--;
+                    const minutes = Math.floor(state.timeLeft / 60);
+                    const seconds = state.timeLeft % 60;
+                    timerEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                    if (state.timeLeft <= 0) submitQuiz();
+                    if (state.timeLeft < 300 && !timerEl.classList.contains('timer-pulse')) {
+                        timerEl.parentElement.classList.add('text-red-600');
+                        timerEl.classList.add('timer-pulse');
+                    }
+                }, 1000);
+            }
+
+            function submitQuiz() {
+                if (state.timerInterval) clearInterval(state.timerInterval);
+                dom.confirmationModal.classList.add('hidden');
+                renderPage('results');
+                bindResultsEvents();
+                calculateAndShowSummary();
+            }
+            
+            function calculateAndShowSummary() {
+                const correctCount = quizData.filter((q, i) => state.userAnswers[i] === q.answer).length;
+                const unattemptedCount = state.userAnswers.filter(a => a === null).length;
+                const incorrectCount = quizData.length - correctCount - unattemptedCount;
+                document.getElementById('final-score').textContent = `${correctCount}/${quizData.length}`;
+                document.getElementById('correct-count').textContent = correctCount;
+                document.getElementById('incorrect-count').textContent = incorrectCount;
+                document.getElementById('unattempted-count').textContent = unattemptedCount;
+                const totalTimeSeconds = (90 * 60) - state.timeLeft;
+                document.getElementById('time-taken').textContent = `${Math.floor(totalTimeSeconds / 60)}m ${totalTimeSeconds % 60}s`;
+            }
+
+            function renderAnalysis() {
+                const summaryPage = dom.appContent.querySelector('#summary-page');
+                const analysisPage = dom.appContent.querySelector('#analysis-page');
+                summaryPage.classList.add('hidden');
+                analysisPage.classList.remove('hidden');
+
+                let correct = 0, incorrect = 0, unattempted = 0, totalTime = 0, correctTime = 0, incorrectTime = 0;
+                const topicStats = {};
+                quizData.forEach((q, i) => {
+                    const topic = q.category;
+                    if (!topicStats[topic]) topicStats[topic] = { correct: 0, attempted: 0 };
+                    if (state.userAnswers[i] !== null) {
+                        topicStats[topic].attempted++;
+                        totalTime += state.timeSpent[i];
+                        if (state.userAnswers[i] === q.answer) {
+                            correct++; correctTime += state.timeSpent[i]; topicStats[topic].correct++;
+                        } else {
+                            incorrect++; incorrectTime += state.timeSpent[i];
+                        }
+                    } else unattempted++;
+                });
+                
+                const attempted = correct + incorrect;
+                document.getElementById('accuracy-percent').textContent = `${attempted > 0 ? Math.round((correct / attempted) * 100) : 0}%`;
+                ['analysis-correct', 'analysis-incorrect', 'analysis-unattempted'].forEach(id => document.getElementById(id).textContent = eval(id.split('-')[1]));
+                document.getElementById('avg-time-all').textContent = attempted > 0 ? `${Math.round(totalTime / attempted)}s` : '0s';
+                document.getElementById('avg-time-correct').textContent = correct > 0 ? `${Math.round(correctTime / correct)}s` : '0s';
+                document.getElementById('avg-time-incorrect').textContent = incorrect > 0 ? `${Math.round(incorrectTime / incorrect)}s` : '0s';
+                
+                const topicBarsContainer = document.getElementById('topic-bars');
+                topicBarsContainer.innerHTML = '';
+                Object.keys(topicStats).sort().forEach(topic => {
+                    const stats = topicStats[topic];
+                    const percent = stats.attempted > 0 ? Math.round((stats.correct / stats.attempted) * 100) : 0;
+                    topicBarsContainer.innerHTML += `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="font-semibold text-gray-700">${topic.replace('Chapter ', 'Ch. ')}</span><span class="text-gray-500">${stats.correct}/${stats.attempted}</span></div><div class="w-full bg-gray-200 rounded-full h-2.5"><div class="bg-blue-600 h-2.5 rounded-full" style="width: ${percent}%"></div></div></div>`;
+                });
+                renderAnalysisList('all');
+            }
+
+            function renderAnalysisList(filter) {
+                const filterBtns = dom.appContent.querySelectorAll('.filter-btn');
+                filterBtns.forEach(btn => {
+                    btn.classList.toggle('btn-primary', btn.dataset.filter === filter);
+                    btn.classList.toggle('btn-light', btn.dataset.filter !== filter);
+                    btn.textContent = `${btn.dataset.filter.charAt(0).toUpperCase() + btn.dataset.filter.slice(1)}`;
+                });
+
+                const listContainer = document.getElementById('analysis-list');
+                listContainer.innerHTML = '';
+                const filtered = quizData.filter((q, i) => {
+                    const isCorrect = state.userAnswers[i] === q.answer;
+                    const isIncorrect = state.userAnswers[i] !== null && !isCorrect;
+                    const isUnattempted = state.userAnswers[i] === null;
+                    return filter === 'all' || (filter === 'correct' && isCorrect) || (filter === 'incorrect' && isIncorrect) || (filter === 'unattempted' && isUnattempted);
+                });
+
+                if (filtered.length === 0) {
+                    listContainer.innerHTML = `<p class="text-center text-gray-500 py-8">No questions to display.</p>`; return;
+                }
+                const checkIcon = `<svg class="w-5 h-5 inline mr-1 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>`;
+                const xIcon = `<svg class="w-5 h-5 inline mr-1 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+
+                filtered.forEach(q => {
+                    const originalIndex = quizData.findIndex(item => item.id === q.id);
+                    const userAnswerIndex = state.userAnswers[originalIndex];
+                    const statusClass = userAnswerIndex === null ? 'unanswered' : (userAnswerIndex === q.answer ? 'correct' : 'incorrect');
+                    let optionsHTML = q.options.map((opt, i) => {
+                        let icon = '<span class="w-5 inline-block"></span>';
+                        if (i === q.answer) icon = checkIcon;
+                        if (i === userAnswerIndex && userAnswerIndex !== q.answer) icon = xIcon;
+                        return `<li class="flex items-center ${i === q.answer ? 'font-bold text-green-700' : (i === userAnswerIndex ? 'text-red-700' : 'text-gray-600')}">${icon}<span class="ml-2">${String.fromCharCode(65 + i)}. ${opt}</span></li>`;
+                    }).join('');
+                    listContainer.innerHTML += `<div class="p-5 rounded-lg ${statusClass}"><p class="font-bold mb-4 text-gray-800 text-lg">${originalIndex + 1}. ${q.question}</p><ul class="space-y-2 mb-4 text-base">${optionsHTML}</ul><div class="mt-3 text-sm p-4 bg-white/70 rounded-md border text-gray-700"><strong>Explanation:</strong> ${q.explanation}</div></div>`;
+                });
+            }
+
+            function bindQuizEvents() {
+                dom.appContent.querySelector('#prev-btn').addEventListener('click', () => { if (state.currentQuestionIndex > 0) loadQuestion(state.currentQuestionIndex - 1); });
+                dom.appContent.querySelector('#next-btn').addEventListener('click', () => { if (state.currentQuestionIndex < quizData.length - 1) loadQuestion(state.currentQuestionIndex + 1); });
+                dom.appContent.querySelector('#mark-review-btn').addEventListener('click', () => {
+                    state.markedForReview[state.currentQuestionIndex] = !state.markedForReview[state.currentQuestionIndex];
+                    updatePaletteButton(state.currentQuestionIndex);
+                    updatePaletteHighlighting();
+                });
+                dom.appContent.querySelector('#clear-response-btn').addEventListener('click', clearResponse);
+                dom.appContent.querySelector('#show-hint-btn').addEventListener('click', () => {
+                    const { explanation } = quizData[state.currentQuestionIndex];
+                    const pageMatch = explanation.match(/\(Page \d+\)/);
+                    dom.appContent.querySelector('#hint-box').innerHTML = `<div class="p-3 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 rounded-r-lg font-medium">${pageMatch ? `Hint: Refer to ${pageMatch[0]}` : "No specific page hint available."}</div>`;
+                });
+                dom.appContent.querySelector('#submit-test-btn').addEventListener('click', () => {
+                    const answered = state.userAnswers.filter(a => a !== null).length;
+                    dom.modalSummary.innerHTML = `<p>Answered: <strong class="text-gray-800">${answered}</strong></p><p>Not Answered: <strong class="text-gray-800">${quizData.length - answered}</strong></p><p>Marked: <strong class="text-gray-800">${state.markedForReview.filter(m => m).length}</strong></p>`;
+                    dom.confirmationModal.classList.remove('hidden');
+                });
+                document.addEventListener('keydown', handleKeydown);
+            }
+            
+            function unbindQuizEvents() {
+                document.removeEventListener('keydown', handleKeydown);
+            }
+
+            function handleKeydown(e) {
+                if (e.key === 'ArrowRight' && !dom.appContent.querySelector('#next-btn').disabled) dom.appContent.querySelector('#next-btn').click();
+                if (e.key === 'ArrowLeft' && !dom.appContent.querySelector('#prev-btn').disabled) dom.appContent.querySelector('#prev-btn').click();
+            }
+
+            function bindResultsEvents() {
+                document.getElementById('restart-quiz-btn').addEventListener('click', init);
+                document.getElementById('analysis-btn').addEventListener('click', renderAnalysis);
+                document.getElementById('back-to-summary-btn').addEventListener('click', () => {
+                    document.getElementById('analysis-page').classList.add('hidden');
+                    document.getElementById('summary-page').classList.remove('hidden');
+                });
+                document.querySelectorAll('.filter-btn').forEach(btn => btn.addEventListener('click', () => renderAnalysisList(btn.dataset.filter)));
+            }
+
+            document.getElementById('cancel-submit-btn').addEventListener('click', () => dom.confirmationModal.classList.add('hidden'));
+            document.getElementById('confirm-submit-btn').addEventListener('click', () => {
+                unbindQuizEvents();
+                submitQuiz();
+            });
+
+            init();
+        });
+    </script>
+</body>
+</html>
