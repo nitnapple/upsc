@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPSC History Class 10 Quiz | Enhanced Edition</title>
+    <!-- Tailwind CSS for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for a clean, readable UI -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles to complement Tailwind */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+        }
+        /* Animation for the timer when time is low */
+        .timer-warning {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.85; }
+        }
+        /* Custom scrollbar for the question palette */
+        .palette-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .palette-scroll::-webkit-scrollbar-track {
+            background: #f1f5f9; /* slate-100 */
+        }
+        .palette-scroll::-webkit-scrollbar-thumb {
+            background: #94a3b8; /* slate-400 */
+            border-radius: 3px;
+        }
+        .palette-scroll::-webkit-scrollbar-thumb:hover {
+            background: #64748b; /* slate-500 */
+        }
+        .review-question-card {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- Header Section -->
+    <header class="bg-white shadow-md sticky top-0 z-50 border-b-4 border-blue-600">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="text-2xl font-bold text-blue-600">
+                    History Quiz
+                </div>
+                <div id="timer" class="hidden items-center justify-center text-lg font-semibold bg-slate-100 text-slate-700 rounded-lg px-4 py-2 w-40 transition-all duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    <span>90:00</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="container mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- Start Page -->
+        <section id="startPage" class="bg-white p-6 sm:p-10 rounded-2xl shadow-lg text-center transition-opacity duration-500 ease-in-out">
+            <h1 class="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">UPSC History Class 10 Quiz</h1>
+            <p class="text-slate-600 mb-6 text-lg">Based on NCERT: India and the Contemporary World</p>
+            
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-6 text-left max-w-2xl mx-auto my-8">
+                <h2 class="text-xl font-semibold text-slate-800 mb-4 text-center">Instructions</h2>
+                <ul class="space-y-3 text-slate-600 list-inside">
+                    <li class="flex items-start"><span class="text-blue-500 font-bold mr-3">✓</span>Total Questions: 100</li>
+                    <li class="flex items-start"><span class="text-blue-500 font-bold mr-3">✓</span>Total Time: 90 Minutes</li>
+                    <li class="flex items-start"><span class="text-blue-500 font-bold mr-3">✓</span>Each correct answer fetches 1 mark. No negative marking.</li>
+                    <li class="flex items-start"><span class="text-blue-500 font-bold mr-3">✓</span>Use the navigation buttons or the side palette to move between questions.</li>
+                    <li class="flex items-start"><span class="text-blue-500 font-bold mr-3">✓</span>The "Submit Test" button is always available in the side palette.</li>
+                </ul>
+            </div>
+            
+            <button onclick="startQuiz()" class="bg-blue-600 text-white font-semibold py-3 px-10 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300">
+                Begin Test
+            </button>
+        </section>
+
+        <!-- Quiz Section -->
+        <section id="quizSection" class="hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 lg:gap-8">
+                <!-- Question Area -->
+                <div id="questionContainer" class="lg:col-span-2">
+                    <!-- Question card will be injected here by JavaScript -->
+                </div>
+                <!-- Question Palette -->
+                <div id="questionPalette" class="bg-white p-4 rounded-2xl shadow-lg mt-6 lg:mt-0 h-full">
+                    <!-- Palette content will be injected here by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Result Section -->
+        <section id="resultSection" class="hidden bg-white p-6 sm:p-10 rounded-2xl shadow-lg transition-opacity duration-500 ease-in-out">
+            <div class="text-center">
+                <h1 class="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">Test Completed!</h1>
+                <p class="text-5xl font-bold text-blue-600 my-4" id="scoreDisplay">0/100</p>
+                <p class="text-2xl text-slate-600" id="percentageDisplay">0%</p>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 my-8 sm:my-10 text-center">
+                <div class="bg-green-50 border-2 border-green-200 p-4 rounded-xl">
+                    <p class="text-3xl sm:text-4xl font-bold text-green-600" id="correctCount">0</p>
+                    <p class="text-sm font-semibold text-green-700 mt-1">Correct</p>
+                </div>
+                <div class="bg-red-50 border-2 border-red-200 p-4 rounded-xl">
+                    <p class="text-3xl sm:text-4xl font-bold text-red-600" id="incorrectCount">0</p>
+                    <p class="text-sm font-semibold text-red-700 mt-1">Incorrect</p>
+                </div>
+                 <div class="bg-slate-50 border-2 border-slate-200 p-4 rounded-xl">
+                    <p class="text-3xl sm:text-4xl font-bold text-slate-600" id="unattemptedCount">0</p>
+                    <p class="text-sm font-semibold text-slate-700 mt-1">Unattempted</p>
+                </div>
+                 <div class="bg-blue-50 border-2 border-blue-200 p-4 rounded-xl">
+                    <p class="text-3xl sm:text-4xl font-bold text-blue-600" id="timeTaken">0:00</p>
+                    <p class="text-sm font-semibold text-blue-700 mt-1">Time Taken</p>
+                </div>
+            </div>
+            
+            <div class="my-8">
+                <h2 class="text-xl font-semibold text-slate-800 mb-3 text-center">Performance Analysis</h2>
+                <div id="performanceChart" class="flex h-4 rounded-full overflow-hidden bg-slate-200">
+                    <!-- Chart segments will be injected here -->
+                </div>
+                 <div class="flex justify-center items-center space-x-6 mt-4 text-sm">
+                    <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-green-500 mr-2"></span>Correct</div>
+                    <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-red-500 mr-2"></span>Incorrect</div>
+                    <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-slate-400 mr-2"></span>Unattempted</div>
+                </div>
+            </div>
+
+            <div class="flex justify-center items-center space-x-4 mt-10">
+                 <button onclick="showReview()" class="bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300 transform hover:scale-105">
+                    Review Answers
+                </button>
+                 <button onclick="location.reload()" class="bg-slate-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-slate-700 transition-all duration-300 transform hover:scale-105">
+                    Restart Quiz
+                </button>
+            </div>
+        </section>
+
+        <!-- Review Section -->
+        <section id="reviewSection" class="hidden">
+             <div class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl font-bold text-slate-900">Review Answers</h1>
+                <button onclick="backToResults()" class="bg-slate-200 text-slate-800 font-semibold py-2 px-6 rounded-lg hover:bg-slate-300 transition-colors duration-300">
+                    ← Back to Results
+                </button>
+            </div>
+            <!-- Review Dashboard -->
+            <div id="reviewDashboard" class="bg-white p-6 rounded-2xl shadow-lg mb-8">
+                <!-- Dashboard content will be injected here -->
+            </div>
+            <div id="reviewContainer" class="space-y-6">
+                <!-- Review questions will be injected here -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Submit Confirmation Modal -->
+    <div id="submitModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full text-center transform transition-all duration-300 scale-95 opacity-0" id="submitModalContent">
+            <h2 class="text-2xl font-bold text-slate-900 mb-4">Confirm Submission</h2>
+            <p class="text-slate-600 mb-6">Are you sure you want to submit the test? You will not be able to change your answers after this.</p>
+            <div id="modalSummary" class="text-left bg-slate-50 p-4 rounded-lg mb-6 space-y-2">
+                <!-- Summary will be injected here -->
+            </div>
+            <div class="flex justify-center space-x-4">
+                <button onclick="hideSubmitModal()" class="bg-slate-200 text-slate-800 font-semibold py-2 px-8 rounded-lg hover:bg-slate-300 transition-colors duration-300">Cancel</button>
+                <button onclick="confirmSubmit()" class="bg-green-600 text-white font-semibold py-2 px-8 rounded-lg hover:bg-green-700 transition-colors duration-300">Submit</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // --- QUIZ DATA ---
+        // Contains 100 questions for the quiz
+        const questions = [
+             {
+                question: "Who was the first Governor-General to introduce English education in India after 1835?",
+                options: ["Warren Hastings", "Lord Bentinck", "Lord Macaulay", "Lord Dalhousie"],
+                correct: 1,
+                hint: "He agreed to revise press laws in 1835 based on Thomas Macaulay's formulation.",
+                explanation: "Governor-General Bentinck agreed to revise press laws in 1835, and Thomas Macaulay formulated new rules that restored earlier freedoms. This is discussed in Chapter VII (Print Culture and the Modern World).",
+                page: "Page 175"
+            },
+            {
+                question: "What was the primary purpose of the Silk Routes before the 15th century?",
+                options: ["Military expansion", "Religious pilgrimage", "Trade and cultural exchange", "Colonial conquest"],
+                correct: 2,
+                hint: "These routes connected Asia with Europe and involved exchange of goods and ideas.",
+                explanation: "The Silk Routes facilitated trade in goods like silk and pottery as well as cultural exchange between Asia, Europe, and North Africa from before the Christian Era until the 15th century. Discussed in Chapter IV (The Making of a Global World).",
+                page: "Page 78"
+            },
+            {
+                question: "In which year did Mahatma Gandhi launch the Civil Disobedience Movement?",
+                options: ["1928", "1930", "1932", "1934"],
+                correct: 1,
+                hint: "This was the year of the famous Dandi March.",
+                explanation: "The Civil Disobedience Movement began in 1930 with the Dandi March on 6 April when Gandhi broke the salt law. This is covered in Chapter III (Nationalism in India).",
+                page: "Page 63"
+            },
+            {
+                question: "Who wrote the first modern novel in Malayalam called 'Indulekha'?",
+                options: ["Bankim Chandra Chattopadhyay", "O. Chandu Menon", "Premchand", "Rabindranath Tagore"],
+                correct: 1,
+                hint: "He was a subjudge from Malabar who initially tried to translate an English novel.",
+                explanation: "O. Chandu Menon wrote Indulekha, published in 1889, which was the first modern novel in Malayalam. He gave up translating English novels as readers weren't familiar with English customs. Discussed in Chapter VIII (Novels, Society and History).",
+                page: "Page 187"
+            },
+            {
+                question: "What technology did Johann Gutenberg develop in the 1430s?",
+                options: ["Steam engine", "Printing press", "Telegraph", "Spinning jenny"],
+                correct: 1,
+                hint: "This invention revolutionized book production in Europe.",
+                explanation: "Johann Gutenberg developed the first-known printing press in Strasbourg, Germany, in the 1430s. He perfected the system by 1448 and first printed the Bible. From Chapter VII (Print Culture and the Modern World).",
+                page: "Page 156"
+            },
+            {
+                question: "Which movement in 1517 was directly facilitated by the spread of print technology?",
+                options: ["Renaissance", "Protestant Reformation", "Industrial Revolution", "French Revolution"],
+                correct: 1,
+                hint: "Martin Luther's 95 Theses were widely circulated due to print.",
+                explanation: "The Protestant Reformation began in 1517 when Martin Luther's 95 Theses were printed and widely distributed, leading to division within the Church. Print technology was crucial for spreading these ideas. Chapter VII.",
+                page: "Page 160"
+            },
+            {
+                question: "What was the main occupation in Bombay's early industrial sector by 1921?",
+                options: ["Shipbuilding", "Cotton textile mills", "Iron and steel", "Chemical industry"],
+                correct: 1,
+                hint: "By 1921, there were 85 such mills employing about 146,000 workers.",
+                explanation: "The first cotton textile mill in Bombay was established in 1854. By 1921, there were 85 cotton mills with about 146,000 workers, making it the dominant industry. From Chapter VI (Work, Life and Leisure).",
+                page: "Page 141-142"
+            },
+            {
+                question: "Who painted the famous image of Bharat Mata in the early 20th century?",
+                options: ["Raja Ravi Varma", "Abanindranath Tagore", "M.V. Dhurandhar", "Nandalal Bose"],
+                correct: 1,
+                hint: "He was influenced by the Swadeshi movement and portrayed her as an ascetic figure.",
+                explanation: "Abanindranath Tagore painted the famous image of Bharat Mata, portraying her as calm, composed, divine and spiritual. The image became popular during the Swadeshi movement. Chapter III (Nationalism in India).",
+                page: "Page 71"
+            },
+            {
+                question: "What percentage of the workforce in 19th century Britain was employed in technologically advanced sectors by the end of the century?",
+                options: ["Less than 20%", "About 40%", "Around 60%", "More than 80%"],
+                correct: 0,
+                hint: "The majority still worked in traditional industries.",
+                explanation: "Even at the end of the 19th century, less than 20% of the total British workforce was employed in technologically advanced industrial sectors. Traditional industries remained dominant. Chapter V (The Age of Industrialisation).",
+                page: "Page 108"
+            },
+            {
+                question: "Which Act of 1878 gave the colonial government extensive rights to censor vernacular newspapers?",
+                options: ["Press Act", "Vernacular Press Act", "Sedition Act", "Rowlatt Act"],
+                correct: 1,
+                hint: "It was modeled on Irish Press Laws and targeted native language newspapers.",
+                explanation: "The Vernacular Press Act of 1878 provided the government with extensive rights to censor reports and editorials in vernacular newspapers. It was modeled on Irish Press Laws. Chapter VII (Print Culture).",
+                page: "Page 175"
+            },
+            {
+                question: "In which year was the first section of the London Underground railway opened?",
+                options: ["1853", "1863", "1873", "1883"],
+                correct: 1,
+                hint: "It opened between Paddington and Farrington Street, carrying 10,000 passengers on the first day.",
+                explanation: "The first section of the Underground in the world opened on 10 January 1863 between Paddington and Farrington Street in London. On that day 10,000 passengers were carried. Chapter VI (Work, Life and Leisure).",
+                page: "Page 133"
+            },
+            {
+                question: "Who wrote the novel 'Godan' which is considered an epic of Indian peasantry?",
+                options: ["Bankim Chandra", "Sarat Chandra", "Premchand", "Rabindranath Tagore"],
+                correct: 2,
+                hint: "Published in 1936, it tells the story of peasants Hori and Dhania.",
+                explanation: "Premchand wrote Godan (The Gift of Cow), published in 1936, which remains his best-known work. It tells the moving story of Hori and Dhania, a peasant couple. Chapter VIII (Novels, Society and History).",
+                page: "Page 198"
+            },
+            {
+                question: "What was the primary fear that led to the Haussmanisation of Paris?",
+                options: ["Disease outbreak", "Foreign invasion", "Political rebellion", "Economic collapse"],
+                correct: 2,
+                hint: "The reconstruction aimed to reduce the possibility of uprisings by the population.",
+                explanation: "Baron Haussmann rebuilt Paris after 1852 partly to reduce the possibility of political rebellion. The poor were evicted from the centre, and straight boulevards were designed for better control. Chapter VI.",
+                page: "Page 139"
+            },
+            {
+                question: "Which book did Dr. B.R. Ambedkar NOT write about caste discrimination?",
+                options: ["Annihilation of Caste", "The Problem of the Rupee", "Who Were the Shudras", "The Untouchables"],
+                correct: 1,
+                hint: "The book mentioned was about economics, not social reform.",
+                explanation: "While Ambedkar wrote extensively on caste discrimination, 'The Problem of the Rupee' was his work on economics. He wrote powerfully on caste issues and his writings were read across India. Chapter VII.",
+                page: "Page 174"
+            },
+            {
+                question: "What was the main cash crop that linked India to the world market in the 19th century?",
+                options: ["Tea", "Cotton", "Indigo", "Opium"],
+                correct: 1,
+                hint: "Its raw material export rose from 5% to 35% between 1812 and 1871.",
+                explanation: "Raw cotton exports from India increased dramatically - from 5% in 1812 to 35% by 1871. Cotton became India's major export crop as British textile mills created huge demand. Chapter IV (The Making of a Global World).",
+                page: "Page 90"
+            },
+            {
+                question: "Who founded Young Italy in Marseilles and Young Europe in Berne?",
+                options: ["Garibaldi", "Cavour", "Mazzini", "Victor Emmanuel II"],
+                correct: 2,
+                hint: "He was born in Genoa in 1807 and became a member of the Carbonari.",
+                explanation: "Giuseppe Mazzini founded Young Italy in Marseilles and then Young Europe in Berne. He believed God had intended nations to be the natural units of mankind. Chapter I (The Rise of Nationalism in Europe).",
+                page: "Page 12"
+            },
+            {
+                question: "What disease devastated African livelihoods in the 1890s by killing 90% of cattle?",
+                options: ["Foot and mouth disease", "Anthrax", "Rinderpest", "Mad cow disease"],
+                correct: 2,
+                hint: "It was carried by infected cattle imported from British Asia to feed Italian soldiers.",
+                explanation: "Rinderpest arrived in Africa in the late 1880s, carried by infected cattle from British Asia. It killed 90% of cattle and destroyed African livelihoods, helping European colonizers control the continent. Chapter IV.",
+                page: "Page 87"
+            },
+            {
+                question: "In which year did the First World War end?",
+                options: ["1917", "1918", "1919", "1920"],
+                correct: 1,
+                hint: "This was also when the influenza epidemic struck India.",
+                explanation: "The First World War ended in 1918. It was followed by influenza epidemic and crop failures in 1918-19 and 1920-21. According to the 1921 census, 12-13 million people perished. Chapter III (Nationalism in India).",
+                page: "Page 54"
+            },
+            {
+                question: "What was the primary economic structure of the 19th century colonial economy in Vietnam?",
+                options: ["Industrial manufacturing", "Rice cultivation and rubber plantations", "Mining and metals", "Textile production"],
+                correct: 1,
+                hint: "These were owned by the French and a small Vietnamese elite.",
+                explanation: "The colonial economy in Vietnam was primarily based on rice cultivation and rubber plantations owned by the French and a small Vietnamese elite. Rail and port facilities were set up to service this sector. Chapter II (The Nationalist Movement in Indo-China).",
+                page: "Page 33"
+            },
+            {
+                question: "Which reformer started a girls' school in Calcutta after becoming a widow?",
+                options: ["Pandita Ramabai", "Rokeya Hossein", "Savitribai Phule", "Tarabai Shinde"],
+                correct: 1,
+                hint: "She wrote 'Sultana's Dream' in 1905.",
+                explanation: "Rokeya Hossein (1880-1932) started a girl's school in Calcutta after she was widowed. She wrote the satiric fantasy 'Sultana's Dream' (1905) and the novel Padmarag. Chapter VIII (Novels, Society and History).",
+                page: "Page 194"
+            },
+            {
+                question: "What was the main reason why industrial workers did not participate widely in the Civil Disobedience Movement in India?",
+                options: ["They were satisfied with their wages", "Congress was reluctant to include workers' demands", "They supported British rule", "They were not interested in politics"],
+                correct: 1,
+                hint: "Including workers' demands might alienate industrialists.",
+                explanation: "The Congress was reluctant to include workers' demands as part of its programme because it felt this would alienate industrialists and divide the anti-imperial forces. Chapter III (Nationalism in India).",
+                page: "Page 66"
+            },
+            {
+                question: "Which novel by Charles Dickens describes the terrible conditions of urban life in industrial England?",
+                options: ["A Tale of Two Cities", "Great Expectations", "Oliver Twist", "David Copperfield"],
+                correct: 2,
+                hint: "Published in 1838, it's the tale of a poor orphan in a world of criminals and beggars.",
+                explanation: "Charles Dickens's Oliver Twist (1838) is the tale of a poor orphan who lived in a world of petty criminals and beggars, brought up in a cruel workhouse. Chapter VIII (Novels, Society and History).",
+                page: "Page 181"
+            },
+            {
+                question: "What was the Jallianwalla Bagh incident date?",
+                options: ["13 April 1918", "13 April 1919", "10 April 1919", "6 April 1919"],
+                correct: 1,
+                hint: "It happened after martial law was imposed in Amritsar.",
+                explanation: "On 13 April 1919, General Dyer opened fire on a crowd gathered in Jallianwalla Bagh, killing hundreds. The crowd was unaware of martial law and had gathered for a fair. Chapter III.",
+                page: "Page 56"
+            },
+            {
+                question: "Who introduced hand-printing technology from China to Japan around AD 768-770?",
+                options: ["Merchants", "Buddhist missionaries", "Government officials", "Samurai warriors"],
+                correct: 1,
+                hint: "They also spread religious texts and ideas.",
+                explanation: "Buddhist missionaries from China introduced hand-printing technology into Japan around AD 768-770. The oldest Japanese book, the Buddhist Diamond Sutra, was printed in AD 868. Chapter VII.",
+                page: "Page 154"
+            },
+            {
+                question: "What was the main purpose of the spinning jenny invented by James Hargreaves in 1764?",
+                options: ["Reduce production costs", "Speed up spinning and reduce labor", "Improve thread quality", "Replace steam engines"],
+                correct: 1,
+                hint: "One wheel could operate multiple spindles simultaneously.",
+                explanation: "The spinning jenny, devised by James Hargreaves in 1764, speeded up the spinning process and reduced labour demand. By turning one wheel, a worker could operate multiple spindles. Chapter V.",
+                page: "Page 111"
+            },
+            {
+                question: "Which city became the hub of new print culture in China in the late 19th century?",
+                options: ["Beijing", "Hong Kong", "Shanghai", "Guangzhou"],
+                correct: 2,
+                hint: "Western printing techniques were imported here as Western powers established outposts.",
+                explanation: "Shanghai became the hub of the new print culture in China as Western printing techniques and mechanical presses were imported in the late 19th century. Chapter VII (Print Culture).",
+                page: "Page 154"
+            },
+            {
+                question: "What was the Swadeshi movement's impact on industrial investment in India?",
+                options: ["It decreased investment", "It had no effect", "Government extended tariff protection to industries", "Foreign investment increased"],
+                correct: 2,
+                hint: "This happened under pressure of nationalist opinion.",
+                explanation: "During the Great Depression, industrial investment grew as the government extended tariff protection to industries under the pressure of nationalist opinion. This helped Indian industries develop. Chapter III.",
+                page: "Page 97"
+            },
+            {
+                question: "Who was the first woman to publish a full-length autobiography in Bengali?",
+                options: ["Rokeya Hossein", "Rashsundari Debi", "Kailashbashini Debi", "Pandita Ramabai"],
+                correct: 1,
+                hint: "She learned to read in the secrecy of her kitchen and published 'Amar Jiban' in 1876.",
+                explanation: "Rashsundari Debi, a young married girl in an orthodox household in East Bengal, secretly learned to read and wrote her autobiography Amar Jiban, published in 1876 - the first in Bengali. Chapter VII.",
+                page: "Page 172"
+            },
+            {
+                question: "What was the Gandhi-Irwin Pact agreed upon?",
+                options: ["Complete independence", "Gandhi would participate in Round Table Conference", "Abolition of salt tax", "Provincial autonomy"],
+                correct: 1,
+                hint: "Signed on 5 March 1931, it also included release of political prisoners.",
+                explanation: "By the Gandhi-Irwin Pact of 5 March 1931, Gandhiji agreed to participate in a Round Table Conference in London, and the government agreed to release political prisoners. Chapter III.",
+                page: "Page 64-65"
+            },
+            {
+                question: "Which novel is considered the first major historical novel in Assamese?",
+                options: ["Phulmoni", "Karuna", "Manomati", "Joymoti"],
+                correct: 2,
+                hint: "Written by Rajanikanta Bardoloi in 1900, set during the Burmese invasion.",
+                explanation: "Rajanikanta Bardoloi wrote Manomati (1900), the first major historical novel in Assam. It is set in the Burmese invasion and tells of two lovers from hostile families. Chapter VIII.",
+                page: "Page 189"
+            },
+            {
+                question: "What was the main product exported from India to China that helped Britain balance its trade deficit?",
+                options: ["Cotton", "Tea", "Opium", "Indigo"],
+                correct: 2,
+                hint: "Britain grew this in India and sold it to China to finance tea imports.",
+                explanation: "Britain grew opium in India and exported it to China. With money earned through opium sales, it financed its tea and other imports from China, helping balance trade deficits. Chapter IV.",
+                page: "Page 91"
+            },
+            {
+                question: "Who was described by Metternich as 'the most dangerous enemy of our social order'?",
+                options: ["Napoleon Bonaparte", "Giuseppe Garibaldi", "Giuseppe Mazzini", "Cavour"],
+                correct: 2,
+                hint: "His relentless opposition to monarchy and vision of democratic republics frightened conservatives.",
+                explanation: "Metternich described Giuseppe Mazzini as 'the most dangerous enemy of our social order' because of his opposition to monarchy and vision of democratic republics. Chapter I.",
+                page: "Page 12"
+            },
+            {
+                question: "What was the primary reason for the growth of lending libraries in England in 1740?",
+                options: ["Government subsidies", "To provide easier access to expensive books", "Educational reforms", "Religious movements"],
+                correct: 1,
+                hint: "Novels were expensive, costing more than what a laborer earned in a week.",
+                explanation: "Circulating libraries were introduced in 1740 because novels were expensive. Henry Fielding's Tom Jones cost three shillings per volume - more than a laborer's weekly earnings. Chapter VIII.",
+                page: "Page 178-179"
+            },
+            {
+                question: "Which city was described as having only 9.5 square yards per person compared to London's 155 square yards in the 1840s?",
+                options: ["Calcutta", "Madras", "Bombay", "Delhi"],
+                correct: 2,
+                hint: "It became India's premier city and expanded rapidly from the late 19th century.",
+                explanation: "Bombay had only 9.5 square yards per person while London had 155 square yards in the 1840s. By 1872, Bombay had 20 persons per house compared to London's 8. Chapter VI.",
+                page: "Page 142"
+            },
+            {
+                question: "What was the main theme of Premchand's novel 'Sewasadan'?",
+                options: ["Freedom struggle", "Poor condition of women in society", "Peasant life", "Caste discrimination"],
+                correct: 1,
+                hint: "Published in 1916, it dealt with issues like child marriage and dowry.",
+                explanation: "Sewasadan (The Abode of Service), published in 1916, dealt mainly with the poor condition of women in society. Issues like child marriage and dowry were woven into the story. Chapter VIII.",
+                page: "Page 189"
+            },
+            {
+                question: "Which Japanese art form depicted ordinary human experiences and urban life?",
+                options: ["Kabuki", "Noh", "Ukiyo", "Bunraku"],
+                correct: 2,
+                hint: "It means 'pictures of the floating world' and was popularized by Kitagawa Utamaro.",
+                explanation: "Ukiyo ('pictures of the floating world') depicted ordinary human experiences, especially urban ones. Artists like Kitagawa Utamaro contributed to this art form that influenced European artists. Chapter VII.",
+                page: "Page 155"
+            },
+            {
+                question: "In which year was the Lahore Congress session where 'Purna Swaraj' was formalized?",
+                options: ["1927", "1928", "1929", "1930"],
+                correct: 2,
+                hint: "Jawaharlal Nehru was the president, and 26 January was declared Independence Day.",
+                explanation: "In December 1929, under Jawaharlal Nehru's presidency, the Lahore Congress formalized the demand of 'Purna Swaraj' (full independence) and declared 26 January 1930 as Independence Day. Chapter III.",
+                page: "Page 63"
+            },
+            {
+                question: "What was the main occupation of the character Surdas in Premchand's 'Rangbhoomi'?",
+                options: ["Farmer", "Beggar", "Weaver", "Shopkeeper"],
+                correct: 1,
+                hint: "He was visually impaired and from a so-called 'untouchable' caste.",
+                explanation: "Surdas in Rangbhoomi (The Arena) was a visually impaired beggar from an 'untouchable' caste. Choosing such a person as the hero made oppressed sections worthy of literary reflection. Chapter VIII.",
+                page: "Page 198"
+            },
+            {
+                question: "Which reformer wrote 'Gulamgiri' in 1871 criticizing the caste system?",
+                options: ["B.R. Ambedkar", "E.V. Ramaswamy Naicker", "Jyotiba Phule", "Mahatma Gandhi"],
+                correct: 2,
+                hint: "He was the Maratha pioneer of 'low caste' protest movements.",
+                explanation: "Jyotiba Phule, the Maratha pioneer of 'low caste' protest movements, wrote Gulamgiri (1871) about the injustices of the caste system. Chapter VII (Print Culture).",
+                page: "Page 174"
+            },
+            {
+                question: "What was the name of the weekly magazine started by James Augustus Hickey in 1780?",
+                options: ["The Times of India", "The Statesman", "Bengal Gazette", "Bombay Samachar"],
+                correct: 2,
+                hint: "It described itself as 'a commercial paper open to all, but influenced by none.'",
+                explanation: "James Augustus Hickey began editing the Bengal Gazette in 1780, a weekly magazine that described itself as 'a commercial paper open to all, but influenced by none.' Chapter VII.",
+                page: "Page 168"
+            },
+            {
+                question: "Which organization did Dr. B.R. Ambedkar establish in 1930?",
+                options: ["Harijan Sevak Sangh", "Depressed Classes Association", "All India Scheduled Castes Federation", "Republican Party of India"],
+                correct: 1,
+                hint: "He organized dalits into this association and demanded separate electorates.",
+                explanation: "Dr. B.R. Ambedkar organized the dalits into the Depressed Classes Association in 1930. He clashed with Gandhi by demanding separate electorates for dalits at the Round Table Conference. Chapter III.",
+                page: "Page 68"
+            },
+            {
+                question: "What was the result of the Poona Pact of September 1932?",
+                options: ["Separate electorates for dalits", "Reserved seats but voted by general electorate", "Complete integration with upper castes", "No special provisions"],
+                correct: 1,
+                hint: "Gandhi began a fast unto death when British agreed to Ambedkar's original demand.",
+                explanation: "The Poona Pact gave Depressed Classes reserved seats in legislative councils, but they were to be voted in by the general electorate, not through separate electorates as Ambedkar initially demanded. Chapter III.",
+                page: "Page 68"
+            },
+            {
+                question: "Which industry led British economic growth after the 1840s, replacing cotton?",
+                options: ["Textile", "Iron and steel", "Chemical", "Automobile"],
+                correct: 1,
+                hint: "Expansion of railways increased demand for this industry.",
+                explanation: "After cotton's dominance until the 1840s, iron and steel industry led the way. With railway expansion from the 1840s in England and 1860s in colonies, demand for iron and steel increased rapidly. Chapter V.",
+                page: "Page 107"
+            },
+            {
+                question: "What percentage of workers in Bombay cotton industries in 1911 came from Ratnagiri?",
+                options: ["Over 25%", "Over 40%", "Over 50%", "Over 75%"],
+                correct: 2,
+                hint: "This neighboring district supplied more than half the workforce.",
+                explanation: "Over 50% of workers in Bombay cotton industries in 1911 came from the neighboring district of Ratnagiri. Workers often moved between village and city during harvests and festivals. Chapter VI.",
+                page: "Page 119"
+            },
+            {
+                question: "Who painted 'The Massacre at Chios' depicting Greek suffering under Turkish rule?",
+                options: ["Jacques-Louis David", "Eugene Delacroix", "Francisco Goya", "J.M.W. Turner"],
+                correct: 1,
+                hint: "He was one of the most important French Romantic painters.",
+                explanation: "Eugene Delacroix, an important French Romantic painter, painted 'The Massacre at Chios' (1824) depicting an incident where 20,000 Greeks were killed by Turks. Chapter I.",
+                page: "Page 14"
+            },
+            {
+                question: "What was the main purpose of the Index of Prohibited Books maintained by the Roman Church from 1558?",
+                options: ["Promote literacy", "Control heretical ideas", "Catalog all books", "Encourage religious debate"],
+                correct: 1,
+                hint: "The Church imposed severe controls over publishers and booksellers.",
+                explanation: "The Roman Church maintained an Index of Prohibited Books from 1558 to control the spread of heretical ideas and questionable religious content that emerged from popular reading. Chapter VII.",
+                page: "Page 161"
+            },
+            {
+                question: "Which Vietnamese leader formed the Communist Party in February 1930?",
+                options: ["Phan Boi Chau", "Phan Chu Trinh", "Ho Chi Minh", "Ngo Dinh Diem"],
+                correct: 2,
+                hint: "Later renamed the Indo-Chinese Communist Party, he was inspired by European communist parties.",
+                explanation: "Ho Chi Minh brought together competing nationalist groups in February 1930 to establish the Vietnamese Communist Party, later renamed the Indo-Chinese Communist Party. Chapter II.",
+                page: "Page 43"
+            },
+            {
+                question: "What was the main economic philosophy that emerged during the Industrial Revolution?",
+                options: ["Socialism", "Mercantilism", "Pursuit of profit", "Feudalism"],
+                correct: 2,
+                hint: "It celebrated profit-making but undervalued workers' lives.",
+                explanation: "The growth of industry was accompanied by an economic philosophy which celebrated the pursuit of profit and undervalued the lives of workers, which Dickens and others criticized. Chapter VIII.",
+                page: "Page 180"
+            },
+            {
+                question: "Which novel by Bankim Chandra inspired many freedom fighters?",
+                options: ["Durgeshnandini", "Anandamath", "Kapalkundala", "Rajmohan's Wife"],
+                correct: 1,
+                hint: "Published in 1882, it was about a secret Hindu militia fighting Muslims.",
+                explanation: "Bankim's Anandamath (1882), about a secret Hindu militia that fights Muslims to establish a Hindu kingdom, inspired many freedom fighters despite its controversial theme. Chapter VIII.",
+                page: "Page 197"
+            },
+            {
+                question: "What was the main innovation in Richard Arkwright's contribution to textile industry?",
+                options: ["Flying shuttle", "Spinning jenny", "Cotton mill", "Power loom"],
+                correct: 2,
+                hint: "He brought all processes under one roof for better management.",
+                explanation: "Richard Arkwright created the cotton mill where costly machines were set up and all processes brought under one roof, allowing careful supervision and regulation. Chapter V.",
+                page: "Page 106-107"
+            },
+            {
+                question: "Which conference in 1944 established the post-war international economic system?",
+                options: ["Yalta Conference", "Potsdam Conference", "Bretton Woods Conference", "San Francisco Conference"],
+                correct: 2,
+                hint: "It established the IMF and World Bank.",
+                explanation: "The United Nations Monetary and Financial Conference held in July 1944 at Bretton Woods, New Hampshire, USA established the post-war economic system including IMF and World Bank. Chapter IV.",
+                page: "Page 99"
+            },
+            {
+                question: "What was the main theme of the novel 'Saraswativijayam' by Potheri Kunjambu?",
+                options: ["Love story", "Historical battle", "Attack on caste oppression", "Religious reform"],
+                correct: 2,
+                hint: "Written in 1892 by a 'lower-caste' writer from north Kerala.",
+                explanation: "Potheri Kunjambu's Saraswativijayam (1892) mounted a strong attack on caste oppression, showing a young 'untouchable' man who escapes his Brahmin landlord and returns as a judge. Chapter VIII.",
+                page: "Page 195-196"
+            },
+            {
+                question: "What was the Khalsa Tract Society's primary publication goal in Punjab?",
+                options: ["Promote English education", "Teach women obedience", "Spread Sikh philosophy", "Economic reforms"],
+                correct: 1,
+                hint: "They published cheap booklets similar to Ram Chaddha's 'Istri Dharm Vichar'.",
+                explanation: "The Khalsa Tract Society published cheap booklets teaching women how to be obedient wives, similar to Ram Chaddha's Istri Dharm Vichar. Many were in dialogue form. Chapter VII.",
+                page: "Page 173"
+            },
+            {
+                question: "Which area in Calcutta was devoted to printing popular books in the 19th century?",
+                options: ["College Street", "Battala", "Bow Bazaar", "Chitpur"],
+                correct: 1,
+                hint: "Pedlars took these publications to homes, enabling women to read them.",
+                explanation: "Battala, an entire area in central Calcutta, was devoted to printing popular books including religious tracts and literature considered scandalous, illustrated with woodcuts. Chapter VII.",
+                page: "Page 173"
+            },
+            {
+                question: "What was the main purpose of the Canal Colonies in west Punjab?",
+                options: ["Military defense", "Urban settlement", "Growing wheat and cotton for export", "Religious centers"],
+                correct: 2,
+                hint: "The British built irrigation canals to transform semi-desert wastes.",
+                explanation: "The British built a network of irrigation canals in west Punjab to transform semi-desert wastes into fertile lands that could grow wheat and cotton for export. Chapter IV.",
+                page: "Page 83"
+            },
+            {
+                question: "Which novelist wrote 'Chemmeen' set in the fishing community of Kerala?",
+                options: ["Vaikom Muhammad Basheer", "O. Chandu Menon", "Thakazhi Sivasankara Pillai", "M.T. Vasudevan Nair"],
+                correct: 2,
+                hint: "Published in 1956, it was later made into a famous film in 1965.",
+                explanation: "Thakazhi Sivasankara Pillai (1912-99) wrote Chemmeen (Shrimp, 1956) set in the fishing community in Kerala. The film directed by Ramu Kariat was made in 1965. Chapter VIII.",
+                page: "Page 197"
+            },
+            {
+                question: "What was the primary occupation that defined Girangaon in Bombay?",
+                options: ["Dock work", "Mill work", "Government service", "Trading"],
+                correct: 1,
+                hint: "It was called a 'mill village' located within 15 minutes' walk from mills.",
+                explanation: "Girangaon was a 'mill village' where 90% of millworkers lived, not more than 15 minutes' walk from the mills. Workers walked to work, necessitating close proximity. Chapter VI.",
+                page: "Page 143"
+            },
+            {
+                question: "Who was the author of the first printed Tamil book in 1579?",
+                options: ["Dutch Protestant missionaries", "Catholic priests", "British missionaries", "Portuguese traders"],
+                correct: 1,
+                hint: "They printed it at Cochin.",
+                explanation: "Catholic priests printed the first Tamil book in 1579 at Cochin. By 1710, Dutch Protestant missionaries had printed 32 Tamil texts, many translations of older works. Chapter VII.",
+                page: "Page 168"
+            },
+            {
+                question: "What was the main criticism of Haussmann's reconstruction of Paris?",
+                options: ["Too expensive", "Killed street life", "Not enough housing", "Poor quality construction"],
+                correct: 1,
+                hint: "Critics said he produced an empty, boring city with similar-looking boulevards.",
+                explanation: "Critics believed Haussmann had 'killed the street' and its life, producing an empty, boring city full of similar-looking boulevards and facades, though it later became admired. Chapter VI.",
+                page: "Page 139"
+            },
+            {
+                question: "Which novel is considered to have lifted the Hindi novel to serious reflection on social issues?",
+                options: ["Pariksha-Guru", "Chandrakanta", "Sewasadan", "Godan"],
+                correct: 2,
+                hint: "Published in 1916 by Premchand, it moved away from fantasy and moralizing.",
+                explanation: "Sewasadan (1916) by Premchand lifted the Hindi novel from fantasy and moralizing to serious reflection on ordinary people's lives and social issues, especially women's condition. Chapter VIII.",
+                page: "Page 189"
+            },
+            {
+                question: "What was the main product of the proto-industrial system in Europe?",
+                options: ["Metal tools", "Pottery", "Cloth", "Furniture"],
+                correct: 2,
+                hint: "Merchants supplied wool to spinners, then yarn to weavers, fullers, and dyers.",
+                explanation: "The proto-industrial system mainly produced cloth. Merchants purchased wool, took it through stages of spinning, weaving, fulling, and dyeing before export. Chapter V.",
+                page: "Page 106"
+            },
+            {
+                question: "What was the primary reason for the Greek war of independence starting in 1821?",
+                options: ["Economic exploitation", "Revolutionary nationalism", "Religious conflict", "Territorial disputes"],
+                correct: 1,
+                hint: "The growth of revolutionary nationalism in Europe sparked the struggle.",
+                explanation: "The growth of revolutionary nationalism in Europe sparked the Greek struggle for independence in 1821. Nationalists received support from Greeks in exile and Europeans sympathetic to ancient Greek culture. Chapter I.",
+                page: "Page 13"
+            },
+            {
+                question: "What was the main feature of chawls in Bombay?",
+                options: ["Luxury apartments", "Single-family homes", "Multi-storeyed structures with one-room tenements", "Government housing"],
+                correct: 2,
+                hint: "Built from the 1860s, each was divided into smaller tenements with no private toilets.",
+                explanation: "Chawls were multi-storeyed structures built from the 1860s, divided into one-room tenements with no private toilets. Multiple families often lived in one tenement due to high rents. Chapter VI.",
+                page: "Page 143"
+            },
+            {
+                question: "Which Bengali newspaper was commissioned by Hindu orthodoxy to oppose Rammohun Roy?",
+                options: ["Sambad Kaumudi", "Samachar Chandrika", "Bengal Gazette", "Bombay Samachar"],
+                correct: 1,
+                hint: "Roy had published Sambad Kaumudi from 1821.",
+                explanation: "Hindu orthodoxy commissioned Samachar Chandrika to oppose Rammohun Roy's opinions published in Sambad Kaumudi from 1821. These debates spread through print. Chapter VII.",
+                page: "Page 169"
+            },
+            {
+                question: "What was the main reason for the failure of the Frankfurt Parliament in 1848?",
+                options: ["Foreign invasion", "Lack of funds", "Opposition from aristocracy and military", "Religious conflicts"],
+                correct: 2,
+                hint: "The King of Prussia rejected the crown offered on parliamentary terms.",
+                explanation: "The Frankfurt Parliament failed when Friedrich Wilhelm IV, King of Prussia, rejected the crown and joined monarchs to oppose the elected assembly. Aristocracy and military opposition strengthened. Chapter I.",
+                page: "Page 17"
+            },
+            {
+                question: "What was the main occupation shown in Thomas Hardy's 'Mayor of Casterbridge'?",
+                options: ["Coal mining", "Textile manufacturing", "Grain merchant", "Shipbuilding"],
+                correct: 2,
+                hint: "The protagonist Michael Henchard was successful in this business.",
+                explanation: "Michael Henchard in Hardy's Mayor of Casterbridge (1886) was a successful grain merchant who became mayor. The novel showed the changing rural culture and business practices. Chapter VIII.",
+                page: "Page 182"
+            },
+            {
+                question: "Which system did Gandhi promote to counter British mill cloth?",
+                options: ["Boycott", "Swadeshi", "Khadi production", "All of these"],
+                correct: 3,
+                hint: "The spinning wheel became the symbol of the Gandhian ideal.",
+                explanation: "Gandhi promoted boycott of foreign goods, swadeshi (buying Indian), and khadi production. The spinning wheel became central to the national flag and represented self-help. Chapter III.",
+                page: "Page 72"
+            },
+            {
+                question: "What was the main criticism of the novel form by religious and social conservatives?",
+                options: ["Too expensive", "Corrupting influence", "Promoted literacy", "Wasted time"],
+                correct: 1,
+                hint: "Women and children were especially warned against reading novels.",
+                explanation: "Conservatives worried novels would corrupt readers, especially women and children, by taking them into an imaginary world. Some parents kept novels locked in lofts away from children. Chapter VIII.",
+                page: "Page 194"
+            },
+            {
+                question: "Which industry employed the largest number of workers in early 20th century London?",
+                options: ["Shipbuilding", "Textiles", "Clothing and footwear", "Coal mining"],
+                correct: 2,
+                hint: "Five major types employed large numbers, with this being one of them.",
+                explanation: "Clothing and footwear was one of the five major industries employing large numbers in London. Others included wood, metals, printing, and precision products. Chapter VI.",
+                page: "Page 129"
+            },
+            {
+                question: "What was the main theme of Jane Austen's novels?",
+                options: ["Industrial revolution", "Women seeking good marriages", "Political reform", "Religious conversion"],
+                correct: 1,
+                hint: "Pride and Prejudice begins with the observation about single men with fortunes.",
+                explanation: "Jane Austen's novels gave glimpses of genteel rural society where women looked for 'good' marriages with wealthy or propertied husbands. Pride and Prejudice exemplifies this theme. Chapter VIII.",
+                page: "Page 184"
+            },
+            {
+                question: "What was the main purpose of the Deoband Seminary founded in 1867?",
+                options: ["Promote English education", "Print fatwas and religious texts", "Train colonial administrators", "Economic development"],
+                correct: 1,
+                hint: "It published thousands of fatwas telling Muslims how to conduct daily lives.",
+                explanation: "The Deoband Seminary, founded in 1867, published thousands of fatwas telling Muslim readers how to conduct themselves in everyday lives and explaining Islamic doctrines. Chapter VII.",
+                page: "Page 169"
+            },
+            {
+                question: "Which port replaced Surat as India's major western port under British rule?",
+                options: ["Cochin", "Goa", "Bombay", "Karachi"],
+                correct: 2,
+                hint: "Control of islands passed to British in 1661 after Charles II's marriage.",
+                explanation: "Bombay replaced Surat as the major western port. After the islands came under British control in 1661, the East India Company shifted its base from Surat to Bombay. Chapter VI.",
+                page: "Page 141"
+            },
+            {
+                question: "What was the main innovation of the power-driven cylindrical press perfected by Richard M. Hoe?",
+                options: ["Print books faster", "Print newspapers at 8,000 sheets per hour", "Print in color", "Reduce paper costs"],
+                correct: 1,
+                hint: "It was particularly useful for printing newspapers.",
+                explanation: "Richard M. Hoe's power-driven cylindrical press could print 8,000 sheets per hour by the mid-19th century. This was particularly useful for printing newspapers. Chapter VII.",
+                page: "Page 166"
+            },
+            {
+                question: "Which Vietnamese leader was described as creating a 'sensible' approach by opposing monarchy without using violence?",
+                options: ["Ho Chi Minh", "Phan Boi Chau", "Phan Chu Trinh", "Ngo Dinh Diem"],
+                correct: 2,
+                hint: "He was influenced by Western democratic ideals and wanted a republic.",
+                explanation: "Phan Chu Trinh (1871-1926) was hostile to monarchy and wanted to establish a democratic republic. He accepted French revolutionary ideals of liberty but criticized French for not following them. Chapter II.",
+                page: "Page 41"
+            },
+            {
+                question: "What was the main agricultural export from India that increased during the American Civil War?",
+                options: ["Wheat", "Rice", "Raw cotton", "Jute"],
+                correct: 2,
+                hint: "As US supplies were cut off, Britain turned to India.",
+                explanation: "When the American Civil War cut off cotton supplies from the US, Britain turned to India. Raw cotton exports from India increased, causing prices to rise and starving Indian weavers. Chapter V.",
+                page: "Page 116-117"
+            },
+            {
+                question: "Which novelist's works were described as being read by Tamil-reading public of an entire generation?",
+                options: ["Subramania Bharati", "Kalki", "Bharathidasan", "Pudhumaipithan"],
+                correct: 1,
+                hint: "His pen name was R. Krishnamurthy and he wrote historical novels.",
+                explanation: "Kalki (R. Krishnamurthy) was the most popular historical novelist in Tamil. His novels, written in simple language and full of adventure, captivated Tamil readers for a generation. Chapter VIII.",
+                page: "Page 192"
+            },
+            {
+                question: "What was the main role of the jobber in Bombay textile mills?",
+                options: ["Machine operator", "Quality inspector", "Recruiter and supervisor", "Accountant"],
+                correct: 2,
+                hint: "Usually an old and trusted worker who got people from his village.",
+                explanation: "The jobber was employed by industrialists to get new recruits. Usually an old trusted worker, he got people from his village, helped them settle, and provided money in crisis, gaining authority and power. Chapter VI.",
+                page: "Page 120"
+            },
+            {
+                question: "Which novel by Charlotte Bronte showed a young girl as independent and assertive?",
+                options: ["Wuthering Heights", "Jane Eyre", "Villette", "Shirley"],
+                correct: 1,
+                hint: "Published in 1847, the protagonist protests against hypocrisy at age ten.",
+                explanation: "Charlotte Bronte's Jane Eyre (published in 1847) showed young Jane as independent and assertive, protesting against hypocrisy with startling bluntness - unlike the expected behavior of girls at that time. Chapter VIII.",
+                page: "Page 184-185"
+            },
+            {
+                question: "What was the main purpose of the Congress of Vienna in 1815?",
+                options: ["Promote democracy", "Restore monarchies and create conservative order", "End colonialism", "Establish free trade"],
+                correct: 1,
+                hint: "Representatives of European powers met to undo Napoleonic changes.",
+                explanation: "The Congress of Vienna (1815) aimed to undo changes from the Napoleonic wars. The Treaty restored Bourbon dynasty and created a new conservative order in Europe. Chapter I.",
+                page: "Page 10-11"
+            },
+            {
+                question: "Which book did Martin Luther translate that sold 5,000 copies within weeks?",
+                options: ["The Bible", "New Testament", "Book of Psalms", "Book of Common Prayer"],
+                correct: 1,
+                hint: "A second edition appeared within three months of the first.",
+                explanation: "Luther's translation of the New Testament sold 5,000 copies within a few weeks and a second edition appeared within three months. Print was crucial for spreading Reformation ideas. Chapter VII.",
+                page: "Page 160"
+            },
+            {
+                question: "What was the primary form of literature popularized by Devaki Nandan Khatri in Hindi?",
+                options: ["Historical novel", "Social reform novel", "Romance with fantasy", "Religious text"],
+                correct: 2,
+                hint: "His best-seller 'Chandrakanta' contributed to popularizing Hindi and Nagari script.",
+                explanation: "Devaki Nandan Khatri's best-seller Chandrakanta - a romance with dazzling fantasy elements - is believed to have contributed immensely in popularizing Hindi and Nagari script. Chapter VIII.",
+                page: "Page 189"
+            },
+            {
+                question: "What was the main economic impact of the Great Depression on Indian peasants?",
+                options: ["Increased income", "Agricultural prices fell by 50%", "Better market access", "Government support increased"],
+                correct: 1,
+                hint: "Wheat prices fell drastically between 1928 and 1934.",
+                explanation: "Between 1928 and 1934, wheat prices in India fell by 50%. Peasants suffered more than urban dwellers as agricultural prices crashed while revenue demands remained unchanged. Chapter IV.",
+                page: "Page 97"
+            },
+            {
+                question: "Which leader's personality and ideas inspired the character Surdas in Premchand's Rangbhoomi?",
+                options: ["Nehru", "Tilak", "Gandhi", "Ambedkar"],
+                correct: 2,
+                hint: "The story shows struggle against land takeover for a tobacco factory.",
+                explanation: "The story of Surdas was inspired by Gandhi's personality and ideas. Surdas struggles against forcible takeover of his land for establishing a tobacco factory. Chapter VIII.",
+                page: "Page 198"
+            },
+            {
+                question: "What was the main provision of the Rowlatt Act of 1919?",
+                options: ["Grant self-government", "Detention without trial for two years", "Promote education", "Economic reforms"],
+                correct: 1,
+                hint: "It gave government enormous powers to repress political activities.",
+                explanation: "The Rowlatt Act (1919) gave government enormous powers to repress political activities and allowed detention of political prisoners without trial for two years, despite Indian opposition. Chapter III.",
+                page: "Page 55"
+            },
+            {
+                question: "Which novel is described as an epic about the Mallas, a community of fisherfolk?",
+                options: ["Pather Panchali", "Titash Ekti Nadir Naam", "Chemmeen", "Saraswativijayam"],
+                correct: 1,
+                hint: "Written by Advaita Malla Burman in 1956, about three generations.",
+                explanation: "Advaita Malla Burman's Titash Ekti Nadir Naam (1956) is an epic about the Mallas who live off fishing in river Titash. The novel describes their community life in great detail. Chapter VIII.",
+                page: "Page 196"
+            },
+            {
+                question: "What was the main criticism of colonial education by Vietnamese intellectuals?",
+                options: ["Too expensive", "Vietnam losing its identity", "Not practical", "Too difficult"],
+                correct: 1,
+                hint: "They feared people were developing a master-slave mentality.",
+                explanation: "Vietnamese intellectuals feared Vietnam was losing not just territory but its very identity - its culture and customs were being devalued and people were developing a master-slave mentality. Chapter II.",
+                page: "Page 36"
+            },
+            {
+                question: "Which city became the first in India to get smoke nuisance legislation in 1863?",
+                options: ["Bombay", "Madras", "Calcutta", "Delhi"],
+                correct: 2,
+                hint: "Coal from Raniganj brought dangerous pollution via railways from 1855.",
+                explanation: "Calcutta became the first Indian city to get smoke nuisance legislation in 1863. The railway line introduced in 1855 brought coal from Raniganj which had high ash content. Chapter VI.",
+                page: "Page 149"
+            },
+            {
+                question: "What was the main feature of the assembly line method introduced by Henry Ford?",
+                options: ["Higher wages", "Workers repeat single task mechanically", "Better working conditions", "Shorter work hours"],
+                correct: 1,
+                hint: "T-Model Ford came off the line at three-minute intervals.",
+                explanation: "The assembly line forced workers to repeat a single task mechanically and continuously at a pace dictated by the conveyor belt. This increased output per worker dramatically. Chapter IV.",
+                page: "Page 94"
+            },
+            {
+                question: "Which novel by Rabindranath Tagore dealt with nationalism and women's condition?",
+                options: ["Gora", "Chokher Bali", "Ghare Baire", "Yogayog"],
+                correct: 2,
+                hint: "Published in 1916, translated as 'The Home and the World' in 1919.",
+                explanation: "Rabindranath Tagore's Ghare Baire (1916), translated as The Home and the World, dealt with nationalism and women's condition through the story of Bimala, Nikhilesh, and Sandip. Chapter VIII.",
+                page: "Page 198"
+            },
+            {
+                question: "What was the primary reason for plantation workers in Assam leaving plantations during Non-Cooperation movement?",
+                options: ["Low wages", "Belief that Gandhi Raj was coming and they'd get land", "Better opportunities elsewhere", "Disease outbreak"],
+                correct: 1,
+                hint: "Thousands defied authorities under the Inland Emigration Act of 1859.",
+                explanation: "When plantation workers in Assam heard of Non-Cooperation Movement, thousands left believing Gandhi Raj was coming and everyone would be given land in their villages. Chapter III.",
+                page: "Page 60"
+            },
+            {
+                question: "Which European country was the first to develop industrialization?",
+                options: ["France", "Germany", "England", "Belgium"],
+                correct: 2,
+                hint: "Industrialization began here in the second half of the eighteenth century.",
+                explanation: "Industrialization began in England in the second half of the eighteenth century. In France and parts of German states, it occurred only during the nineteenth century. Chapter V.",
+                page: "Page 109"
+            },
+            {
+                question: "What was the main theme of the novel 'Indirabai' by Gulavadi Venkata Rao?",
+                options: ["Freedom struggle", "Social reform - widow remarriage and women's education", "Economic development", "Religious conversion"],
+                correct: 1,
+                hint: "Written in 1899 in Kannada, the heroine is widowed young and faces opposition.",
+                explanation: "Indirabai (1899) dealt with social reform issues - the heroine is widowed young but succeeds in continuing education and remarrying despite opposition, highlighting widow's plight and women's education. Chapter VIII.",
+                page: "Page 191"
+            },
+            {
+                question: "What was the main purpose of the Bretton Woods institutions?",
+                options: ["Promote colonialism", "Preserve economic stability and full employment", "Control world trade", "End capitalism"],
+                correct: 1,
+                hint: "The IMF and World Bank were established for post-war reconstruction.",
+                explanation: "The main aim of the post-war Bretton Woods system was to preserve economic stability and full employment in the industrial world through the IMF and World Bank. Chapter IV.",
+                page: "Page 99"
+            },
+            {
+                question: "Which novelist wrote extensively about rural life and community in Russia?",
+                options: ["Fyodor Dostoevsky", "Leo Tolstoy", "Anton Chekhov", "Ivan Turgenev"],
+                correct: 1,
+                hint: "He lived from 1828-1910 and was a famous Russian novelist.",
+                explanation: "Leo Tolstoy (1828-1910) was a famous Russian novelist who wrote extensively on rural life and community, similar to how European novelists dealt with social changes. Chapter VIII.",
+                page: "Page 180"
+            },
+            {
+                question: "What was the main economic activity that defined proto-industrialization in Europe?",
+                options: ["Factory production", "Merchants organizing production in countryside", "Guild-based urban production", "Agricultural farming"],
+                correct: 1,
+                hint: "Merchants supplied money to peasants to produce for international markets.",
+                explanation: "Proto-industrialization involved merchants from towns moving to countryside, supplying money to peasants and artisans to produce for international markets, avoiding guild restrictions in towns. Chapter V.",
+                page: "Page 105"
+            },
+            {
+                question: "Which battle in 1954 led to French defeat in Vietnam?",
+                options: ["Battle of Hanoi", "Battle of Saigon", "Battle of Dien Bien Phu", "Battle of Hue"],
+                correct: 2,
+                hint: "The Vietminh annihilated and captured over 16,000 French soldiers.",
+                explanation: "On 7 May 1954, the Vietminh defeated the French at Dien Bien Phu, capturing over 16,000 soldiers including the commanding staff. This led to peace negotiations in Geneva. Chapter II.",
+                page: "Page 43"
+            },
+            {
+                question: "What was the main feature of the Napoleonic Code of 1804?",
+                options: ["Established monarchy", "Did away with privileges based on birth", "Promoted feudalism", "Restricted property rights"],
+                correct: 1,
+                hint: "Also known as Civil Code, it established equality before law.",
+                explanation: "The Napoleonic Code of 1804 did away with all privileges based on birth, established equality before the law, and secured the right to property. It was exported to French-controlled regions. Chapter I.",
+                page: "Page 6"
+            },
+            {
+                question: "Which year saw the Treaty of Constantinople recognizing Greek independence?",
+                options: ["1821", "1824", "1832", "1840"],
+                correct: 2,
+                hint: "This came after years of struggle that began in 1821.",
+                explanation: "The Treaty of Constantinople of 1832 recognized Greece as an independent nation after the Greek war of independence that began in 1821 with support from Europeans. Chapter I.",
+                page: "Page 13"
+            },
+            {
+                question: "What was the main purpose of night refuges and casual wards in 19th century London?",
+                options: ["Entertainment", "Education", "Shelter for the destitute", "Employment centers"],
+                correct: 2,
+                hint: "Set up by private individuals and Poor Law authorities for homeless.",
+                explanation: "Night Refuges (set up by private individuals) and Casual Ward (by Poor Law authorities) provided shelter for the destitute, though staying involved medical examination and hard labor. Chapter VI.",
+                page: "Page 130-131"
+            },
+            {
+                question: "Which novel by Emile Zola explored the grim conditions of miners' lives in France?",
+                options: ["Nana", "L'Assommoir", "Germinal", "La Bête Humaine"],
+                correct: 2,
+                hint: "Published in 1885, it ends on a note of despair with a failed strike.",
+                explanation: "Emile Zola's Germinal (1885) explored in harsh detail the grim conditions of miners' lives in France, ending with the failure of the hero's strike and shattered hopes. Chapter VIII.",
+                page: "Page 181"
+            },
+            {
+                question: "What was the main purpose of the zollverein formed in 1834?",
+                options: ["Military alliance", "Customs union to abolish tariff barriers", "Religious unity", "Educational reform"],
+                correct: 1,
+                hint: "Formed at Prussia's initiative, it reduced currencies from over thirty to two.",
+                explanation: "The zollverein was a customs union formed in 1834 at Prussia's initiative. It abolished tariff barriers and reduced the number of currencies from over thirty to two in German states. Chapter I.",
+                page: "Page 10"
+            },
+            {
+                question: "Which leader said 'Printing is the ultimate gift of God and the greatest one'?",
+                options: ["John Calvin", "Martin Luther", "Erasmus", "Thomas More"],
+                correct: 1,
+                hint: "His writings were reproduced in vast numbers during the Protestant Reformation.",
+                explanation: "Martin Luther, deeply grateful to print technology which spread his ideas rapidly during the Protestant Reformation, said 'Printing is the ultimate gift of God and the greatest one.' Chapter VII.",
+                page: "Page 160"
+            },
+            {
+                question: "What was the main occupation of James Augustus Hickey before starting Bengal Gazette?",
+                options: ["Government official", "Teacher", "Private English enterprise", "Missionary"],
+                correct: 2,
+                hint: "He described his magazine as independent from colonial influence.",
+                explanation: "James Augustus Hickey's Bengal Gazette (1780) was a private English enterprise, proud of its independence from colonial influence, describing itself as 'open to all, but influenced by none.' Chapter VII.",
+                page: "Page 168"
+            },
+            {
+                question: "Which war lasted from 1914 to 1918?",
+                options: ["Franco-Prussian War", "Crimean War", "First World War", "Boer War"],
+                correct: 2,
+                hint: "It was fought between Allies and Central Powers with modern industrial weapons.",
+                explanation: "The First World War (1914-18) was fought between Allies (Britain, France, Russia, later US) and Central Powers (Germany, Austria-Hungary, Ottoman Turkey). At least 9 million people died. Chapter IV.",
+                page: "Page 92-93"
+            },
+            {
+                question: "What was the main theme of Bankim Chandra's first novel Durgeshnandini?",
+                options: ["Social reform", "Historical romance", "Religious text", "Political satire"],
+                correct: 1,
+                hint: "Published in 1865, it stunned listeners with its ingenious plot and language.",
+                explanation: "Durgeshnandini (1865) was Bankim Chandra's first novel featuring ingenious plot twists, suspense, and a new prose style that quickly established excellence in Bengali novels. Chapter VIII.",
+                page: "Page 190"
+            },
+            {
+                question: "Which Act made elementary education compulsory in Britain?",
+                options: ["Education Act 1870", "Factory Act 1902", "Reform Act 1832", "Poor Law 1834"],
+                correct: 0,
+                hint: "After this and factory acts from 1902, children were kept out of industrial work.",
+                explanation: "The Compulsory Elementary Education Act of 1870, along with factory acts beginning from 1902, kept children out of industrial work in Britain. Chapter VI.",
+                page: "Page 130"
+            },
+            {
+                question: "What was the main purpose of the Ho Chi Minh trail?",
+                options: ["Tourism", "Transport men and materials from north to south Vietnam", "Trade route", "Religious pilgrimage"],
+                correct: 1,
+                hint: "An immense network of footpaths and roads, improved from the late 1950s.",
+                explanation: "The Ho Chi Minh trail was used to transport men and materials from north to south Vietnam. From 1967, about 20,000 North Vietnamese troops came south monthly on this trail. Chapter II.",
+                page: "Page 47"
+            },
+            {
+                question: "Which novelist is credited with making the Hindi novel achieve excellence?",
+                options: ["Devaki Nandan Khatri", "Srinivas Das", "Premchand", "Bharatendu Harishchandra"],
+                correct: 2,
+                hint: "He began writing in Urdu then shifted to Hindi, remaining influential in both.",
+                explanation: "Premchand achieved excellence in the Hindi novel. He began writing in Urdu then shifted to Hindi, drawing on the traditional art of kissa-goi (storytelling). Chapter VIII.",
+                page: "Page 189"
+            },
+            {
+                question: "What was the main economic change in Europe that led to growth of commercial classes?",
+                options: ["Agricultural reforms", "Growth of industrial production and trade", "Colonial expansion", "Religious reforms"],
+                correct: 1,
+                hint: "This meant growth of towns and emergence of classes based on market production.",
+                explanation: "In Western and Central Europe, the growth of industrial production and trade meant growth of towns and emergence of commercial classes whose existence was based on production for market. Chapter I.",
+                page: "Page 9"
+            },
+            {
+                question: "Which reform movement developed to fight against evils of drinking in 19th century?",
+                options: ["Prohibition movement", "Temperance movement", "Abstinence movement", "Sobriety movement"],
+                correct: 1,
+                hint: "Led by middle classes, it aimed to reduce alcohol consumption among working classes.",
+                explanation: "The temperance movement was a largely middle-class-led social reform movement from the 19th century that aimed at reducing alcoholic drink consumption, especially among working classes. Chapter VI.",
+                page: "Page 132"
+            },
+            {
+                question: "What was the main purpose of the Green Belt around London?",
+                options: ["Agriculture", "Bridge difference between city and countryside", "Military defense", "Industrial zone"],
+                correct: 1,
+                hint: "Created to provide 'lungs' for the city and reduce congestion.",
+                explanation: "The Green Belt around London was an attempt to bridge the difference between city and countryside, providing 'lungs' for the city as congestion increased in the 19th century. Chapter VI.",
+                page: "Page 132-133"
+            },
+            {
+                question: "Which battle marked the end of Napoleon's rule?",
+                options: ["Battle of Austerlitz", "Battle of Waterloo", "Battle of Leipzig", "Battle of Trafalgar"],
+                correct: 1,
+                hint: "After this defeat in 1815, European powers met at Vienna.",
+                explanation: "Following Napoleon's defeat in 1815, European governments were driven by a spirit of conservatism. Representatives met at Vienna to draw up a settlement for Europe. Chapter I.",
+                page: "Page 10"
+            },
+            {
+                question: "What was the main feature of epistolary novels?",
+                options: ["Historical setting", "Written in verse", "Use of letters to tell story", "Multiple narrators"],
+                correct: 2,
+                hint: "Samuel Richardson's 'Pamela' used this form to show hidden conflicts.",
+                explanation: "Epistolary novels used the private and personal form of letters to tell their story. Samuel Richardson's Pamela told much of its story through exchange of letters between two lovers. Chapter VIII.",
+                page: "Page 178"
+            },
+            {
+                question: "Which Vietnamese leader wanted to establish a democratic republic without wholesale rejection of Western civilization?",
+                options: ["Ho Chi Minh", "Phan Boi Chau", "Phan Chu Trinh", "Bao Dai"],
+                correct: 2,
+                hint: "He accepted French revolutionary ideals of liberty but criticized French.",
+                explanation: "Phan Chu Trinh (1871-1926) wanted to establish a democratic republic and was profoundly influenced by Western democratic ideals, accepting French revolutionary ideals while criticizing French hypocrisy. Chapter II.",
+                page: "Page 41"
+            },
+            {
+                question: "What was the main reason for the popularity of Sarat Chandra Chattopadhyay?",
+                options: ["Complex plots", "Simple language storytelling", "Political themes", "Historical accuracy"],
+                correct: 1,
+                hint: "By the 20th century, he was the most popular novelist in Bengal and probably India.",
+                explanation: "The power of telling stories in simple language made Sarat Chandra Chattopadhyay (1876-1938) the most popular novelist in Bengal and probably in the rest of India. Chapter VIII.",
+                page: "Page 190"
+            },
+            {
+                question: "What was the main purpose of the printing press established by Portuguese missionaries in Goa?",
+                options: ["Commercial printing", "Government documents", "Religious texts and tracts", "Newspapers"],
+                correct: 2,
+                hint: "Jesuit priests learned Konkani and printed several tracts.",
+                explanation: "The printing press came to Goa with Portuguese missionaries in mid-16th century. Jesuit priests learned Konkani and printed several tracts. By 1674, about 50 books had been printed in Konkani and Kanara languages. Chapter VII.",
+                page: "Page 168"
+            },
+            {
+                question: "Which movement in 1868 was led by officials at the imperial court in Vietnam?",
+                options: ["Peasant Revolt", "Scholars Revolt", "Workers Strike", "Students Protest"],
+                correct: 1,
+                hint: "Led by officials angered by spread of Catholicism and French power.",
+                explanation: "The Scholars Revolt in 1868 was an early movement against French control and Christianity, led by officials at the imperial court angered by spread of Catholicism and French power. Chapter II.",
+                page: "Page 39-40"
+            }
+        ];
+
+
+        // --- APPLICATION STATE ---
+        let currentQuestionIndex = 0;
+        let userAnswers = new Array(questions.length).fill(null);
+        let markedForReview = new Array(questions.length).fill(false);
+        let timeLeft = 90 * 60; // 90 minutes in seconds
+        let timerInterval;
+        let startTime;
+
+        // --- DOM ELEMENT REFERENCES ---
+        const startPage = document.getElementById('startPage');
+        const quizSection = document.getElementById('quizSection');
+        const resultSection = document.getElementById('resultSection');
+        const reviewSection = document.getElementById('reviewSection');
+        const questionContainer = document.getElementById('questionContainer');
+        const paletteContainer = document.getElementById('questionPalette');
+        const timerDisplay = document.getElementById('timer');
+        const submitModal = document.getElementById('submitModal');
+        const submitModalContent = document.getElementById('submitModalContent');
+
+        // --- CORE FUNCTIONS ---
+
+        /**
+         * Initializes the quiz, hiding the start page and showing the quiz interface.
+         */
+        function startQuiz() {
+            startPage.classList.add('hidden');
+            quizSection.classList.remove('hidden');
+            timerDisplay.classList.remove('hidden');
+            timerDisplay.classList.add('flex');
+            startTime = Date.now();
+            startTimer();
+            showQuestion(0);
+        }
+
+        /**
+         * Starts the countdown timer.
+         */
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 300) { // 5-minute warning
+                    timerDisplay.classList.add('bg-red-100', 'text-red-600', 'timer-warning');
+                }
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    confirmSubmit(); // Auto-submit when time is up
+                }
+            }, 1000);
+        }
+
+        /**
+         * Updates the timer display in MM:SS format.
+         */
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.querySelector('span').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        /**
+         * Displays a specific question and updates the navigation palette.
+         * @param {number} index - The index of the question to display.
+         */
+        function showQuestion(index) {
+            currentQuestionIndex = index;
+            const question = questions[index];
+            
+            questionContainer.innerHTML = `
+                <div class="bg-white p-6 rounded-2xl shadow-lg transition-all duration-300">
+                    <div class="flex justify-between items-center border-b pb-4 mb-4">
+                        <span class="font-semibold text-lg text-slate-800">Question ${index + 1} of ${questions.length}</span>
+                        <button onclick="toggleHint(this)" class="bg-yellow-100 text-yellow-800 text-sm font-semibold px-4 py-2 rounded-lg hover:bg-yellow-200 transition-colors">💡 Show Hint</button>
+                    </div>
+                     <div id="hintContent" class="hidden bg-yellow-50 text-yellow-900 p-4 rounded-lg mb-4 border border-yellow-200">
+                        <strong>Hint:</strong> ${question.hint}
+                    </div>
+                    <p class="text-lg text-slate-900 leading-relaxed mb-6">${question.question}</p>
+                    <div class="space-y-3">
+                        ${question.options.map((option, i) => `
+                            <div class="option border-2 ${userAnswers[index] === i ? 'border-blue-500 bg-blue-50' : 'border-slate-200 bg-white'} hover:border-blue-400 p-4 rounded-lg cursor-pointer transition-all duration-200 flex items-center" onclick="selectOption(${i})">
+                                <span class="flex-shrink-0 font-bold text-slate-500 ${userAnswers[index] === i ? 'text-blue-600' : ''} mr-4 w-6 h-6 rounded-full border-2 ${userAnswers[index] === i ? 'border-blue-500 bg-blue-100' : 'border-slate-300'} flex items-center justify-center">${String.fromCharCode(65 + i)}</span>
+                                <span class="text-slate-700 ${userAnswers[index] === i ? 'font-semibold' : ''}">${option}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="flex flex-wrap gap-4 justify-between items-center mt-8 pt-6 border-t">
+                        <button onclick="toggleMarkForReview()" class="bg-purple-100 text-purple-800 font-semibold py-2 px-5 rounded-lg hover:bg-purple-200 transition-colors">
+                            ${markedForReview[index] ? '✓ Unmark Review' : '⚑ Mark for Review'}
+                        </button>
+                        <div class="flex gap-4">
+                            <button onclick="previousQuestion()" ${index === 0 ? 'disabled' : ''} class="bg-slate-600 text-white font-semibold py-2 px-5 rounded-lg hover:bg-slate-700 transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed">← Previous</button>
+                            <button onclick="nextQuestion()" ${index === questions.length - 1 ? 'disabled' : ''} class="bg-slate-600 text-white font-semibold py-2 px-5 rounded-lg hover:bg-slate-700 transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed">Next →</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            updatePalette();
+        }
+
+        /**
+         * Updates the question navigation palette with the current status of each question.
+         */
+        function updatePalette() {
+            let paletteHTML = `
+                <h3 class="text-lg font-semibold text-center mb-4 pb-3 border-b">Question Palette</h3>
+                <div class="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-7 lg:grid-cols-5 gap-2 max-h-[50vh] overflow-y-auto palette-scroll pr-2">
+            `;
+            for (let i = 0; i < questions.length; i++) {
+                let statusClass = 'bg-slate-100 text-slate-700 hover:bg-slate-200';
+                if (userAnswers[i] !== null) {
+                    statusClass = 'bg-green-100 text-green-800 hover:bg-green-200'; // Answered
+                }
+                if (markedForReview[i]) {
+                    statusClass = 'bg-purple-100 text-purple-800 hover:bg-purple-200'; // Marked for review
+                }
+                if (i === currentQuestionIndex) {
+                    statusClass = 'bg-blue-500 text-white scale-110 ring-2 ring-offset-2 ring-blue-500'; // Current
+                }
+                paletteHTML += `<button onclick="jumpToQuestion(${i})" class="w-10 h-10 rounded-lg font-semibold flex items-center justify-center transition-all duration-200 ${statusClass}">${i + 1}</button>`;
+            }
+            paletteHTML += `</div><div class="mt-4 pt-3 border-t text-xs space-y-2">
+                <div class="flex items-center"><span class="w-4 h-4 rounded-md bg-green-100 border border-green-300 mr-2"></span> Answered</div>
+                <div class="flex items-center"><span class="w-4 h-4 rounded-md bg-slate-100 border border-slate-300 mr-2"></span> Not Answered</div>
+                <div class="flex items-center"><span class="w-4 h-4 rounded-md bg-purple-100 border border-purple-300 mr-2"></span> Marked for Review</div>
+                <div class="flex items-center"><span class="w-4 h-4 rounded-md bg-blue-500 border border-blue-600 mr-2"></span> Current Question</div>
+            </div>
+            <div class="mt-4 pt-4 border-t">
+                <button onclick="showSubmitModal()" class="w-full bg-green-600 text-white font-semibold py-3 px-5 rounded-lg hover:bg-green-700 transition-colors">
+                    Submit Test
+                </button>
+            </div>
+            `;
+            paletteContainer.innerHTML = paletteHTML;
+        }
+
+        function toggleHint(button) {
+            const hintContent = document.getElementById('hintContent');
+            const isHidden = hintContent.classList.contains('hidden');
+            if(isHidden) {
+                hintContent.classList.remove('hidden');
+                button.textContent = '💡 Hide Hint';
+            } else {
+                hintContent.classList.add('hidden');
+                button.textContent = '💡 Show Hint';
+            }
+        }
+
+        function selectOption(optionIndex) {
+            userAnswers[currentQuestionIndex] = optionIndex;
+            showQuestion(currentQuestionIndex);
+            setTimeout(() => {
+                if(currentQuestionIndex < questions.length - 1) {
+                    nextQuestion();
+                }
+            }, 300); // Auto-navigate to next question after a short delay
+        }
+
+        function toggleMarkForReview() {
+            markedForReview[currentQuestionIndex] = !markedForReview[currentQuestionIndex];
+            showQuestion(currentQuestionIndex);
+        }
+
+        function previousQuestion() {
+            if (currentQuestionIndex > 0) {
+                showQuestion(currentQuestionIndex - 1);
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < questions.length - 1) {
+                showQuestion(currentQuestionIndex + 1);
+            }
+        }
+        
+        function jumpToQuestion(index) {
+            showQuestion(index);
+        }
+
+        function showSubmitModal() {
+            const answeredCount = userAnswers.filter(a => a !== null).length;
+            const notAnsweredCount = questions.length - answeredCount;
+            const markedCount = markedForReview.filter(m => m).length;
+            
+            document.getElementById('modalSummary').innerHTML = `
+                <p><strong>Answered:</strong> ${answeredCount}</p>
+                <p><strong>Not Answered:</strong> ${notAnsweredCount}</p>
+                <p><strong>Marked for Review:</strong> ${markedCount}</p>
+            `;
+
+            submitModal.classList.remove('hidden');
+            setTimeout(() => {
+                 submitModalContent.classList.remove('scale-95', 'opacity-0');
+            }, 10);
+        }
+
+        function hideSubmitModal() {
+            submitModalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                submitModal.classList.add('hidden');
+            }, 300);
+        }
+        
+        function confirmSubmit() {
+            clearInterval(timerInterval);
+            hideSubmitModal();
+
+            let correct = 0, incorrect = 0, unattempted = 0;
+            userAnswers.forEach((answer, index) => {
+                if (answer === null) unattempted++;
+                else if (answer === questions[index].correct) correct++;
+                else incorrect++;
+            });
+
+            const totalTimeTaken = Math.floor((Date.now() - startTime) / 1000);
+            const minutesTaken = Math.floor(totalTimeTaken / 60);
+            const secondsTaken = totalTimeTaken % 60;
+
+            quizSection.classList.add('hidden');
+            reviewSection.classList.add('hidden');
+            resultSection.classList.remove('hidden');
+
+            document.getElementById('scoreDisplay').textContent = `${correct}/${questions.length}`;
+            document.getElementById('percentageDisplay').textContent = `${((correct / questions.length) * 100).toFixed(2)}%`;
+            document.getElementById('correctCount').textContent = correct;
+            document.getElementById('incorrectCount').textContent = incorrect;
+            document.getElementById('unattemptedCount').textContent = unattempted;
+            document.getElementById('timeTaken').textContent = `${minutesTaken}:${String(secondsTaken).padStart(2, '0')}`;
+
+            const chart = document.getElementById('performanceChart');
+            chart.innerHTML = `
+                <div class="bg-green-500 transition-all duration-1000" style="width: ${(correct/questions.length)*100}%"></div>
+                <div class="bg-red-500 transition-all duration-1000" style="width: ${(incorrect/questions.length)*100}%"></div>
+                <div class="bg-slate-400 transition-all duration-1000" style="width: ${(unattempted/questions.length)*100}%"></div>
+            `;
+            window.scrollTo(0, 0);
+        }
+
+        function showReview() {
+            resultSection.classList.add('hidden');
+            reviewSection.classList.remove('hidden');
+
+            const correct = userAnswers.filter((a, i) => a === questions[i].correct).length;
+            const incorrect = userAnswers.filter((a, i) => a !== null && a !== questions[i].correct).length;
+            const unattempted = userAnswers.filter(a => a === null).length;
+            const attempted = correct + incorrect;
+            const accuracy = attempted > 0 ? ((correct / attempted) * 100).toFixed(2) : 0;
+
+            const reviewDashboard = document.getElementById('reviewDashboard');
+            reviewDashboard.innerHTML = `
+                <h2 class="text-2xl font-bold text-slate-800 mb-4 text-center">Review Dashboard</h2>
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 text-center">
+                    <div class="bg-blue-50 p-3 rounded-lg"><p class="font-bold text-2xl text-blue-600">${accuracy}%</p><p class="text-sm text-blue-700">Accuracy</p></div>
+                    <div class="bg-green-50 p-3 rounded-lg"><p class="font-bold text-2xl text-green-600">${correct}</p><p class="text-sm text-green-700">Correct</p></div>
+                    <div class="bg-red-50 p-3 rounded-lg"><p class="font-bold text-2xl text-red-600">${incorrect}</p><p class="text-sm text-red-700">Incorrect</p></div>
+                    <div class="bg-slate-50 p-3 rounded-lg"><p class="font-bold text-2xl text-slate-600">${unattempted}</p><p class="text-sm text-slate-700">Unattempted</p></div>
+                </div>
+                <div class="flex flex-wrap justify-center gap-2">
+                    <button data-filter="all" onclick="filterReview('all')" class="review-filter-btn bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors">Show All</button>
+                    <button data-filter="correct" onclick="filterReview('correct')" class="review-filter-btn bg-slate-200 text-slate-700 font-semibold py-2 px-4 rounded-lg text-sm transition-colors">Correct</button>
+                    <button data-filter="incorrect" onclick="filterReview('incorrect')" class="review-filter-btn bg-slate-200 text-slate-700 font-semibold py-2 px-4 rounded-lg text-sm transition-colors">Incorrect</button>
+                    <button data-filter="unattempted" onclick="filterReview('unattempted')" class="review-filter-btn bg-slate-200 text-slate-700 font-semibold py-2 px-4 rounded-lg text-sm transition-colors">Unattempted</button>
+                </div>
+            `;
+
+            const container = document.getElementById('reviewContainer');
+            container.innerHTML = questions.map((q, i) => {
+                const userAnswer = userAnswers[i];
+                const isCorrect = userAnswer === q.correct;
+                const isUnattempted = userAnswer === null;
+                
+                const status = isUnattempted ? 'unattempted' : (isCorrect ? 'correct' : 'incorrect');
+                let statusText = '', statusColor = '', borderColor = '';
+
+                switch(status) {
+                    case 'correct':
+                        statusText = '✓ Correct'; statusColor = 'text-green-600'; borderColor = 'border-green-500';
+                        break;
+                    case 'incorrect':
+                        statusText = '✗ Incorrect'; statusColor = 'text-red-600'; borderColor = 'border-red-500';
+                        break;
+                    default:
+                        statusText = 'Not Attempted'; statusColor = 'text-slate-500'; borderColor = 'border-slate-300';
+                }
+
+                return `
+                    <div class="review-question-card bg-white p-6 rounded-2xl shadow-lg border-l-4 ${borderColor}" data-status="${status}">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="font-semibold text-lg text-slate-800">Question ${i + 1}</span>
+                            <span class="font-bold text-sm ${statusColor}">${statusText}</span>
+                        </div>
+                        <p class="text-lg text-slate-900 leading-relaxed mb-5">${q.question}</p>
+                        <div class="space-y-3">
+                            ${q.options.map((option, optIndex) => {
+                                let optClasses = 'border-2 p-4 rounded-lg flex items-center ';
+                                if(optIndex === q.correct) {
+                                    optClasses += 'bg-green-50 border-green-400 font-semibold text-green-800';
+                                } else if (optIndex === userAnswer) {
+                                     optClasses += 'bg-red-50 border-red-400 text-red-800';
+                                } else {
+                                     optClasses += 'border-slate-200 bg-slate-50 text-slate-700';
+                                }
+                                return `<div class="${optClasses}">
+                                            <span class="font-bold mr-4">${String.fromCharCode(65 + optIndex)}.</span>
+                                            <span>${option}</span>
+                                        </div>`;
+                            }).join('')}
+                        </div>
+                        <div class="mt-5 pt-5 border-t border-slate-200">
+                             <div class="bg-blue-50 text-blue-900 p-4 rounded-lg border border-blue-200">
+                                <p class="font-semibold mb-1">📚 Explanation</p>
+                                <p>${q.explanation}</p>
+                                <p class="text-sm mt-2 text-blue-800 opacity-80"><strong>Reference:</strong> ${q.page}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            window.scrollTo(0, 0);
+        }
+
+        function filterReview(statusToShow) {
+            const allQuestions = document.querySelectorAll('.review-question-card');
+            allQuestions.forEach(q => {
+                if (statusToShow === 'all' || q.dataset.status === statusToShow) {
+                    q.style.display = 'block';
+                } else {
+                    q.style.display = 'none';
+                }
+            });
+            
+            const filterButtons = document.querySelectorAll('.review-filter-btn');
+            filterButtons.forEach(btn => {
+                if (btn.dataset.filter === statusToShow) {
+                    btn.classList.add('bg-blue-600', 'text-white');
+                    btn.classList.remove('bg-slate-200', 'text-slate-700');
+                } else {
+                    btn.classList.remove('bg-blue-600', 'text-white');
+                    btn.classList.add('bg-slate-200', 'text-slate-700');
+                }
+            });
+        }
+
+        function backToResults() {
+            reviewSection.classList.add('hidden');
+            resultSection.classList.remove('hidden');
+             window.scrollTo(0, 0);
+        }
+    </script>
+</body>
+</html>
