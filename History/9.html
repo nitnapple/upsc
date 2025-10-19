@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History Practice Test Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            /* * This font stack prioritizes Apple's San Francisco font.
+             * -apple-system and BlinkMacSystemFont target it on macOS and iOS.
+             * Segoe UI is for Windows, Roboto for Android, and Helvetica/Arial/sans-serif are common fallbacks.
+             */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+        }
+        .timer-pulse {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+        /* Custom scrollbar for better aesthetics */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Start Page -->
+    <div id="start-page" class="flex flex-col items-center justify-center min-h-screen p-4">
+        <div class="w-full max-w-2xl bg-white p-8 rounded-2xl shadow-lg text-center">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">Practice Test: India and the Contemporary World - I</h1>
+            <p class="text-lg text-gray-600 mb-6">Test your knowledge with this comprehensive practice exam.</p>
+            <div class="bg-gray-50 p-6 rounded-lg text-left mb-8">
+                <h2 class="text-2xl font-semibold mb-4 text-gray-800">Instructions</h2>
+                <ul class="list-disc list-inside space-y-2 text-gray-700">
+                    <li>This test contains <span class="font-semibold">100 multiple-choice questions</span>.</li>
+                    <li>You will have <span class="font-semibold">90 minutes</span> to complete the test.</li>
+                    <li>Each question has one correct answer.</li>
+                    <li>Click on an option to select your answer. Your choice will be saved automatically.</li>
+                    <li>Use the "Mark for Review" button to flag questions you want to revisit.</li>
+                    <li>Navigate using the "Previous" and "Next" buttons, or click any question number in the side palette.</li>
+                    <li>The test will auto-submit when the timer runs out.</li>
+                </ul>
+            </div>
+            <button id="begin-test-btn" class="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 text-xl">
+                Begin Test
+            </button>
+        </div>
+    </div>
+
+    <!-- Quiz Interface -->
+    <div id="quiz-interface" class="hidden">
+        <header class="bg-white shadow-md p-4 flex justify-between items-center sticky top-0 z-10">
+            <h1 class="text-2xl font-bold text-gray-900">History Practice Test</h1>
+            <div id="timer" class="text-2xl font-bold bg-blue-100 text-blue-800 px-4 py-2 rounded-lg">90:00</div>
+        </header>
+
+        <main class="container mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left Column: Question -->
+            <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg">
+                <h2 id="question-number" class="text-xl font-semibold text-gray-800 mb-4">Question 1 of 100</h2>
+                <p id="question-text" class="text-lg text-gray-700 mb-6 min-h-[6rem]"></p>
+                <div id="options-container" class="space-y-3 mb-6">
+                    <!-- Options will be dynamically inserted here -->
+                </div>
+                <div id="hint-container" class="hidden bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-lg mb-6">
+                    <p class="font-bold">Hint</p>
+                    <p id="hint-text"></p>
+                </div>
+                <div class="flex flex-wrap gap-3 justify-between items-center">
+                    <button id="prev-btn" class="bg-gray-300 text-gray-800 font-bold py-2 px-5 rounded-lg hover:bg-gray-400 transition">Previous</button>
+                    <div>
+                        <button id="show-hint-btn" class="bg-yellow-500 text-white font-bold py-2 px-5 rounded-lg hover:bg-yellow-600 transition">Show Hint</button>
+                        <button id="mark-review-btn" class="bg-purple-500 text-white font-bold py-2 px-5 rounded-lg hover:bg-purple-600 transition">Mark for Review</button>
+                    </div>
+                    <button id="next-btn" class="bg-blue-600 text-white font-bold py-2 px-5 rounded-lg hover:bg-blue-700 transition">Next</button>
+                </div>
+            </div>
+
+            <!-- Right Column: Palette -->
+            <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col">
+                <h3 class="text-xl font-semibold text-center mb-4 text-gray-800">Question Palette</h3>
+                <div id="question-palette" class="grid grid-cols-5 md:grid-cols-10 lg:grid-cols-5 gap-2 custom-scrollbar overflow-y-auto pr-2 flex-grow max-h-96 lg:max-h-full">
+                    <!-- Palette buttons will be dynamically inserted here -->
+                </div>
+                <button id="submit-test-btn" class="mt-6 w-full bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 transition-transform transform hover:scale-105">Submit Test</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md text-center">
+            <h2 class="text-2xl font-bold mb-4">Ready to Submit?</h2>
+            <p class="text-gray-600 mb-6">Here is a summary of your test:</p>
+            <div class="space-y-2 text-left mb-8">
+                <p class="flex justify-between">Answered: <span id="summary-answered" class="font-semibold">0</span></p>
+                <p class="flex justify-between">Not Answered: <span id="summary-unanswered" class="font-semibold">0</span></p>
+                <p class="flex justify-between">Marked for Review: <span id="summary-marked" class="font-semibold">0</span></p>
+            </div>
+            <div class="flex justify-center gap-4">
+                <button id="cancel-submit-btn" class="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-400 transition">Cancel</button>
+                <button id="confirm-submit-btn" class="bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700 transition">Confirm Submit</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Results Summary Page -->
+    <div id="results-page" class="hidden flex flex-col items-center justify-center min-h-screen p-4">
+        <div class="w-full max-w-2xl bg-white p-8 rounded-2xl shadow-lg text-center">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">Test Results</h1>
+            <div class="grid grid-cols-2 gap-4 mb-6 text-lg">
+                <div class="bg-blue-100 p-4 rounded-lg">
+                    <p class="text-gray-600">Final Score</p>
+                    <p id="final-score" class="text-3xl font-bold text-blue-800">0/100</p>
+                </div>
+                <div class="bg-green-100 p-4 rounded-lg">
+                    <p class="text-gray-600">Percentage</p>
+                    <p id="percentage" class="text-3xl font-bold text-green-800">0%</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                 <div class="bg-green-50 p-3 rounded-lg"><p>Correct: <span id="correct-count" class="font-bold">0</span></p></div>
+                 <div class="bg-red-50 p-3 rounded-lg"><p>Incorrect: <span id="incorrect-count" class="font-bold">0</span></p></div>
+                 <div class="bg-gray-100 p-3 rounded-lg"><p>Unattempted: <span id="unattempted-count" class="font-bold">0</span></p></div>
+            </div>
+             <div class="bg-gray-50 p-4 rounded-lg mb-8">
+                <p class="text-gray-600">Total Time Taken</p>
+                <p id="time-taken" class="text-2xl font-bold text-gray-800">00:00</p>
+            </div>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <button id="restart-quiz-btn" class="bg-gray-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-600 transition">Restart Quiz</button>
+                <button id="analysis-btn" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition">In-Depth Analysis</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- In-Depth Analysis Page -->
+    <div id="analysis-page" class="hidden container mx-auto p-4 lg:p-8">
+        <div class="bg-white p-6 rounded-2xl shadow-lg mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl font-bold text-gray-900">In-Depth Analysis</h1>
+                <button id="back-to-results-btn" class="bg-gray-200 text-gray-800 font-bold py-2 px-5 rounded-lg hover:bg-gray-300 transition">&larr; Back to Results</button>
+            </div>
+            
+            <!-- Dashboard -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div class="bg-green-100 p-4 rounded-xl text-center"><p class="text-sm text-green-800">Accuracy</p><p id="analysis-accuracy" class="text-2xl font-bold">0%</p></div>
+                <div class="bg-blue-100 p-4 rounded-xl text-center"><p class="text-sm text-blue-800">Correct</p><p id="analysis-correct" class="text-2xl font-bold">0</p></div>
+                <div class="bg-red-100 p-4 rounded-xl text-center"><p class="text-sm text-red-800">Incorrect</p><p id="analysis-incorrect" class="text-2xl font-bold">0</p></div>
+                <div class="bg-gray-200 p-4 rounded-xl text-center"><p class="text-sm text-gray-800">Unattempted</p><p id="analysis-unattempted" class="text-2xl font-bold">0</p></div>
+            </div>
+            
+             <!-- Time Analysis -->
+            <h2 class="text-2xl font-semibold mb-4 text-gray-800">Time Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <div class="bg-gray-100 p-4 rounded-xl text-center"><p class="text-sm">Avg. Time / Question</p><p id="analysis-avg-time" class="text-xl font-bold">0s</p></div>
+                <div class="bg-green-50 p-4 rounded-xl text-center"><p class="text-sm">Avg. Time (Correct)</p><p id="analysis-avg-time-correct" class="text-xl font-bold">0s</p></div>
+                <div class="bg-red-50 p-4 rounded-xl text-center"><p class="text-sm">Avg. Time (Incorrect)</p><p id="analysis-avg-time-incorrect" class="text-xl font-bold">0s</p></div>
+            </div>
+
+            <!-- Chapter/Topic Performance -->
+            <h2 class="text-2xl font-semibold mb-4 text-gray-800">Topic Performance</h2>
+            <div id="topic-performance-container" class="space-y-4 mb-8">
+                <!-- Topic performance will be dynamically inserted here -->
+            </div>
+
+            <!-- Filterable Question List -->
+            <h2 class="text-2xl font-semibold mb-4 text-gray-800">Question Review</h2>
+            <div class="flex flex-wrap gap-2 mb-4">
+                <button class="filter-btn bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg" data-filter="all">All</button>
+                <button class="filter-btn bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg" data-filter="correct">Correct</button>
+                <button class="filter-btn bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg" data-filter="incorrect">Incorrect</button>
+                <button class="filter-btn bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg" data-filter="unattempted">Unattempted</button>
+            </div>
+            <div id="analysis-question-list" class="space-y-6">
+                <!-- Analysis questions will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
+
+<script>
+    // --- QUIZ DATA ---
+    const quizData = [
+        // Chapter I: The French Revolution
+        { id: 1, question: "On the morning of 14 July 1789, a crowd in Paris stormed which fortress-prison?", options: ["The Louvre", "The Bastille", "Palace of Versailles", "The Conciergerie"], answer: "The Bastille", hint: "It was a symbol of the king's despotic power.", explanation: "The storming of the Bastille on 14 July 1789 is considered the start of the French Revolution. It symbolized the end of the Old Regime. Chapter I: The French Revolution, Page 3." },
+        { id: 2, question: "Who was the king of France during the French Revolution?", options: ["Louis XIV", "Louis V", "Louis XVI", "Napoleon Bonaparte"], answer: "Louis XVI", hint: "He belonged to the Bourbon family of kings.", explanation: "Louis XVI ascended the throne in 1774. His reign was marked by financial crisis, which was a major cause of the revolution. Chapter I: The French Revolution, Page 4." },
+        { id: 3, question: "French society in the 18th century was divided into how many estates?", options: ["Two", "Three", "Four", "Five"], answer: "Three", hint: "The clergy, the nobility, and everyone else.", explanation: "The First Estate (clergy), Second Estate (nobility), and the Third Estate (commoners) formed the social structure of the Old Regime. Chapter I: The French Revolution, Page 4." },
+        { id: 4, question: "What was the 'taille'?", options: ["A tax on salt", "A tax levied by the Church", "A direct tax paid by the Third Estate", "A tax on tobacco"], answer: "A direct tax paid by the Third Estate", hint: "The burden of taxes fell almost entirely on one group.", explanation: "The taille was a direct land tax imposed on the French peasantry and non-nobles. The Third Estate bore the burden of this and other taxes. Chapter I: The French Revolution, Page 4." },
+        { id: 5, question: "The book 'The Social Contract' was written by which philosopher?", options: ["John Locke", "Montesquieu", "Jean-Jacques Rousseau", "Voltaire"], answer: "Jean-Jacques Rousseau", hint: "He proposed a government based on a contract between people and their representatives.", explanation: "Rousseau's 'The Social Contract' (1762) was a seminal work that influenced the French Revolution with its ideas on popular sovereignty. Chapter I: The French Revolution, Page 6." },
+        // ... (Generated 95 more questions from the provided PDF content)
+        { id: 6, question: "What was the Tennis Court Oath?", options: ["A pledge to create a new tennis league", "A promise by the Third Estate not to disperse until a constitution was drafted", "A declaration of war against Austria", "A secret agreement between the king and the nobility"], answer: "A promise by the Third Estate not to disperse until a constitution was drafted", hint: "It took place on 20 June 1789 in Versailles.", explanation: "Members of the Third Estate, declaring themselves the National Assembly, took an oath not to separate until a new constitution for France was established. Chapter I: The French Revolution, Page 8." },
+        { id: 7, question: "The 'Marseillaise', the national anthem of France, was composed by:", options: ["Maximilian Robespierre", "Roget de L'Isle", "Napoleon Bonaparte", "Jean-Paul Marat"], answer: "Roget de L'Isle", hint: "It was first sung by volunteers from Marseilles as they marched into Paris.", explanation: "The 'Marseillaise' became a rallying cry for the revolution and is now the national anthem of France. Chapter I: The French Revolution, Page 14." },
+        { id: 8, question: "The period from 1793 to 1794 in France is referred to as:", options: ["The Age of Enlightenment", "The Directory", "The Napoleonic Era", "The Reign of Terror"], answer: "The Reign of Terror", hint: "It was led by Robespierre and marked by mass executions.", explanation: "The Reign of Terror was a period of extreme violence where perceived enemies of the revolution were executed by the guillotine. Chapter I: The French Revolution, Page 16." },
+        { id: 9, question: "What were 'sans-culottes'?", options: ["Nobles who supported the king", "Jacobins who wore long striped trousers", "A type of French bread", "The royal guards"], answer: "Jacobins who wore long striped trousers", hint: "The name literally means 'those without knee breeches'.", explanation: "The sans-culottes were the common people of the lower classes, who became radical and militant partisans of the French Revolution. Chapter I: The French Revolution, Page 15." },
+        { id: 10, question: "When did women in France finally win the right to vote?", options: ["1791", "1848", "1902", "1946"], answer: "1946", hint: "It was long after the revolution.", explanation: "Despite their active role in the revolution, women's struggle for suffrage continued for nearly 150 years. They finally gained the right to vote in 1946. Chapter I: The French Revolution, Page 19." },
+        
+        // Chapter II: Socialism in Europe and the Russian Revolution
+        { id: 11, question: "Who were the 'liberals' in early 19th-century Europe?", options: ["Those who wanted to radically restructure society", "Supporters of the monarchy", "Those who wanted a nation tolerant of all religions and opposed dynastic rulers", "Supporters of Karl Marx"], answer: "Those who wanted a nation tolerant of all religions and opposed dynastic rulers", hint: "They argued for a representative, elected parliamentary government but were not 'democrats'.", explanation: "Liberals wanted gradual change, individual rights, and a government subject to laws, but did not support universal adult franchise. Chapter II: Socialism in Europe, Page 25." },
+        { id: 12, question: "Karl Marx argued that industrial society was:", options: ["'Feudal'", "'Socialist'", "'Capitalist'", "'Communist'"], answer: "'Capitalist'", hint: "He believed capitalists owned the capital invested in factories.", explanation: "Marx's critique of capitalism was central to his philosophy. He argued that workers must overthrow it to free themselves from exploitation. Chapter II: Socialism in Europe, Page 28." },
+        { id: 13, question: "Who ruled the Russian Empire in 1914?", options: ["Vladimir Lenin", "Tsar Nicholas II", "Alexander Kerensky", "Joseph Stalin"], answer: "Tsar Nicholas II", hint: "He was an autocrat from the Romanov dynasty.", explanation: "Tsar Nicholas II's rule ended with the February Revolution in 1917. Chapter II: The Russian Revolution, Page 30." },
+        { id: 14, question: "The incident known as 'Bloody Sunday' in Russia occurred in which year?", options: ["1900", "1905", "1914", "1917"], answer: "1905", hint: "A procession of workers led by Father Gapon was attacked by police.", explanation: "On 22 January 1905, unarmed demonstrators were fired upon as they marched to the Winter Palace to present a petition to the Tsar, sparking the 1905 Revolution. Chapter II: The Russian Revolution, Page 33." },
+        { id: 15, question: "What were Lenin's 'April Theses'?", options: ["A plan for agricultural reform", "A declaration of war against Germany", "Demands for the war to end, land transfer to peasants, and nationalisation of banks", "A new constitution for Russia"], answer: "Demands for the war to end, land transfer to peasants, and nationalisation of banks", hint: "He presented them upon his return from exile in April 1917.", explanation: "Lenin's April Theses called for 'Peace, Land, and Bread' and argued for the soviets to take power, setting the stage for the October Revolution. Chapter II: The Russian Revolution, Page 36." },
+        { id: 16, question: "The Bolshevik Party was renamed as the:", options: ["Socialist Revolutionary Party", "Russian Social Democratic Workers Party", "Russian Communist Party", "Menshevik Party"], answer: "Russian Communist Party", hint: "This was done to indicate its new radical aims after the April Theses.", explanation: "The name change to the Russian Communist Party (Bolshevik) signified a clear break with the moderate socialists and a commitment to establishing a communist state. Chapter II: The Russian Revolution, Page 39." },
+        { id: 17, question: "The October Revolution of 1917 was led by which political group?", options: ["The Mensheviks", "The Liberals", "The Socialist Revolutionaries", "The Bolsheviks"], answer: "The Bolsheviks", hint: "Their leader was Vladimir Lenin.", explanation: "The Bolsheviks, led by Lenin, seized power in a well-organized uprising on 24 October 1917 (7 November by the Gregorian calendar). Chapter II: The Russian Revolution, Page 38." },
+        { id: 18, question: "What was the 'Duma' in Tsarist Russia?", options: ["The secret police", "An elected consultative Parliament", "The Tsar's royal palace", "A collective farm"], answer: "An elected consultative Parliament", hint: "The Tsar allowed its creation after the 1905 Revolution.", explanation: "The Duma was created as a concession, but the Tsar dismissed the first two Dumas and changed voting laws to ensure the third was dominated by conservatives. Chapter II: The Russian Revolution, Page 33." },
+        { id: 19, question: "Who were the 'greens' and 'whites' during the Russian Civil War?", options: ["Bolshevik supporters", "Anarchist groups", "Socialist Revolutionaries and pro-Tsarists, respectively", "Foreign troops"], answer: "Socialist Revolutionaries and pro-Tsarists, respectively", hint: "They fought against the Bolshevik 'reds'.", explanation: "The Russian Civil War (1918-20) was fought between the Bolsheviks (reds) and a loose coalition of anti-Bolshevik forces including the 'greens' (Socialist Revolutionaries) and 'whites' (pro-Tsarists). Chapter II: The Russian Revolution, Page 40." },
+        { id: 20, question: "Stalin's program to eliminate 'kulaks' and establish large, state-controlled farms was called:", options: ["The New Economic Policy", "The Five-Year Plan", "Collectivisation", "The Great Purge"], answer: "Collectivisation", hint: "It began in 1929 and forced peasants to cultivate in collective farms (kolkhoz).", explanation: "Collectivisation was a key part of Stalin's plan to modernize Soviet agriculture but led to widespread resistance, destruction of livestock, and a devastating famine. Chapter II: The Russian Revolution, Page 44." },
+        
+        // Chapter III: Nazism and the Rise of Hitler
+        { id: 21, question: "After World War I, Germany was forced to sign which humiliating treaty?", options: ["Treaty of Paris", "Treaty of Versailles", "Treaty of London", "Treaty of Rome"], answer: "Treaty of Versailles", hint: "It imposed heavy reparations and territorial losses on Germany.", explanation: "The harsh terms of the Treaty of Versailles in 1919 caused deep resentment in Germany and were a key factor in the rise of Nazism. Chapter III: Nazism and the Rise of Hitler, Page 52." },
+        { id: 22, question: "The democratic republic established in Germany after WWI was known as the:", options: ["German Republic", "Prussian Republic", "Weimar Republic", "Berlin Republic"], answer: "Weimar Republic", hint: "It was named after the city where the national assembly met.", explanation: "The Weimar Republic (1919-1933) faced numerous problems, including economic instability and political extremism, which ultimately led to its collapse. Chapter III: Nazism and the Rise of Hitler, Page 51." },
+        { id: 23, question: "What was the name of the political party led by Adolf Hitler?", options: ["The Communist Party", "The Social Democratic Party", "The National Socialist German Workers' Party", "The Centre Party"], answer: "The National Socialist German Workers' Party", hint: "It is commonly known as the Nazi Party.", explanation: "Hitler joined this small party in 1919 and transformed it into a mass movement, which came to be known as the Nazi Party. Chapter III: Nazism and the Rise of Hitler, Page 56." },
+        { id: 24, question: "The Nazi ideology was based on a racial hierarchy that considered which group to be at the top?", options: ["Slavic peoples", "Jews", "Nordic German Aryans", "Gypsies"], answer: "Nordic German Aryans", hint: "This was central to Hitler's worldview.", explanation: "Nazi racial ideology promoted the idea of a 'master race' of 'pure' Aryans and viewed Jews, Gypsies, and others as 'subhuman' or 'undesirable'. Chapter III: Nazism and the Rise of Hitler, Page 61." },
+        { id: 25, question: "What event in February 1933 allowed Hitler to suspend civil rights and suppress his political opponents?", options: ["The Night of the Long Knives", "The Munich Putsch", "The Reichstag Fire", "The passing of the Nuremberg Laws"], answer: "The Reichstag Fire", hint: "A mysterious fire broke out in the German Parliament building.", explanation: "Hitler used the Reichstag Fire as a pretext to issue the Fire Decree, which suspended basic rights and allowed for the arrest of communists and other opponents. Chapter III: Nazism and the Rise of Hitler, Page 58." },
+        { id: 26, question: "The Nazi geopolitical concept of acquiring territory for settlement was known as:", options: ["Blitzkrieg", "Lebensraum", "Anschluss", "Kristallnacht"], answer: "Lebensraum", hint: "It means 'living space'.", explanation: "Hitler's ideology included the concept of Lebensraum, or living space, which justified the expansion of Germany eastwards to acquire new territories. Chapter III: Nazism and the Rise of Hitler, Page 61." },
+        { id: 27, question: "The infamous 1935 laws that stripped Jews of German citizenship and forbade marriages between Jews and Germans were called:", options: ["The Enabling Act", "The Fire Decree", "The Nuremberg Laws", "The Final Solution"], answer: "The Nuremberg Laws", hint: "They were named after the city where the Nazi party held annual rallies.", explanation: "The Nuremberg Laws institutionalized the racial theories of Nazism, marking a major step in the persecution of Jews. Chapter III: Nazism and the Rise of Hitler, Page 64." },
+        { id: 28, question: "What was the name of the Nazi youth organization for boys aged 14 and above?", options: ["Jungvolk", "Hitler Youth", "Gestapo", "SS"], answer: "Hitler Youth", hint: "It was responsible for educating German youth in the 'spirit of National Socialism'.", explanation: "The Hitler Youth was a critical part of the Nazi state's efforts to indoctrinate young Germans and prepare them for war and service to the regime. Chapter III: Nazism and the Rise of Hitler, Page 66." },
+        { id: 29, question: "The mass murder of European Jews by the Nazi regime is known as:", options: ["The Great Purge", "The Holocaust", "The Armenian Genocide", "The Reign of Terror"], answer: "The Holocaust", hint: "The Nazis referred to it as the 'Final Solution'.", explanation: "The Holocaust was the systematic, state-sponsored persecution and murder of six million Jews by the Nazi regime and its collaborators. Chapter III: Nazism and the Rise of Hitler, Page 72." },
+        { id: 30, question: "What was the Gestapo?", options: ["The regular police force", "The secret state police", "The Nazi protection squads", "The youth organization"], answer: "The secret state police", hint: "It was one of the most feared instruments of Nazi terror.", explanation: "The Gestapo was the secret state police of Nazi Germany, responsible for rounding up Jews, political opponents, and others deemed 'undesirable'. Chapter III: Nazism and the Rise of Hitler, Page 58." },
+
+        // Chapter IV: Forest Society and Colonialism
+        { id: 31, question: "The disappearance of forests is referred to as:", options: ["Afforestation", "Reforestation", "Deforestation", "Scientific Forestry"], answer: "Deforestation", hint: "It's the clearing of trees on a large scale.", explanation: "Deforestation is the clearing of Earth's forests on a massive scale, often resulting in damage to the quality of the land. Chapter IV: Forest Society and Colonialism, Page 78." },
+        { id: 32, question: "In the colonial period, the British encouraged the production of 'commercial crops' such as:", options: ["Rice, maize, and millet", "Jute, sugar, wheat, and cotton", "Fruits and vegetables", "Spices and herbs"], answer: "Jute, sugar, wheat, and cotton", hint: "These were required as raw materials for British industries.", explanation: "The expansion of cultivation for commercial crops was a major cause of deforestation in India during colonial rule. Chapter IV: Forest Society and Colonialism, Page 79." },
+        { id: 33, question: "What are 'sleepers' in the context of railways?", options: ["Passenger cars", "Engine drivers", "Wooden planks laid across railway tracks", "Train station platforms"], answer: "Wooden planks laid across railway tracks", hint: "They hold the tracks in position.", explanation: "The vast expansion of the railway network in India created a huge demand for wooden sleepers, leading to large-scale felling of trees. Chapter IV: Forest Society and Colonialism, Page 79." },
+        { id: 34, question: "Who was Dietrich Brandis?", options: ["A British viceroy", "An Indian revolutionary", "The first Inspector General of Forests in India", "A tea plantation owner"], answer: "The first Inspector General of Forests in India", hint: "He was a German expert invited for advice.", explanation: "Brandis introduced a system of 'scientific forestry' and helped formulate the Indian Forest Act of 1865 to manage India's forests for timber production. Chapter IV: Forest Society and Colonialism, Page 83." },
+        { id: 35, question: "The Indian Forest Act of 1878 divided forests into which three categories?", options: ["Dense, Open, and Scrub", "National, State, and Private", "Reserved, Protected, and Village", "Tropical, Temperate, and Alpine"], answer: "Reserved, Protected, and Village", hint: "The 'best' forests were called 'reserved'.", explanation: "This division severely restricted villagers' access to forests. They could not take anything from Reserved Forests, and their rights were limited in Protected Forests. Chapter IV: Forest Society and Colonialism, Page 84." },
+        { id: 36, question: "The agricultural practice of cutting and burning parts of a forest in rotation is known as:", options: ["Plantation agriculture", "Intensive farming", "Terrace farming", "Shifting cultivation"], answer: "Shifting cultivation", hint: "It has many local names, such as 'jhum' in India.", explanation: "European foresters viewed shifting cultivation (or swidden agriculture) as harmful to forests and banned it, displacing many communities. Chapter IV: Forest Society and Colonialism, Page 86." },
+        { id: 37, question: "The rebellion in the kingdom of Bastar against British forest policies took place in which year?", options: ["1857", "1890", "1910", "1930"], answer: "1910", hint: "The initiative was taken by the Dhurwas of the Kanger forest.", explanation: "The 1910 Bastar rebellion was a response to the reservation of forests, famines, and increased demands for free labour and goods by colonial officials. Chapter IV: Forest Society and Colonialism, Page 90." },
+        { id: 38, question: "In Java, the Dutch colonial power wanted timber primarily for what purpose?", options: ["Building houses", "Building ships", "Making furniture", "Fuel for industries"], answer: "Building ships", hint: "This was similar to the British need in India.", explanation: "The Dutch needed timber from Java to build ships for their trade and navy, leading them to implement forest management laws. Chapter IV: Forest Society and Colonialism, Page 93." },
+        { id: 39, question: "Who were the Kalangs of Java?", options: ["Dutch forest officials", "A community of skilled forest cutters and shifting cultivators", "Rice farmers", "Traders in spices"], answer: "A community of skilled forest cutters and shifting cultivators", hint: "They were considered so valuable their families were divided when a kingdom split.", explanation: "The Kalangs were essential for harvesting teak and building palaces. They resisted Dutch attempts to make them work under them in 1770. Chapter IV: Forest Society and Colonialism, Page 93." },
+        { id: 40, question: "The Dutch system of exempting villages from rent if they provided free labour for cutting and transporting timber was known as:", options: ["Cultuurstelsel", "Blandongdiensten system", "Taungya system", "Saminism"], answer: "Blandongdiensten system", hint: "It was a form of forced labour.", explanation: "The blandongdiensten system was a way for the Dutch to extract labour from forest villagers for their timber operations in Java. Chapter IV: Forest Society and Colonialism, Page 94." },
+
+        // Chapter V: Pastoralists in the Modern World
+        { id: 41, question: "The Gujjar Bakarwals are a pastoral community from which region of India?", options: ["Rajasthan", "Maharashtra", "Jammu and Kashmir", "Himachal Pradesh"], answer: "Jammu and Kashmir", hint: "They are herders of goat and sheep.", explanation: "The Gujjar Bakarwals migrate annually between their summer and winter grazing grounds in the mountains. Chapter V: Pastoralists in the Modern World, Page 98." },
+        { id: 42, question: "What are 'bugyals'?", options: ["Dry scrub forests in the Siwalik range", "Vast natural pastures in the high mountains", "The settlements of the Dhangars", "A type of sheep reared by Gaddis"], answer: "Vast natural pastures in the high mountains", hint: "They are found above 12,000 feet and are used for summer grazing.", explanation: "Pastoral communities like the Gujjars in Garhwal and Kumaon move up to the high-altitude bugyals in summer. Chapter V: Pastoralists in the Modern World, Page 99." },
+        { id: 43, question: "The Dhangars are an important pastoral community of which state?", options: ["Karnataka", "Rajasthan", "Maharashtra", "Uttar Pradesh"], answer: "Maharashtra", hint: "They stay in the central plateau during the monsoon and move to the Konkan coast in the dry season.", explanation: "The Dhangars are primarily shepherds who move seasonally, manuring the fields of Konkani peasants in exchange for rice. Chapter V: Pastoralists in the Modern World, Page 100." },
+        { id: 44, question: "The Raikas, a pastoral community that herds camels, sheep, and goats, live in the deserts of:", options: ["Gujarat", "Rajasthan", "Punjab", "Madhya Pradesh"], answer: "Rajasthan", hint: "They combine cultivation with pastoralism in a region of meager rainfall.", explanation: "The Raikas of Rajasthan move out in search of pasture and water after the monsoons when their village grazing grounds are exhausted. Chapter V: Pastoralists in the Modern World, Page 101." },
+        { id: 45, question: "The Criminal Tribes Act was passed by the colonial government in India in which year?", options: ["1857", "1871", "1905", "1919"], answer: "1871", hint: "This Act classified many nomadic communities as 'criminal by nature'.", explanation: "The Criminal Tribes Act was a tool used by the colonial state to control and settle mobile communities, severely restricting their livelihood and movements. Chapter V: Pastoralists in the Modern World, Page 105." },
+        { id: 46, question: "Under colonial rule, why did all uncultivated land appear as 'waste land' to the officials?", options: ["It was not beautiful", "It posed a threat from wild animals", "It produced neither revenue nor agricultural produce", "It was used by nomadic tribes they considered criminals"], answer: "It produced neither revenue nor agricultural produce", hint: "The colonial state wanted to maximize its revenue.", explanation: "The colonial state viewed uncultivated land, including pastures, as unproductive 'waste land' that needed to be brought under cultivation to increase land revenue. Chapter V: Pastoralists in the Modern World, Page 104." },
+        { id: 47, question: "The Maasai cattle herders live primarily in which region?", options: ["West Africa", "North Africa", "South Africa", "East Africa"], answer: "East Africa", hint: "Their lands were split between British Kenya and German Tanganyika.", explanation: "The Maasai are a pastoral community living in southern Kenya and northern Tanzania in East Africa. Chapter V: Pastoralists in the Modern World, Page 109." },
+        { id: 48, question: "The Maasai lost about 60% of their pre-colonial lands, much of which was turned into:", options: ["Cultivated farms for white settlers and game reserves", "Industrial zones", "New cities", "Railway lines"], answer: "Cultivated farms for white settlers and game reserves", hint: "Examples include the Maasai Mara and Serengeti National Parks.", explanation: "Colonial policies took over the best Maasai grazing lands for white settlement and created large game reserves where pastoralists were forbidden entry. Chapter V: Pastoralists in the Modern World, Page 110." },
+        { id: 49, question: "In pre-colonial Maasai society, the two main social categories were:", options: ["Chiefs and commoners", "Rich and poor", "Elders and warriors", "Landowners and herders"], answer: "Elders and warriors", hint: "The elders formed the ruling group, while the warriors were responsible for protection.", explanation: "British colonial administration disturbed this traditional age-based social structure by appointing chiefs, which undermined the authority of both elders and warriors. Chapter V: Pastoralists in the Modern World, Page 113." },
+        { id: 50, question: "The word 'Maasai' is derived from the word 'Maa'. What does 'Maa-sai' mean?", options: ["'Cattle People'", "'My People'", "'Desert Dwellers'", "'Brave Warriors'"], answer: "'My People'", hint: "The name reflects their strong community identity.", explanation: "The name 'Maasai' means 'My People', derived from their language, Maa. They are traditionally nomadic and pastoral. Chapter V: Pastoralists in the Modern World, Page 111." },
+        { id: 51, question: "Which mountain range did the Gujjar Bakarwals cross to enter the valley of Kashmir for summer grazing?", options: ["Himalayas", "Karakoram", "Pir Panjal", "Siwalik"], answer: "Pir Panjal", hint: "Their journey formed a kafila.", explanation: "The Gujjar Bakarwals crossed the Pir Panjal passes to reach their summer grazing grounds in Kashmir after spending winters in the low Siwalik hills. Chapter V: Pastoralists in the Modern World, Page 98." },
+        { id: 52, question: "The Gaddi shepherds of Himachal Pradesh spent their summer in which region?", options: ["Kangra Valley", "Shimla Hills", "Lahul and Spiti", "Siwalik range"], answer: "Lahul and Spiti", hint: "They moved north by April for summer pastures.", explanation: "Gaddi shepherds had a cyclical movement, spending winters in the Siwaliks and summers in the high mountain meadows of Lahul and Spiti. Chapter V: Pastoralists in the Modern World, Page 98." },
+        { id: 53, question: "The Gollas, Kurumas, and Kurubas are pastoral communities from which region of India?", options: ["Central plateau of Maharashtra", "Deserts of Rajasthan", "Dry central plateau of Karnataka and Andhra Pradesh", "Hills of Garhwal and Kumaon"], answer: "Dry central plateau of Karnataka and Andhra Pradesh", hint: "Their movement was defined by the alternation of monsoon and dry season.", explanation: "These communities herded cattle, sheep, and goats, moving to coastal tracts in the dry season and back to the plateau during the monsoon. Chapter V: Pastoralists in the Modern World, Page 101." },
+        { id: 54, question: "Why were British officials suspicious of nomadic people?", options: ["They did not pay taxes", "They were difficult to identify and control", "They were considered lazy", "They did not practice settled agriculture"], answer: "They were difficult to identify and control", hint: "The colonial government preferred a settled population.", explanation: "The British wanted to rule a settled population for easier administration and control. Nomadic people were seen as untrustworthy and criminal. Chapter V: Pastoralists in the Modern World, Page 105." },
+        { id: 55, question: "What was the main purpose of the Grazing Tax introduced by the colonial government?", options: ["To improve the quality of pastures", "To expand its revenue income", "To limit the number of cattle", "To settle the pastoralists"], answer: "To expand its revenue income", hint: "The colonial state looked for every possible source of taxation.", explanation: "The Grazing Tax was imposed on every animal pastoralists grazed, becoming a significant financial burden and a way for the colonial state to increase its revenue. Chapter V: Pastoralists in the Modern World, Page 105." },
+        { id: 56, question: "How did pastoralists' movements help the natural restoration of pastures?", options: ["They planted new grass", "They allowed pastures time to recover by moving to new areas", "They used fertilizers", "They limited the size of their herds"], answer: "They allowed pastures time to recover by moving to new areas", hint: "Their nomadism prevented overuse of grazing lands.", explanation: "The traditional rotational grazing of nomadic pastoralists was an ecologically sustainable practice that allowed vegetation to regrow. Restrictions on their movement disrupted this cycle. Chapter V: Pastoralists in the Modern World, Page 106." },
+        { id: 57, question: "The 'Old Regime' is a term usually used to describe the society and institutions of France before which year?", options: ["1688", "1776", "1789", "1815"], answer: "1789", hint: "This year marks the beginning of the French Revolution.", explanation: "The term 'Old Regime' (Ancien Régime) refers to the political and social system in the Kingdom of France from the Late Middle Ages until 1789. Chapter I: The French Revolution, Page 4." },
+        { id: 58, question: "Who wrote the influential pamphlet called 'What is the Third Estate'?", options: ["Mirabeau", "Abbé Sieyès", "Georges Danton", "Jean-Paul Marat"], answer: "Abbé Sieyès", hint: "He was originally a priest and a leader of the National Assembly.", explanation: "Abbé Sieyès's pamphlet was a powerful political text that argued the Third Estate was the nation itself and did not need the privileged orders of the clergy and nobility. Chapter I: The French Revolution, Page 9." },
+        { id: 59, question: "The guillotine, a device for beheading, was named after:", options: ["Its first victim", "A French king", "Dr. Guillotin who invented it", "The city where it was first used"], answer: "Dr. Guillotin who invented it", hint: "It became a symbol of the Reign of Terror.", explanation: "Dr. Joseph-Ignace Guillotin proposed the use of a mechanical device to carry out executions humanely, and the device subsequently became associated with his name. Chapter I: The French Revolution, Page 16." },
+        { id: 60, question: "The abolition of slavery in French colonies was first legislated by which government body in 1794?", options: ["The National Assembly", "The Directory", "The Convention", "Napoleon's government"], answer: "The Convention", hint: "This was one of the most revolutionary social reforms of the Jacobin regime.", explanation: "The Jacobin-led Convention abolished slavery in 1794, although it was later reintroduced by Napoleon in 1802 and not finally abolished until 1848. Chapter I: The French Revolution, Page 21." },
+        { id: 61, question: "Who were the 'radicals' in early 19th-century Europe?", options: ["Those who wanted government based on the majority and supported women's suffrage", "Those who believed in a gradual shift in society", "Supporters of the old aristocracy", "Those who opposed private property"], answer: "Those who wanted government based on the majority and supported women's suffrage", hint: "Unlike liberals, they opposed the privileges of great landowners.", explanation: "Radicals sought more fundamental changes than liberals, including a government based on the majority of the population and often supported movements for women's right to vote. Chapter II: Socialism in Europe, Page 26." },
+        { id: 62, question: "The international body formed by socialists in the late 19th century to coordinate their efforts was known as:", options: ["The First International", "The Second International", "The Comintern", "The Socialist Union"], answer: "The Second International", hint: "It was formed by 1870s.", explanation: "The Second International was an organization of socialist and labour parties formed in Paris on July 14, 1889, to coordinate socialist action. Chapter II: Socialism in Europe, Page 29." },
+        { id: 63, question: "In Russia before 1914, all political parties were illegal, including the Russian Social Democratic Workers Party, which was founded in:", options: ["1881", "1898", "1903", "1905"], answer: "1898", hint: "It was founded by socialists who respected Marx's ideas.", explanation: "Due to government policing in Tsarist Russia, this party had to operate as an illegal organization, setting up newspapers and organizing strikes from the underground. Chapter II: The Russian Revolution, Page 32." },
+        { id: 64, question: "Who was Leon Trotskii?", options: ["The last Tsar of Russia", "Leader of the Mensheviks", "A key Bolshevik leader who organized the October seizure of power", "The head of the Provisional Government"], answer: "A key Bolshevik leader who organized the October seizure of power", hint: "He led the Military Revolutionary Committee.", explanation: "Leon Trotskii was a major figure in the Bolshevik party, second only to Lenin. He was instrumental in the October Revolution and later became the commander of the Red Army. Chapter II: The Russian Revolution, Page 38." },
+        { id: 65, question: "After the October Revolution, what was the 'Cheka'?", options: ["The new Russian parliament", "A collective farm", "The Bolshevik secret police", "A workers' council"], answer: "The Bolshevik secret police", hint: "It was later known as OGPU and NKVD.", explanation: "The Cheka was the first of a succession of Soviet secret-police organizations, tasked with punishing those who criticized the Bolsheviks. Chapter II: The Russian Revolution, Page 39." },
+        { id: 66, question: "What does the term 'hyperinflation' refer to, as experienced by Germany in 1923?", options: ["A period of stable prices", "A situation when prices rise phenomenally high", "A decrease in the value of currency", "A government-controlled economy"], answer: "A situation when prices rise phenomenally high", hint: "Germans had to carry cartloads of currency to buy bread.", explanation: "In 1923, Germany printed paper currency recklessly to pay war reparations, causing the value of the German mark to collapse and prices to soar uncontrollably. Chapter III: Nazism and the Rise of Hitler, Page 54." },
+        { id: 67, question: "The Nazi propaganda minister, a key figure in creating the Hitler myth, was:", options: ["Heinrich Himmler", "Hermann Göring", "Joseph Goebbels", "Rudolf Hess"], answer: "Joseph Goebbels", hint: "He and his family committed suicide with Hitler in 1945.", explanation: "Joseph Goebbels was the Reich Minister of Propaganda and a master of using media to create a cult of personality around Hitler and spread Nazi ideology. Chapter III: Nazism and the Rise of Hitler, Page 49." },
+        { id: 68, question: "What was the 'Enabling Act' of 1933?", options: ["An act that gave women the right to vote", "An act that established dictatorship in Germany", "An act that banned the Nazi Party", "An act that created new jobs"], answer: "An act that established dictatorship in Germany", hint: "It gave Hitler the power to rule by decree.", explanation: "The Enabling Act effectively destroyed the power of the Reichstag and gave Hitler's government absolute power, dismantling the Weimar Republic's democratic structure. Chapter III: Nazism and the Rise of Hitler, Page 58." },
+        { id: 69, question: "The Nazi program to kill Germans considered mentally or physically unfit was called:", options: ["The Euthanasia Programme", "The Final Solution", "The General Government", "Lebensborn"], answer: "The Euthanasia Programme", hint: "Helmuth's father, a physician, was involved in this.", explanation: "Under this program, the Nazis systematically murdered disabled Germans, as they were considered 'undesirable' and a drain on national resources. Chapter III: Nazism and the Rise of Hitler, Page 62." },
+        { id: 70, question: "What were 'ghettos' in the context of Nazi persecution?", options: ["Nazi training camps", "Holiday resorts for party members", "Separately marked areas where Jews were forced to live", "Fortified military zones"], answer: "Separately marked areas where Jews were forced to live", hint: "Examples include the ghettos in Lodz and Warsaw.", explanation: "Jews were forced into ghettos, which were sites of extreme misery, poverty, starvation, and disease, before being deported to death camps. Chapter III: Nazism and the Rise of Hitler, Page 64." },
+        { id: 71, question: "The expansion of what transportation network from the 1850s created a new demand for timber in India?", options: ["Canals", "Roads", "Railways", "Shipping lanes"], answer: "Railways", hint: "Wood was needed for both fuel and sleepers.", explanation: "The rapid construction of railways across India by the British required enormous quantities of timber for sleepers and fuel, leading to massive deforestation. Chapter IV: Forest Society and Colonialism, Page 80." },
+        { id: 72, question: "What is 'scientific forestry'?", options: ["A system of forest conservation based on traditional knowledge", "The study of forest ecology", "A system where natural forests are cut down and one type of tree is planted in straight rows", "A ban on all tree cutting"], answer: "A system where natural forests are cut down and one type of tree is planted in straight rows", hint: "It favored trees suitable for timber, like teak and sal.", explanation: "Introduced by Brandis, 'scientific forestry' replaced diverse natural forests with monoculture plantations to meet the colonial demand for timber. Chapter IV: Forest Society and Colonialism, Page 84." },
+        { id: 73, question: "Who was Gunda Dhur?", options: ["A colonial forest official", "A king of Bastar", "An important figure in the 1910 Bastar rebellion", "A Dutch trader in Java"], answer: "An important figure in the 1910 Bastar rebellion", hint: "He was from village Nethanar.", explanation: "Gunda Dhur is remembered as a key leader of the 1910 rebellion in Bastar against the colonial government's oppressive forest policies. Chapter IV: Forest Society and Colonialism, Page 91." },
+        { id: 74, question: "What was the 'scorched earth' policy followed by the Dutch in Java during WWII?", options: ["Planting new forests", "Expanding cultivation", "Destroying sawmills and burning teak logs", "Handing over forests to the Japanese"], answer: "Destroying sawmills and burning teak logs", hint: "This was to prevent resources from falling into Japanese hands.", explanation: "Just before the Japanese occupation, the Dutch destroyed forest resources to deny them to the invading army. Chapter IV: Forest Society and Colonialism, Page 95." },
+        { id: 75, question: "Since the 1980s, governments have begun to see that forest conservation requires the involvement of:", options: ["Private corporations", "Foreign experts", "The army", "People who live near the forests"], answer: "People who live near the forests", hint: "This is a shift from the old policy of keeping communities away.", explanation: "There is a growing recognition that conservation is more effective when local communities are involved and their traditional knowledge is respected. Chapter IV: Forest Society and Colonialism, Page 95." },
+        { id: 76, question: "In the Himalayas, the seasonal movement of pastoralists between summer and winter pastures is called:", options: ["Nomadism", "Transhumance", "Shifting cultivation", "Settled agriculture"], answer: "Transhumance", hint: "This is a cyclical movement.", explanation: "Communities like the Gujjar Bakarwals practice transhumance, moving their herds to high mountain pastures in summer and to the low hills in winter. Chapter V: Pastoralists in the Modern World, Page 99." },
+        { id: 77, question: "Which pastoral community in India is well-known for being traders who moved over long distances selling plough cattle?", options: ["Gaddis", "Dhangars", "Raikas", "Banjaras"], answer: "Banjaras", hint: "They were found in many states, including UP, Punjab, and Rajasthan.", explanation: "The Banjaras were historically important nomadic traders and transporters, moving with their cattle and goods across the subcontinent. Chapter V: Pastoralists in the Modern World, Page 101." },
+        { id: 78, question: "The establishment of game reserves like the Maasai Mara and Serengeti National Park had what effect on the Maasai?", options: ["It provided them with jobs as guides", "It protected their traditional lands", "It deprived them of their traditional grazing grounds", "It increased their cattle stock"], answer: "It deprived them of their traditional grazing grounds", hint: "Pastoralists were not allowed to enter these reserves.", explanation: "The creation of national parks and game reserves on Maasai land was a major blow, cutting them off from essential pastures and water resources. Chapter V: Pastoralists in the Modern World, Page 110." },
+        { id: 79, question: "The frequent droughts in the semi-arid tract the Maasai were confined to led to:", options: ["An increase in their animal stock", "A shift to agriculture", "A steady decline of their animal stock", "The development of new water sources"], answer: "A steady decline of their animal stock", hint: "They could no longer move to find new pastures during dry periods.", explanation: "By restricting their mobility, colonial policies made the Maasai much more vulnerable to droughts, leading to catastrophic cattle losses. Chapter V: Pastoralists in the Modern World, Page 113." },
+        { id: 80, question: "The British appointed chiefs to administer Maasai affairs. How did this affect the chiefs?", options: ["They lost all their authority", "They became poorer than other pastoralists", "They often accumulated wealth and survived droughts better", "They were forced to give up their pastoral life"], answer: "They often accumulated wealth and survived droughts better", hint: "They had a regular income and could buy animals, goods, and land.", explanation: "The new system created a division between wealthy chiefs, who collaborated with the colonial government, and poor pastoralists who became more vulnerable. Chapter V: Pastoralists in the Modern World, Page 114." },
+        { id: 81, question: "The Tithe was a tax levied by:", options: ["The King", "The Church", "The Nobility", "Merchants"], answer: "The Church", hint: "It was usually one-tenth of the agricultural produce.", explanation: "In Old Regime France, the Church (First Estate) had the power to extract a tax called the tithe from the peasants of the Third Estate. Chapter I: The French Revolution, Page 4." },
+        { id: 82, question: "The Jacobin club in revolutionary France got its name from:", options: ["Its leader, Jacob", "The former convent of St. Jacob in Paris", "A revolutionary song", "The month of Jacobin"], answer: "The former convent of St. Jacob in Paris", hint: "It was the most successful of the political clubs.", explanation: "The Jacobin Club, one of the most influential political clubs during the French Revolution, met at a former monastery of the Jacobins in Paris. Chapter I: The French Revolution, Page 14." },
+        { id: 83, question: "Olympe de Gouges was a revolutionary woman who wrote:", options: ["The Social Contract", "The Declaration of the Rights of Man and Citizen", "A Declaration of the Rights of Woman and Citizen", "L'Ami du peuple newspaper"], answer: "A Declaration of the Rights of Woman and Citizen", hint: "She protested the exclusion of women from basic rights.", explanation: "In 1791, Olympe de Gouges wrote her declaration to expose the failure of the French Revolution to recognize gender equality. She was later executed during the Reign of Terror. Chapter I: The French Revolution, Page 19." },
+        { id: 84, question: "Muslim reformers within the Russian empire who wanted modernized Islam to lead their societies were known as:", options: ["Bolsheviks", "Kulaks", "Jadidists", "Soviets"], answer: "Jadidists", hint: "They supported the 1905 revolution.", explanation: "Jadidists were part of a reform movement in the late 19th and early 20th centuries that aimed to modernize Islam and the cultures of Muslim peoples in the Russian Empire. Chapter II: The Russian Revolution, Page 33." },
+        { id: 85, question: "After the October Revolution, the Bolsheviks enforced the partition of large houses according to:", options: ["The owner's wishes", "Family requirements", "Wealth", "Party membership"], answer: "Family requirements", hint: "This was part of their social reforms in cities.", explanation: "As part of their policy against private property and to solve housing shortages, the Bolsheviks partitioned large urban houses to accommodate multiple families. Chapter II: The Russian Revolution, Page 39." },
+        { id: 86, question: "The economic crisis that began with the Wall Street Exchange crash in 1929 is known as:", options: ["The Great Inflation", "The Economic Miracle", "The Great Economic Depression", "The Industrial Revolution"], answer: "The Great Economic Depression", hint: "It had a severe worldwide impact, especially on Germany.", explanation: "The Great Depression led to mass unemployment and economic collapse in Germany, creating a climate of anxiety and despair that Hitler exploited to gain power. Chapter III: Nazism and the Rise of Hitler, Page 54." },
+        { id: 87, question: "The red banners used by the Nazis featured which symbol?", options: ["The Cross", "The Hammer and Sickle", "The Swastika", "The Eagle"], answer: "The Swastika", hint: "It was a key part of the 'spectacle of power'.", explanation: "The Swastika became the most recognizable symbol of the Nazi Party, used in massive rallies and on flags to create a powerful visual identity. Chapter III: Nazism and the Rise of Hitler, Page 57." },
+        { id: 88, question: "What were the 'undesirable children' who were thrown out of German schools under Nazism?", options: ["Children who failed their exams", "Jews, the physically handicapped, and Gypsies", "Children from rural areas", "Children who did not join the Hitler Youth"], answer: "Jews, the physically handicapped, and Gypsies", hint: "Schools were 'cleansed' and 'purified'.", explanation: "The Nazi regime implemented its racial ideology in schools by first segregating and then expelling children they deemed 'undesirable' or 'racially impure'. Chapter III: Nazism and the Rise of Hitler, Page 66." },
+        { id: 89, question: "What was the 'budeonovka'?", options: ["A type of Russian rifle", "A Bolshevik propaganda poster", "The Soviet hat chosen in a 1918 clothing competition", "A collective farm"], answer: "The Soviet hat chosen in a 1918 clothing competition", hint: "It was part of the new uniforms for the army and officials.", explanation: "The pointed, cloth budeonovka became a distinctive part of the new Red Army uniform, symbolizing the new Soviet state. Chapter II: The Russian Revolution, Page 39." },
+        { id: 90, question: "The Saminist movement, which questioned state ownership of forests, emerged in:", options: ["Bastar, India", "Java, Indonesia", "The Amazon, Brazil", "Central India"], answer: "Java, Indonesia", hint: "It was led by Surontiko Samin around 1890.", explanation: "The Saminist movement was a peaceful peasant resistance against Dutch colonial forest laws in Java, arguing that the state could not own natural resources like wind, water, earth, and wood. Chapter IV: Forest Society and Colonialism, Page 94." },
+        { id: 91, question: "Which colonial power ruled Indonesia?", options: ["The British", "The French", "The Portuguese", "The Dutch"], answer: "The Dutch", hint: "They implemented forest management in Java.", explanation: "The Dutch were the colonial power in Indonesia (formerly the Dutch East Indies) and exploited its resources, including timber from Java. Chapter IV: Forest Society and Colonialism, Page 93." },
+        { id: 92, question: "What are 'Reserved Forests'?", options: ["Forests reserved for villagers' use", "The best forests from which villagers were completely barred", "Forests where hunting was allowed", "Forests meant for shifting cultivation"], answer: "The best forests from which villagers were completely barred", hint: "This was the highest level of protection under the Forest Acts.", explanation: "Under the Forest Act of 1878, 'Reserved Forests' were the most valuable forests, and local people were completely excluded from them to ensure a supply of timber for the state. Chapter IV: Forest Society and Colonialism, Page 84." },
+        { id: 93, question: "The novel 'Tom Brown's Schooldays' by Thomas Hughes helped spread the ideals of:", options: ["The French Revolution", "Socialism", "Muscular Christianity", "Nazism"], answer: "Muscular Christianity", hint: "It linked sports, Christian ideals, and building character.", explanation: "This popular novel promoted the idea that team sports and physical training were essential for moulding boys into ideal, manly, and patriotic citizens, a core tenet of the English public school system. Chapter VII: History and Sport, Page 145." },
+        { id: 94, question: "The first Indian community to start playing cricket was:", options: ["The Hindus", "The Muslims", "The Parsis", "The Sikhs"], answer: "The Parsis", hint: "They founded the Oriental Cricket Club in Bombay in 1848.", explanation: "Due to their close contact with the British through trade, the Parsis were the first Indian community to westernize and adopt cricket, founding the first Indian cricket club. Chapter VII: History and Sport, Page 150." },
+        { id: 95, question: "The colonial-era Pentangular cricket tournament in India was criticized by nationalists because:", options: ["It was too long", "It was played with a red ball", "It was organized on communal and racial lines", "The players were not paid enough"], answer: "It was organized on communal and racial lines", hint: "Mahatma Gandhi condemned it as a divisive competition.", explanation: "The tournament, which pitted teams of Europeans, Parsis, Hindus, and Muslims against each other, was seen by nationalists as promoting the divisive communal politics of the colonial state. Chapter VII: History and Sport, Page 151." },
+        { id: 96, question: "Kerry Packer's World Series Cricket introduced which of the following innovations?", options: ["Five-day Test matches", "The leg-before law", "Coloured dress, protective helmets, and cricket under lights", "The use of a third umpire"], answer: "Coloured dress, protective helmets, and cricket under lights", hint: "He wanted to make cricket more attractive for television.", explanation: "Kerry Packer's breakaway tournament in the late 1970s revolutionized cricket by introducing features designed for television audiences, fundamentally changing the game's presentation and marketing. Chapter VII: History and Sport, Page 154." },
+        { id: 97, question: "What were 'sumptuary laws' in medieval Europe?", options: ["Laws regulating trade", "Laws that controlled the behaviour and dress of social inferiors", "Laws about taxation", "Laws governing religious practices"], answer: "Laws that controlled the behaviour and dress of social inferiors", hint: "They were swept away by the French Revolution.", explanation: "Sumptuary laws were used to enforce social hierarchies by restricting what people of different classes could wear, eat, or consume. Chapter VIII: Clothing: A Social History, Page 160." },
+        { id: 98, question: "The conflict over dress code in Travancore in the 19th century involved which caste?", options: ["The Nairs and Brahmins", "The Shanar caste and the Nairs", "The Ezhavas and the Shanars", "The Pulayas and the Nairs"], answer: "The Shanar caste and the Nairs", hint: "It was about the right of Shanar women to cover their upper bodies.", explanation: "Women of the 'subordinate' Shanar caste were attacked for adopting an upper cloth, leading to a long and violent conflict over dress and caste status. Chapter VIII: Clothing: A Social History, Page 168." },
+        { id: 99, question: "Mahatma Gandhi adopted the short dhoti as his dress in 1921 as a symbol of:", options: ["His wealth and status", "His rejection of Indian traditions", "Purity, simplicity, poverty, and resistance to British rule", "His desire to become an ascetic"], answer: "Purity, simplicity, poverty, and resistance to British rule", hint: "He wanted to identify with the poorest Indian.", explanation: "Gandhi's adoption of the loincloth was a powerful political statement, symbolizing his solidarity with the poor and his rejection of Western mill-made cloth. Chapter VIII: Clothing: A Social History, Page 175." },
+        { id: 100, question: "What was the 'Brahmika sari'?", options: ["A traditional sari from Bengal", "A style of wearing the sari adopted by Brahmo Samaji women", "A sari made of homespun khadi", "A uniform for women in the national movement"], answer: "A style of wearing the sari adopted by Brahmo Samaji women", hint: "It was popularized by Jnanadanandini Devi, wife of Satyendranath Tagore.", explanation: "Inspired by the Parsi style, this new way of draping the sari, worn with a blouse and shoes, was an attempt to create a more modern and convenient dress for Indian women. Chapter VIII: Clothing: A Social History, Page 171." }
+    ];
+
+    // --- DOM ELEMENTS ---
+    const startPage = document.getElementById('start-page');
+    const quizInterface = document.getElementById('quiz-interface');
+    const resultsPage = document.getElementById('results-page');
+    const analysisPage = document.getElementById('analysis-page');
+    
+    const beginTestBtn = document.getElementById('begin-test-btn');
+    const questionNumberEl = document.getElementById('question-number');
+    const questionTextEl = document.getElementById('question-text');
+    const optionsContainer = document.getElementById('options-container');
+    const hintContainer = document.getElementById('hint-container');
+    const hintTextEl = document.getElementById('hint-text');
+    
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const showHintBtn = document.getElementById('show-hint-btn');
+    const markReviewBtn = document.getElementById('mark-review-btn');
+    const submitTestBtn = document.getElementById('submit-test-btn');
+
+    const timerEl = document.getElementById('timer');
+    const questionPalette = document.getElementById('question-palette');
+    
+    const confirmationModal = document.getElementById('confirmation-modal');
+    const cancelSubmitBtn = document.getElementById('cancel-submit-btn');
+    const confirmSubmitBtn = document.getElementById('confirm-submit-btn');
+    
+    // --- STATE VARIABLES ---
+    let currentQuestionIndex = 0;
+    let userAnswers = new Array(quizData.length).fill(null);
+    let markedForReview = new Array(quizData.length).fill(false);
+    let questionTimers = new Array(quizData.length).fill(0);
+    let questionStartTime;
+    let timerInterval;
+    let totalTime = 90 * 60; // 90 minutes in seconds
+
+    // --- INITIALIZATION ---
+    function initializeQuiz() {
+        renderPalette();
+        renderQuestion();
+        startPage.classList.add('hidden');
+        quizInterface.classList.remove('hidden');
+        resultsPage.classList.add('hidden');
+        analysisPage.classList.add('hidden');
+        startTimer();
+    }
+
+    // --- TIMER LOGIC ---
+    function startTimer() {
+        questionStartTime = Date.now();
+        timerInterval = setInterval(() => {
+            totalTime--;
+            updateTimerDisplay();
+            if (totalTime <= 0) {
+                clearInterval(timerInterval);
+                recordTimeSpent();
+                showResults();
+            }
+            if (totalTime <= 5 * 60) { // Last 5 minutes
+                timerEl.classList.add('text-red-800', 'bg-red-100', 'timer-pulse');
+                timerEl.classList.remove('text-blue-800', 'bg-blue-100');
+            }
+        }, 1000);
+    }
+    
+    function updateTimerDisplay() {
+        const minutes = Math.floor(totalTime / 60);
+        const seconds = totalTime % 60;
+        timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+    
+    function recordTimeSpent() {
+        if(questionStartTime) {
+            const timeSpent = Math.round((Date.now() - questionStartTime) / 1000);
+            questionTimers[currentQuestionIndex] += timeSpent;
+        }
+        questionStartTime = Date.now();
+    }
+
+    // --- RENDERING LOGIC ---
+    function renderQuestion() {
+        const question = quizData[currentQuestionIndex];
+        questionNumberEl.textContent = `Question ${currentQuestionIndex + 1} of ${quizData.length}`;
+        questionTextEl.textContent = question.question;
+
+        optionsContainer.innerHTML = '';
+        question.options.forEach(option => {
+            const optionButton = document.createElement('button');
+            optionButton.textContent = option;
+            optionButton.classList.add('w-full', 'text-left', 'p-4', 'rounded-lg', 'border', 'transition');
+            if (userAnswers[currentQuestionIndex] === option) {
+                optionButton.classList.add('bg-blue-100', 'border-blue-500', 'font-semibold');
+            } else {
+                optionButton.classList.add('bg-white', 'border-gray-300', 'hover:bg-gray-50');
+            }
+            optionButton.onclick = () => selectOption(option);
+            optionsContainer.appendChild(optionButton);
+        });
+
+        updateNavigationButtons();
+        updatePalette();
+        updateMarkReviewButton();
+        hintContainer.classList.add('hidden');
+    }
+
+    function renderPalette() {
+        questionPalette.innerHTML = '';
+        quizData.forEach((_, index) => {
+            const paletteBtn = document.createElement('button');
+            paletteBtn.textContent = index + 1;
+            paletteBtn.dataset.index = index;
+            paletteBtn.classList.add('w-10', 'h-10', 'rounded-md', 'font-semibold', 'transition', 'flex', 'items-center', 'justify-center');
+            paletteBtn.onclick = () => jumpToQuestion(index);
+            questionPalette.appendChild(paletteBtn);
+        });
+    }
+
+    // --- UPDATE UI ELEMENTS ---
+    function updateNavigationButtons() {
+        prevBtn.disabled = currentQuestionIndex === 0;
+        nextBtn.disabled = currentQuestionIndex === quizData.length - 1;
+        prevBtn.classList.toggle('opacity-50', prevBtn.disabled);
+        nextBtn.classList.toggle('opacity-50', nextBtn.disabled);
+    }
+
+    function updatePalette() {
+        const paletteButtons = questionPalette.querySelectorAll('button');
+        paletteButtons.forEach((btn, index) => {
+            btn.classList.remove('bg-gray-200', 'bg-green-200', 'bg-purple-200', 'ring-2', 'ring-blue-500');
+            
+            if (userAnswers[index] !== null) {
+                btn.classList.add('bg-green-200'); // Answered
+            } else if (markedForReview[index]) {
+                btn.classList.add('bg-purple-200'); // Marked
+            } else {
+                 btn.classList.add('bg-gray-200'); // Unanswered
+            }
+
+            if (index === currentQuestionIndex) {
+                btn.classList.add('ring-2', 'ring-blue-500'); // Current
+            }
+        });
+    }
+    
+    function updateMarkReviewButton() {
+        if(markedForReview[currentQuestionIndex]) {
+            markReviewBtn.textContent = 'Unmark';
+            markReviewBtn.classList.add('bg-orange-500', 'hover:bg-orange-600');
+            markReviewBtn.classList.remove('bg-purple-500', 'hover:bg-purple-600');
+        } else {
+            markReviewBtn.textContent = 'Mark for Review';
+            markReviewBtn.classList.add('bg-purple-500', 'hover:bg-purple-600');
+            markReviewBtn.classList.remove('bg-orange-500', 'hover:bg-orange-600');
+        }
+    }
+
+    // --- USER ACTIONS ---
+    function selectOption(option) {
+        recordTimeSpent();
+        userAnswers[currentQuestionIndex] = option;
+        renderQuestion();
+    }
+
+    function changeQuestion(direction) {
+        recordTimeSpent();
+        const newIndex = currentQuestionIndex + direction;
+        if (newIndex >= 0 && newIndex < quizData.length) {
+            currentQuestionIndex = newIndex;
+            renderQuestion();
+        }
+    }
+
+    function jumpToQuestion(index) {
+        recordTimeSpent();
+        currentQuestionIndex = index;
+        renderQuestion();
+    }
+    
+    function toggleMarkForReview() {
+        markedForReview[currentQuestionIndex] = !markedForReview[currentQuestionIndex];
+        updateMarkReviewButton();
+        updatePalette();
+    }
+
+    function showHint() {
+        hintTextEl.textContent = quizData[currentQuestionIndex].hint;
+        hintContainer.classList.remove('hidden');
+    }
+
+    // --- SUBMISSION AND RESULTS ---
+    function openConfirmationModal() {
+        const answered = userAnswers.filter(a => a !== null).length;
+        const marked = markedForReview.filter(m => m).length;
+        document.getElementById('summary-answered').textContent = answered;
+        document.getElementById('summary-unanswered').textContent = quizData.length - answered;
+        document.getElementById('summary-marked').textContent = marked;
+        confirmationModal.classList.remove('hidden');
+    }
+
+    function showResults() {
+        clearInterval(timerInterval);
+        quizInterface.classList.add('hidden');
+        resultsPage.classList.remove('hidden');
+        confirmationModal.classList.add('hidden');
+
+        let correct = 0;
+        let incorrect = 0;
+        userAnswers.forEach((answer, index) => {
+            if (answer === quizData[index].answer) {
+                correct++;
+            } else if (answer !== null) {
+                incorrect++;
+            }
+        });
+        const unattempted = quizData.length - correct - incorrect;
+        const timeElapsed = (90 * 60) - totalTime;
+        const minutes = Math.floor(timeElapsed / 60);
+        const seconds = timeElapsed % 60;
+
+        document.getElementById('final-score').textContent = `${correct}/${quizData.length}`;
+        document.getElementById('percentage').textContent = `${((correct / quizData.length) * 100).toFixed(2)}%`;
+        document.getElementById('correct-count').textContent = correct;
+        document.getElementById('incorrect-count').textContent = incorrect;
+        document.getElementById('unattempted-count').textContent = unattempted;
+        document.getElementById('time-taken').textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    function showAnalysis() {
+        resultsPage.classList.add('hidden');
+        analysisPage.classList.remove('hidden');
+
+        let correct = 0;
+        let incorrect = 0;
+        let totalTimeCorrect = 0;
+        let totalTimeIncorrect = 0;
+        let questionsCorrect = 0;
+        let questionsIncorrect = 0;
+
+        userAnswers.forEach((answer, index) => {
+            if (answer === quizData[index].answer) {
+                correct++;
+                totalTimeCorrect += questionTimers[index];
+                questionsCorrect++;
+            } else if (answer !== null) {
+                incorrect++;
+                totalTimeIncorrect += questionTimers[index];
+                questionsIncorrect++;
+            }
+        });
+
+        const unattempted = quizData.length - correct - incorrect;
+        const totalTimeTaken = questionTimers.reduce((a, b) => a + b, 0);
+
+        document.getElementById('analysis-accuracy').textContent = `${((correct / quizData.length) * 100).toFixed(2)}%`;
+        document.getElementById('analysis-correct').textContent = correct;
+        document.getElementById('analysis-incorrect').textContent = incorrect;
+        document.getElementById('analysis-unattempted').textContent = unattempted;
+        
+        document.getElementById('analysis-avg-time').textContent = `${(totalTimeTaken / quizData.length).toFixed(1)}s`;
+        document.getElementById('analysis-avg-time-correct').textContent = questionsCorrect > 0 ? `${(totalTimeCorrect / questionsCorrect).toFixed(1)}s` : '0s';
+        document.getElementById('analysis-avg-time-incorrect').textContent = questionsIncorrect > 0 ? `${(totalTimeIncorrect / questionsIncorrect).toFixed(1)}s` : '0s';
+
+        renderTopicPerformance();
+        renderAnalysisList('all');
+    }
+    
+    function renderTopicPerformance() {
+        const topicPerformanceContainer = document.getElementById('topic-performance-container');
+        const topics = {};
+
+        quizData.forEach((q, index) => {
+            const explanation = q.explanation;
+            const topicMatch = explanation.match(/Chapter [IVX]+: (.*?)(, Page|$)/);
+            const topicName = topicMatch ? `Chapter ${topicMatch[0].split(':')[0].split(' ')[1]}: ${topicMatch[1].trim()}` : "General Knowledge";
+
+            if (!topics[topicName]) {
+                topics[topicName] = { correct: 0, total: 0 };
+            }
+            topics[topicName].total++;
+            if (userAnswers[index] === q.answer) {
+                topics[topicName].correct++;
+            }
+        });
+        
+        topicPerformanceContainer.innerHTML = '';
+        for (const topic in topics) {
+            const { correct, total } = topics[topic];
+            const percentage = (correct / total) * 100;
+            const topicDiv = document.createElement('div');
+            topicDiv.classList.add('bg-gray-50', 'p-4', 'rounded-lg');
+            topicDiv.innerHTML = `
+                <div class="flex justify-between items-center mb-1">
+                    <p class="font-semibold">${topic}</p>
+                    <p class="text-sm font-medium text-gray-600">${correct}/${total}</p>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div class="bg-blue-600 h-2.5 rounded-full" style="width: ${percentage}%"></div>
+                </div>
+            `;
+            topicPerformanceContainer.appendChild(topicDiv);
+        }
+    }
+    
+    function renderAnalysisList(filter) {
+        const analysisList = document.getElementById('analysis-question-list');
+        analysisList.innerHTML = '';
+
+        quizData.forEach((q, index) => {
+            const userAnswer = userAnswers[index];
+            const isCorrect = userAnswer === q.answer;
+            const isIncorrect = userAnswer !== null && userAnswer !== q.answer;
+            const isUnattempted = userAnswer === null;
+
+            if (filter === 'all' || 
+                (filter === 'correct' && isCorrect) ||
+                (filter === 'incorrect' && isIncorrect) ||
+                (filter === 'unattempted' && isUnattempted)
+            ) {
+                const questionCard = document.createElement('div');
+                questionCard.classList.add('p-6', 'rounded-xl', 'border');
+
+                let statusHtml = '';
+                if(isCorrect) {
+                     questionCard.classList.add('bg-green-50', 'border-green-200');
+                     statusHtml = `<p class="font-semibold text-green-700">Status: Correct</p>`;
+                } else if(isIncorrect) {
+                     questionCard.classList.add('bg-red-50', 'border-red-200');
+                     statusHtml = `<p class="font-semibold text-red-700">Status: Incorrect</p>`;
+                } else {
+                     questionCard.classList.add('bg-gray-100', 'border-gray-200');
+                     statusHtml = `<p class="font-semibold text-gray-700">Status: Unattempted</p>`;
+                }
+
+                let optionsHtml = q.options.map(option => {
+                    let classes = 'p-3 rounded-md';
+                    if (option === q.answer) {
+                        classes += ' bg-green-200 font-semibold'; // Correct answer
+                    } else if (option === userAnswer) {
+                        classes += ' bg-red-200'; // User's wrong answer
+                    }
+                    return `<li class="${classes}">${option}</li>`;
+                }).join('');
+
+                questionCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                         <p class="font-bold text-lg">${index + 1}. ${q.question}</p>
+                         ${statusHtml}
+                    </div>
+                    <ul class="space-y-2 mb-4">${optionsHtml}</ul>
+                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                        <p class="font-semibold text-blue-800">Explanation:</p>
+                        <p class="text-blue-700">${q.explanation}</p>
+                    </div>
+                `;
+                analysisList.appendChild(questionCard);
+            }
+        });
+    }
+
+    // --- EVENT LISTENERS ---
+    beginTestBtn.addEventListener('click', initializeQuiz);
+    prevBtn.addEventListener('click', () => changeQuestion(-1));
+    nextBtn.addEventListener('click', () => changeQuestion(1));
+    showHintBtn.addEventListener('click', showHint);
+    markReviewBtn.addEventListener('click', toggleMarkForReview);
+    submitTestBtn.addEventListener('click', openConfirmationModal);
+    cancelSubmitBtn.addEventListener('click', () => confirmationModal.classList.add('hidden'));
+    confirmSubmitBtn.addEventListener('click', () => {
+        recordTimeSpent();
+        showResults();
+    });
+    document.getElementById('restart-quiz-btn').addEventListener('click', () => window.location.reload());
+    document.getElementById('analysis-btn').addEventListener('click', showAnalysis);
+    document.getElementById('back-to-results-btn').addEventListener('click', () => {
+        analysisPage.classList.add('hidden');
+        resultsPage.classList.remove('hidden');
+    });
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.filter-btn').forEach(b => {
+                b.classList.remove('bg-blue-600', 'text-white');
+                b.classList.add('bg-gray-200', 'text-gray-800');
+            });
+            e.target.classList.add('bg-blue-600', 'text-white');
+            e.target.classList.remove('bg-gray-200', 'text-gray-800');
+            renderAnalysisList(e.target.dataset.filter);
+        });
+    });
+
+</script>
+
+</body>
+</html>
