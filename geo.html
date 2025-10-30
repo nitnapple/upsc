@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CameraGeoTag - Sony Cyber-shot Inspired</title>
+    <style>
+        /* Design System Variables */
+        :root {
+            --primary-dark: #1a1a1a;
+            --secondary-dark: #2a2a2a;
+            --accent-silver: #e8e8e8;
+            --accent-light: #c0c0c0;
+            --highlight-red: #ff4444;
+            --success-green: #44ff44;
+            --text-primary: #f0f0f0;
+            --text-secondary: #b0b0b0;
+            --glass-bg: rgba(42, 42, 42, 0.85);
+            --glass-border: rgba(232, 232, 232, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--primary-dark);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            position: fixed;
+        }
+
+        /* Camera View */
+        #cameraView {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: #000;
+        }
+
+        #videoPreview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #canvas {
+            display: none;
+        }
+
+        /* Top Controls Bar */
+        .top-controls {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 10;
+        }
+
+        .control-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--accent-silver);
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .control-btn:hover {
+            background: rgba(42, 42, 42, 0.95);
+            box-shadow: 0 0 15px rgba(232, 232, 232, 0.4);
+            transform: scale(1.05);
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        .gps-status {
+            background: var(--glass-bg);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            font-size: 12px;
+            color: var(--text-secondary);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .gps-status.active {
+            color: var(--success-green);
+            border-color: var(--success-green);
+        }
+
+        /* Bottom Controls */
+        .bottom-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 140px;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            z-index: 10;
+        }
+
+        #captureBtn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--highlight-red), #cc0000);
+            border: 4px solid var(--accent-silver);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(255, 68, 68, 0.5);
+            position: relative;
+        }
+
+        #captureBtn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(255, 68, 68, 0.8);
+        }
+
+        #captureBtn:active {
+            transform: scale(0.95);
+        }
+
+        #captureBtn::after {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            right: -8px;
+            bottom: -8px;
+            border-radius: 50%;
+            border: 2px solid var(--highlight-red);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.1); }
+        }
+
+        #galleryBtn {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            background: var(--glass-bg);
+            border: 2px solid var(--glass-border);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-silver);
+            font-size: 24px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        #galleryBtn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(232, 232, 232, 0.4);
+        }
+
+        /* Flash Animation */
+        .flash-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .flash-overlay.active {
+            animation: flashEffect 0.3s ease;
+        }
+
+        @keyframes flashEffect {
+            0% { opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { opacity: 0; }
+        }
+
+        /* Location Popup */
+        .location-popup {
+            position: absolute;
+            bottom: 160px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 16px 24px;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.4s ease;
+            max-width: 90%;
+            z-index: 50;
+        }
+
+        .location-popup.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .location-popup .location-name {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            color: var(--text-primary);
+        }
+
+        .location-popup .location-coords {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        /* Gallery View */
+        #galleryView {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--primary-dark);
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+        }
+
+        #galleryView.active {
+            display: flex;
+        }
+
+        .gallery-header {
+            height: 60px;
+            background: var(--secondary-dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .gallery-header h2 {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .gallery-grid {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+            align-content: start;
+        }
+
+        .gallery-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid var(--glass-border);
+            transition: all 0.3s ease;
+        }
+
+        .gallery-item:hover {
+            transform: scale(1.05);
+            border-color: var(--accent-silver);
+            box-shadow: 0 0 15px rgba(232, 232, 232, 0.3);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .gallery-item .location-label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+            padding: 8px;
+            font-size: 10px;
+            color: var(--text-primary);
+            text-align: center;
+        }
+
+        .empty-gallery {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        .empty-gallery .icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* Full Image View */
+        #fullImageView {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 300;
+            display: none;
+            flex-direction: column;
+        }
+
+        #fullImageView.active {
+            display: flex;
+        }
+
+        .full-image-header {
+            height: 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .full-image-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .full-image-container img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+        }
+
+        .full-image-metadata {
+            background: var(--secondary-dark);
+            border-top: 1px solid var(--glass-border);
+            padding: 20px;
+        }
+
+        .metadata-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+
+        .metadata-row .icon {
+            font-size: 16px;
+        }
+
+        .metadata-row .text {
+            flex: 1;
+            color: var(--text-secondary);
+        }
+
+        .full-image-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-bg);
+            color: var(--text-primary);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: rgba(42, 42, 42, 0.95);
+            border-color: var(--accent-silver);
+        }
+
+        .action-btn.primary {
+            background: var(--highlight-red);
+            border-color: var(--highlight-red);
+        }
+
+        .action-btn.primary:hover {
+            background: #cc0000;
+        }
+
+        /* Permission Screen */
+        #permissionScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--primary-dark);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            text-align: center;
+            z-index: 400;
+        }
+
+        #permissionScreen.hidden {
+            display: none;
+        }
+
+        .permission-icon {
+            font-size: 80px;
+            margin-bottom: 24px;
+        }
+
+        .permission-title {
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 16px;
+        }
+
+        .permission-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            max-width: 400px;
+        }
+
+        .permission-btn {
+            padding: 16px 40px;
+            border-radius: 8px;
+            background: var(--highlight-red);
+            border: none;
+            color: var(--text-primary);
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .permission-btn:hover {
+            background: #cc0000;
+            box-shadow: 0 0 20px rgba(255, 68, 68, 0.5);
+        }
+
+        /* Flash Mode Indicator */
+        .flash-mode {
+            position: absolute;
+            top: 70px;
+            right: 20px;
+            background: var(--glass-bg);
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            z-index: 10;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid var(--glass-border);
+            border-top: 3px solid var(--accent-silver);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .gallery-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Permission Screen -->
+    <div id="permissionScreen">
+        <div class="permission-icon">📷</div>
+        <div class="permission-title">CameraGeoTag</div>
+        <div class="permission-text">
+            This app needs access to your camera and location to capture photos with geographic metadata.
+        </div>
+        <button class="permission-btn" onclick="requestPermissions()">Enable Camera &amp; GPS</button>
+    </div>
+
+    <!-- Camera View -->
+    <div id="cameraView">
+        <video id="videoPreview" autoplay playsinline></video>
+        <canvas id="canvas"></canvas>
+        <div class="flash-overlay" id="flashOverlay"></div>
+
+        <div class="top-controls">
+            <button class="control-btn" id="switchCameraBtn" title="Switch Camera">🔄</button>
+            <div class="gps-status" id="gpsStatus">
+                <span>📍</span>
+                <span id="gpsText">Waiting for GPS...</span>
+            </div>
+            <button class="control-btn" id="flashBtn" title="Flash: Auto">⚡</button>
+        </div>
+
+        <div class="flash-mode" id="flashMode">Flash: Auto</div>
+
+        <div class="location-popup" id="locationPopup">
+            <div class="location-name" id="locationName">📍 Location Name</div>
+            <div class="location-coords" id="locationCoords">0.0000° N, 0.0000° E</div>
+        </div>
+
+        <div class="bottom-controls">
+            <button id="galleryBtn" title="Gallery">🖼️</button>
+            <button id="captureBtn" title="Capture Photo"></button>
+            <button class="control-btn" id="hdrBtn" title="HDR: Off">HDR</button>
+        </div>
+    </div>
+
+    <!-- Gallery View -->
+    <div id="galleryView">
+        <div class="gallery-header">
+            <h2>Gallery <span id="photoCount">(0)</span></h2>
+            <button class="control-btn" id="closeGalleryBtn">✕</button>
+        </div>
+        <div class="gallery-grid" id="galleryGrid">
+            <div class="empty-gallery">
+                <div class="icon">📸</div>
+                <div>No photos yet. Start capturing!</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full Image View -->
+    <div id="fullImageView">
+        <div class="full-image-header">
+            <button class="control-btn" id="backToGalleryBtn">←</button>
+            <button class="control-btn" id="deletePhotoBtn">🗑️</button>
+        </div>
+        <div class="full-image-container">
+            <img id="fullImage" src="" alt="Full view">
+        </div>
+        <div class="full-image-metadata">
+            <div class="metadata-row">
+                <span class="icon">📸</span>
+                <span class="text" id="metaTimestamp">Timestamp</span>
+            </div>
+            <div class="metadata-row">
+                <span class="icon">📍</span>
+                <span class="text" id="metaLocation">Location</span>
+            </div>
+            <div class="full-image-actions">
+                <button class="action-btn primary" id="downloadBtn">Download</button>
+                <button class="action-btn" id="shareBtn">Share Location</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/piexifjs@1.0.6/piexif.min.js"></script>
+
+    <script>
+        // Application State
+        const state = {
+            stream: null,
+            facingMode: 'environment',
+            flashMode: 'auto', // auto, on, off
+            hdrEnabled: false,
+            currentLocation: null,
+            photos: [],
+            currentPhotoIndex: null,
+            permissionsGranted: false
+        };
+
+        // DOM Elements
+        const elements = {
+            permissionScreen: document.getElementById('permissionScreen'),
+            cameraView: document.getElementById('cameraView'),
+            videoPreview: document.getElementById('videoPreview'),
+            canvas: document.getElementById('canvas'),
+            flashOverlay: document.getElementById('flashOverlay'),
+            captureBtn: document.getElementById('captureBtn'),
+            switchCameraBtn: document.getElementById('switchCameraBtn'),
+            flashBtn: document.getElementById('flashBtn'),
+            hdrBtn: document.getElementById('hdrBtn'),
+            galleryBtn: document.getElementById('galleryBtn'),
+            gpsStatus: document.getElementById('gpsStatus'),
+            gpsText: document.getElementById('gpsText'),
+            flashMode: document.getElementById('flashMode'),
+            locationPopup: document.getElementById('locationPopup'),
+            locationName: document.getElementById('locationName'),
+            locationCoords: document.getElementById('locationCoords'),
+            galleryView: document.getElementById('galleryView'),
+            galleryGrid: document.getElementById('galleryGrid'),
+            photoCount: document.getElementById('photoCount'),
+            closeGalleryBtn: document.getElementById('closeGalleryBtn'),
+            fullImageView: document.getElementById('fullImageView'),
+            fullImage: document.getElementById('fullImage'),
+            backToGalleryBtn: document.getElementById('backToGalleryBtn'),
+            deletePhotoBtn: document.getElementById('deletePhotoBtn'),
+            downloadBtn: document.getElementById('downloadBtn'),
+            shareBtn: document.getElementById('shareBtn'),
+            metaTimestamp: document.getElementById('metaTimestamp'),
+            metaLocation: document.getElementById('metaLocation')
+        };
+
+        // Request Camera and Geolocation Permissions
+        async function requestPermissions() {
+            try {
+                // Request camera
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: state.facingMode },
+                    audio: false
+                });
+                state.stream = stream;
+                elements.videoPreview.srcObject = stream;
+
+                // Request geolocation
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        updateGeolocation(position);
+                    },
+                    (error) => {
+                        console.warn('Geolocation error:', error);
+                        elements.gpsText.textContent = 'GPS unavailable';
+                    },
+                    { enableHighAccuracy: true }
+                );
+
+                // Watch position for continuous updates
+                navigator.geolocation.watchPosition(
+                    (position) => {
+                        updateGeolocation(position);
+                    },
+                    null,
+                    { enableHighAccuracy: true, maximumAge: 10000 }
+                );
+
+                state.permissionsGranted = true;
+                elements.permissionScreen.classList.add('hidden');
+            } catch (error) {
+                alert('Unable to access camera or GPS. Please check your browser settings.');
+                console.error('Permission error:', error);
+            }
+        }
+
+        // Update Geolocation
+        function updateGeolocation(position) {
+            state.currentLocation = {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+                accuracy: position.coords.accuracy
+            };
+            elements.gpsStatus.classList.add('active');
+            elements.gpsText.textContent = `GPS: ±${Math.round(position.coords.accuracy)}m`;
+        }
+
+        // Switch Camera (Front/Rear)
+        async function switchCamera() {
+            if (!state.stream) return;
+
+            // Stop current stream
+            state.stream.getTracks().forEach(track => track.stop());
+
+            // Toggle facing mode
+            state.facingMode = state.facingMode === 'environment' ? 'user' : 'environment';
+
+            // Start new stream
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: state.facingMode },
+                    audio: false
+                });
+                state.stream = stream;
+                elements.videoPreview.srcObject = stream;
+            } catch (error) {
+                console.error('Camera switch error:', error);
+                // Revert on error
+                state.facingMode = state.facingMode === 'environment' ? 'user' : 'environment';
+            }
+        }
+
+        // Toggle Flash Mode
+        function toggleFlash() {
+            const modes = ['auto', 'on', 'off'];
+            const currentIndex = modes.indexOf(state.flashMode);
+            state.flashMode = modes[(currentIndex + 1) % modes.length];
+
+            const labels = { auto: 'Auto', on: 'On', off: 'Off' };
+            const icons = { auto: '⚡', on: '💡', off: '⚡' };
+
+            elements.flashBtn.textContent = icons[state.flashMode];
+            elements.flashBtn.title = `Flash: ${labels[state.flashMode]}`;
+            elements.flashMode.textContent = `Flash: ${labels[state.flashMode]}`;
+        }
+
+        // Toggle HDR
+        function toggleHDR() {
+            state.hdrEnabled = !state.hdrEnabled;
+            elements.hdrBtn.style.background = state.hdrEnabled ? 
+                'rgba(68, 255, 68, 0.3)' : 'var(--glass-bg)';
+            elements.hdrBtn.title = `HDR: ${state.hdrEnabled ? 'On' : 'Off'}`;
+        }
+
+        // Capture Photo
+        async function capturePhoto() {
+            if (!state.stream) return;
+
+            // Flash animation
+            elements.flashOverlay.classList.add('active');
+            setTimeout(() => elements.flashOverlay.classList.remove('active'), 300);
+
+            // Capture from video
+            const video = elements.videoPreview;
+            const canvas = elements.canvas;
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+
+            // Convert to blob
+            canvas.toBlob(async (blob) => {
+                const timestamp = new Date();
+                const photo = {
+                    id: Date.now(),
+                    blob: blob,
+                    url: URL.createObjectURL(blob),
+                    timestamp: timestamp,
+                    location: null,
+                    locationName: 'Unknown location'
+                };
+
+                // Fetch location data
+                if (state.currentLocation) {
+                    photo.location = { ...state.currentLocation };
+
+                    // Reverse geocoding
+                    try {
+                        const locationName = await reverseGeocode(
+                            state.currentLocation.latitude,
+                            state.currentLocation.longitude
+                        );
+                        photo.locationName = locationName;
+                    } catch (error) {
+                        console.warn('Reverse geocoding failed:', error);
+                        photo.locationName = 'Location name unavailable';
+                    }
+
+                    // Show location popup
+                    showLocationPopup(photo);
+                }
+
+                // Add to gallery
+                state.photos.push(photo);
+                updateGallery();
+            }, 'image/jpeg', 0.95);
+        }
+
+        // Reverse Geocoding using Nominatim
+        async function reverseGeocode(lat, lon) {
+            const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18`;
+
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'User-Agent': 'CameraGeoTag/1.0'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Geocoding failed');
+
+                const data = await response.json();
+
+                // Extract meaningful location name
+                const address = data.address || {};
+                const parts = [];
+
+                if (address.road || address.neighbourhood) {
+                    parts.push(address.road || address.neighbourhood);
+                }
+                if (address.city || address.town || address.village) {
+                    parts.push(address.city || address.town || address.village);
+                }
+                if (address.state) {
+                    parts.push(address.state);
+                }
+
+                return parts.length > 0 ? parts.join(', ') : data.display_name;
+            } catch (error) {
+                throw error;
+            }
+        }
+
+        // Show Location Popup
+        function showLocationPopup(photo) {
+            const lat = photo.location.latitude;
+            const lon = photo.location.longitude;
+            const latDir = lat >= 0 ? 'N' : 'S';
+            const lonDir = lon >= 0 ? 'E' : 'W';
+
+            elements.locationName.textContent = `📍 ${photo.locationName}`;
+            elements.locationCoords.textContent = 
+                `${Math.abs(lat).toFixed(4)}° ${latDir}, ${Math.abs(lon).toFixed(4)}° ${lonDir}`;
+
+            elements.locationPopup.classList.add('show');
+            setTimeout(() => {
+                elements.locationPopup.classList.remove('show');
+            }, 4000);
+        }
+
+        // Update Gallery
+        function updateGallery() {
+            elements.photoCount.textContent = `(${state.photos.length})`;
+
+            if (state.photos.length === 0) {
+                elements.galleryGrid.innerHTML = `
+                    <div class="empty-gallery">
+                        <div class="icon">📸</div>
+                        <div>No photos yet. Start capturing!</div>
+                    </div>
+                `;
+                return;
+            }
+
+            elements.galleryGrid.innerHTML = '';
+            state.photos.forEach((photo, index) => {
+                const item = document.createElement('div');
+                item.className = 'gallery-item';
+                item.innerHTML = `
+                    <img src="${photo.url}" alt="Photo ${index + 1}">
+                    <div class="location-label">${photo.locationName}</div>
+                `;
+                item.onclick = () => openFullImage(index);
+                elements.galleryGrid.appendChild(item);
+            });
+        }
+
+        // Open Gallery
+        function openGallery() {
+            elements.galleryView.classList.add('active');
+            updateGallery();
+        }
+
+        // Close Gallery
+        function closeGallery() {
+            elements.galleryView.classList.remove('active');
+        }
+
+        // Open Full Image
+        function openFullImage(index) {
+            state.currentPhotoIndex = index;
+            const photo = state.photos[index];
+
+            elements.fullImage.src = photo.url;
+
+            // Format timestamp
+            const timeStr = photo.timestamp.toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            elements.metaTimestamp.textContent = timeStr;
+
+            // Format location
+            if (photo.location) {
+                const lat = photo.location.latitude;
+                const lon = photo.location.longitude;
+                const latDir = lat >= 0 ? 'N' : 'S';
+                const lonDir = lon >= 0 ? 'E' : 'W';
+                elements.metaLocation.textContent = 
+                    `${photo.locationName} – ${Math.abs(lat).toFixed(4)}° ${latDir}, ${Math.abs(lon).toFixed(4)}° ${lonDir}`;
+            } else {
+                elements.metaLocation.textContent = 'Location unavailable';
+            }
+
+            elements.fullImageView.classList.add('active');
+        }
+
+        // Close Full Image
+        function closeFullImage() {
+            elements.fullImageView.classList.remove('active');
+        }
+
+        // Delete Photo
+        function deletePhoto() {
+            if (state.currentPhotoIndex === null) return;
+
+            if (confirm('Delete this photo?')) {
+                state.photos.splice(state.currentPhotoIndex, 1);
+                closeFullImage();
+                updateGallery();
+            }
+        }
+
+        // Download Photo with EXIF
+        async function downloadPhoto() {
+            if (state.currentPhotoIndex === null) return;
+
+            const photo = state.photos[state.currentPhotoIndex];
+
+            try {
+                // Read image as data URL
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const dataUrl = e.target.result;
+                    const base64 = dataUrl.split(',')[1];
+
+                    // Create EXIF data
+                    const exifObj = {};
+                    exifObj['0th'] = {};
+                    exifObj['Exif'] = {};
+                    exifObj['GPS'] = {};
+
+                    // Add basic metadata
+                    exifObj['0th'][piexif.ImageIFD.Make] = 'CameraGeoTag';
+                    exifObj['0th'][piexif.ImageIFD.Model] = 'v1.0';
+                    exifObj['0th'][piexif.ImageIFD.Software] = 'CameraGeoTag Web App';
+                    exifObj['0th'][piexif.ImageIFD.DateTime] = formatExifDate(photo.timestamp);
+
+                    // Add GPS data if available
+                    if (photo.location) {
+                        const lat = photo.location.latitude;
+                        const lon = photo.location.longitude;
+
+                        exifObj['GPS'][piexif.GPSIFD.GPSLatitudeRef] = lat >= 0 ? 'N' : 'S';
+                        exifObj['GPS'][piexif.GPSIFD.GPSLatitude] = degToDMS(Math.abs(lat));
+                        exifObj['GPS'][piexif.GPSIFD.GPSLongitudeRef] = lon >= 0 ? 'E' : 'W';
+                        exifObj['GPS'][piexif.GPSIFD.GPSLongitude] = degToDMS(Math.abs(lon));
+                    }
+
+                    // Insert EXIF into image
+                    const exifBytes = piexif.dump(exifObj);
+                    const newDataUrl = piexif.insert(exifBytes, dataUrl);
+
+                    // Trigger download
+                    const link = document.createElement('a');
+                    link.href = newDataUrl;
+                    link.download = `photo_${photo.id}.jpg`;
+                    link.click();
+                };
+                reader.readAsDataURL(photo.blob);
+            } catch (error) {
+                console.error('Download error:', error);
+                // Fallback: download without EXIF
+                const link = document.createElement('a');
+                link.href = photo.url;
+                link.download = `photo_${photo.id}.jpg`;
+                link.click();
+            }
+        }
+
+        // Share Location
+        function shareLocation() {
+            if (state.currentPhotoIndex === null) return;
+
+            const photo = state.photos[state.currentPhotoIndex];
+            if (!photo.location) {
+                alert('No location data available');
+                return;
+            }
+
+            const text = `${photo.locationName}\nCoordinates: ${photo.location.latitude.toFixed(6)}, ${photo.location.longitude.toFixed(6)}`;
+
+            // Copy to clipboard
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Location copied to clipboard!');
+            }).catch(() => {
+                alert(text);
+            });
+        }
+
+        // Helper: Convert degrees to DMS (Degrees, Minutes, Seconds)
+        function degToDMS(deg) {
+            const d = Math.floor(deg);
+            const minFloat = (deg - d) * 60;
+            const m = Math.floor(minFloat);
+            const s = (minFloat - m) * 60;
+            return [[d, 1], [m, 1], [Math.round(s * 100), 100]];
+        }
+
+        // Helper: Format date for EXIF
+        function formatExifDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hour = String(date.getHours()).padStart(2, '0');
+            const minute = String(date.getMinutes()).padStart(2, '0');
+            const second = String(date.getSeconds()).padStart(2, '0');
+            return `${year}:${month}:${day} ${hour}:${minute}:${second}`;
+        }
+
+        // Event Listeners
+        elements.captureBtn.addEventListener('click', capturePhoto);
+        elements.switchCameraBtn.addEventListener('click', switchCamera);
+        elements.flashBtn.addEventListener('click', toggleFlash);
+        elements.hdrBtn.addEventListener('click', toggleHDR);
+        elements.galleryBtn.addEventListener('click', openGallery);
+        elements.closeGalleryBtn.addEventListener('click', closeGallery);
+        elements.backToGalleryBtn.addEventListener('click', closeFullImage);
+        elements.deletePhotoBtn.addEventListener('click', deletePhoto);
+        elements.downloadBtn.addEventListener('click', downloadPhoto);
+        elements.shareBtn.addEventListener('click', shareLocation);
+
+        // Initialize app on load
+        window.addEventListener('load', () => {
+            // App starts with permission screen
+            console.log('CameraGeoTag v1.0 initialized');
+        });
+    </script>
+</body>
+</html>
