@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Geo Camera</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Main Camera View -->
+    <div id="cameraView" class="view active">
+        <!-- Top Overlay Bar with Coordinates -->
+        <div class="top-overlay">
+            <div class="coordinates-display">
+                <div id="latitudeDisplay" class="coord-line">Latitude: --</div>
+                <div id="longitudeDisplay" class="coord-line">Longitude: --</div>
+                <div id="accuracyDisplay" class="accuracy-line">Accuracy: --</div>
+            </div>
+            <button id="settingsBtn" class="icon-btn" aria-label="Settings">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M12 1v6m0 6v6m9-9h-6m-6 0H3"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Camera Viewport -->
+        <video id="cameraFeed" autoplay playsinline></video>
+        
+        <!-- Permission/Error Messages -->
+        <div id="messageOverlay" class="message-overlay hidden">
+            <div class="message-content">
+                <div class="message-icon">📷</div>
+                <h2 id="messageTitle">Camera Access Required</h2>
+                <p id="messageText">Please grant camera and location permissions to use this app.</p>
+                <button id="retryBtn" class="btn btn-primary">Grant Permissions</button>
+            </div>
+        </div>
+
+        <!-- Bottom Controls -->
+        <div class="bottom-controls">
+            <button id="galleryBtn" class="control-btn" aria-label="Gallery">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+                <span id="photoCount" class="photo-count">0</span>
+            </button>
+            
+            <button id="captureBtn" class="capture-btn" aria-label="Capture Photo">
+                <span class="capture-ring"></span>
+            </button>
+            
+            <div class="control-spacer"></div>
+        </div>
+    </div>
+
+    <!-- Preview View -->
+    <div id="previewView" class="view">
+        <div class="preview-header">
+            <button id="closePreviewBtn" class="icon-btn" aria-label="Close">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <h2>Photo Preview</h2>
+            <div class="spacer"></div>
+        </div>
+        
+        <div class="preview-content">
+            <img id="previewImage" alt="Captured photo">
+            <div class="preview-metadata">
+                <div class="metadata-item">
+                    <strong>📍 Location</strong>
+                    <span id="previewLocation">--</span>
+                </div>
+                <div class="metadata-item">
+                    <strong>🕐 Timestamp</strong>
+                    <span id="previewTimestamp">--</span>
+                </div>
+                <div class="metadata-item">
+                    <strong>📏 Accuracy</strong>
+                    <span id="previewAccuracy">--</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="preview-actions">
+            <button id="retakeBtn" class="btn btn-secondary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="1 4 1 10 7 10"></polyline>
+                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                </svg>
+                Retake
+            </button>
+            <button id="downloadBtn" class="btn btn-primary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Download
+            </button>
+        </div>
+    </div>
+
+    <!-- Gallery View -->
+    <div id="galleryView" class="view">
+        <div class="gallery-header">
+            <button id="closeGalleryBtn" class="icon-btn" aria-label="Close">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+            </button>
+            <h2>Gallery</h2>
+            <div class="spacer"></div>
+        </div>
+        
+        <div id="galleryGrid" class="gallery-grid">
+            <div class="empty-gallery">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+                <p>No photos captured yet</p>
+                <p class="empty-subtitle">Take your first geo-tagged photo!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <button id="closeSettingsBtn" class="icon-btn" aria-label="Close">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-group">
+                    <label for="coordinateFormat">Coordinate Format</label>
+                    <select id="coordinateFormat" class="form-control">
+                        <option value="decimal">Decimal Degrees (XX.XXXXXX)</option>
+                        <option value="dms">Degrees Minutes Seconds (XX° XX' XX")</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label for="showAccuracy" class="checkbox-label">
+                        <input type="checkbox" id="showAccuracy" checked>
+                        <span>Show Location Accuracy</span>
+                    </label>
+                </div>
+                <div class="setting-group">
+                    <label for="showTimestamp" class="checkbox-label">
+                        <input type="checkbox" id="showTimestamp" checked>
+                        <span>Show Timestamp on Photos</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
